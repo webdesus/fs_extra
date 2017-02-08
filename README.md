@@ -2,6 +2,13 @@
 
 A Rust library for more work functionality with file system.
 
+[![Build Status](https://travis-ci.org/webdesus/fs_extra.svg)](https://travis-ci.org/webdesus/fs_extra)
+[![Crates.io Status](https://img.shields.io/crates/v/fs_extra.svg)](https://crates.io/crates/fs_extra)
+[![Docs](https://docs.rs/fs_extra/badge.svg)](https://docs.rs/fs_extra)
+
+[Documentation](https://docs.rs/fs_extra)
+
+
 ## Key features:
 
 * Copy files with recept information about process.
@@ -16,35 +23,24 @@ A Rust library for more work functionality with file system.
 
 * One method for open and read `String` content from file.
 
-## functions:
+## Functions:
 
-fs_extra::fs::copy
-
-fs_extra::fs::copy_with_progress
-
-fs_extra::fs::move_file
-
-fs_extra::fs::move_file_with_progress
-
-fs_extra::fs::remove
-
-fs_extra::fs::read_to_string
-
-fs_extra::fs::write_all
-
-fs_extra::dir::create
-
-fs_extra::dir::create_all
-
-fs_extra::dir::copy
-
-fs_extra::dir::copy_with_progress
-
-fs_extra::dir::move_dir
-
-fs_extra::dir::move_dir_with_progress
-
-fs_extra::dir::remove
+| Function | Description |
+| ------------- | ------------- |
+| [fs_extra::fs::copy](https://docs.rs/fs_extra/0.1.0/fs_extra/file/fn.copy.html)  | Copies the contents of one file to another |
+| [fs_extra::fs::copy_with_progress](https://docs.rs/fs_extra/0.1.0/fs_extra/file/fn.copy_with_progress.html)  | Copies the contents of one file to another with recept information about process  |
+| [fs_extra::fs::move_file](https://docs.rs/fs_extra/0.1.0/fs_extra/file/fn.move_file.html)  | Moves file from one place to another  |
+| [fs_extra::fs::move_file_with_progress](https://docs.rs/fs_extra/0.1.0/fs_extra/file/fn.move_file_with_progress.html)  | Moves file from one place to another with recept information about process  |
+| [fs_extra::fs::remove](https://docs.rs/fs_extra/0.1.0/fs_extra/file/fn.remove.html)  | Removes a file from the filesystem  |
+| [fs_extra::fs::read_to_string](https://docs.rs/fs_extra/0.1.0/fs_extra/file/fn.read_to_string.html)  | Read file content, placing him into `String`  |
+| [fs_extra::fs::write_all](https://docs.rs/fs_extra/0.1.0/fs_extra/file/fn.write_all.html)  | Write `String` content into inside target file  |
+| [fs_extra::dir::create](https://docs.rs/fs_extra/0.1.0/fs_extra/dir/fn.create.html)  | Creates a new, empty directory at the provided path  |
+| [fs_extra::dir::create_all](https://docs.rs/fs_extra/0.1.0/fs_extra/dir/fn.create_all.html)  | Recursively create a directory and all of its parent components if they are missing  |
+| [fs_extra::dir::copy](https://docs.rs/fs_extra/0.1.0/fs_extra/dir/fn.copy.html)  | Copies the directory contents from one place to another using recursive method  |
+| [fs_extra::dir::copy_with_progress](https://docs.rs/fs_extra/0.1.0/fs_extra/dir/fn.copy_with_progress.html)  | Copies the directory contents from one place to another using recursive method, with recept information about process]()  |
+| [fs_extra::dir::move_dir](https://docs.rs/fs_extra/0.1.0/fs_extra/dir/fn.move_dir.html)  | Moves the directory contents from one place to another  |
+| [fs_extra::dir::move_dir_with_progress](https://docs.rs/fs_extra/0.1.0/fs_extra/dir/fn.move_dir_with_progress.html)  | Moves the directory contents from one place to another with recept information about process  |
+| [fs_extra::dir::remove](https://docs.rs/fs_extra/0.1.0/fs_extra/dir/fn.remove.html)  | Removes directory  |
 
 
 
