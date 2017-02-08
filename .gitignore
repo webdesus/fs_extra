@@ -6,5 +6,6 @@
 # More information here http://doc.crates.io/guide.html#cargotoml-vs-cargolock
 Cargo.lock
 
-/tests/temp
-/temp
+/tests/temp/file/*/*
+/tests/temp/dir/*/*
+
