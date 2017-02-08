@@ -32,13 +32,13 @@ impl CopyOptions {
 }
 
 /// A structure which imclude information about directory
-struct DirContent {
+pub struct DirContent {
     /// Directory size.
-    dir_size: u64,
+    pub dir_size: u64,
     /// List all files directory and sub directories.
-    files: Vec<String>,
+    pub files: Vec<String>,
     /// List all folders and sub folders directory.
-    directories: Vec<String>,
+    pub directories: Vec<String>,
 }
 
 /// A structure which include information about the current status of the copy or move directory.
@@ -220,7 +220,33 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 }
 
 
-fn get_dir_content<P>(path: P) -> Result<DirContent>
+/// Return DirContent which containt information about directory:
+///
+/// * Size directory.
+/// * List all files source directory(files subdirectories  included too).
+/// * List all directory and subdirectories source path.
+///
+/// # Errors
+///
+/// This function will return an error in the following situations, but is not limited to just
+/// these cases:
+///
+/// * This `path` directory does not exist.
+/// * Invalid `path`.
+/// * The current process does not have the permission rights to access `path`.
+///
+/// # Examples
+/// ```rust,ignore
+///    extern crate fs_extra;
+///    use fs_extra::dir::get_dir_content;
+///
+///    let dir_content = get_dir_content("dir")?;
+///    for directory in dir_content.directories {
+///        println!("{}", directory); // print directory path
+///    }
+/// ```
+///
+pub fn get_dir_content<P>(path: P) -> Result<DirContent>
     where P: AsRef<Path>
 {
     let mut directories = Vec::new();
@@ -234,11 +260,6 @@ fn get_dir_content<P>(path: P) -> Result<DirContent>
 
     if path.as_ref().is_dir() {
         directories.push(item);
-    } else {
-        dir_size = Path::new(&item).metadata()?.len();
-        files.push(item);
-    }
-    if path.as_ref().is_dir() {
         for entry in read_dir(&path)? {
             let _path = entry?.path();
 
@@ -253,12 +274,58 @@ fn get_dir_content<P>(path: P) -> Result<DirContent>
                 Err(err) => return Err(err),
             }
         }
+
+    } else {
+        dir_size = path.as_ref().metadata()?.len();
+        files.push(item);
     }
     Ok(DirContent {
         dir_size: dir_size,
         files: files,
         directories: directories,
     })
+}
+
+/// Returns the size of the file or directory
+///
+/// # Errors
+///
+/// This function will return an error in the following situations, but is not limited to just
+/// these cases:
+///
+/// * This `path` directory does not exist.
+/// * Invalid `path`.
+/// * The current process does not have the permission rights to access `path`.
+///
+/// # Examples
+/// ```rust,ignore
+///    extern crate fs_extra;
+///    use fs_extra::dir::get_size;
+///
+///    let folder_size = get_size("dir")?;
+///    println!("{}", folder_size); // print directory sile in bytes
+/// ```
+pub fn get_size<P>(path: P) -> Result<u64>
+    where P: AsRef<Path>
+{
+    let mut result = 0;
+
+    if path.as_ref().is_dir() {
+        for entry in read_dir(&path)? {
+            let _path = entry?.path();
+
+            match get_dir_content(_path) {
+                Ok(items) => {
+                    result += items.dir_size;
+                }
+                Err(err) => return Err(err),
+            }
+        }
+
+    } else {
+        result = path.as_ref().metadata()?.len();
+    }
+    Ok(result)
 }
 
 /// Copies the directory contents from one place to another using recursive method,

@@ -1863,3 +1863,161 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
     rx.recv().unwrap();
 
 }
+
+
+#[test]
+fn it_get_folder_size() {
+    let mut path = PathBuf::from(TEST_FOLDER);
+    path.push("it_get_folder_size");
+    path.push("dir");
+
+    create_all(&path, true).unwrap();
+    assert!(path.exists());
+
+    let mut file1 = path.clone();
+    file1.push("test1.txt");
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    assert!(file1.exists());
+
+    let mut sub_dir_path = path.clone();
+    sub_dir_path.push("sub");
+    create(&sub_dir_path, true).unwrap();
+    let mut file2 = sub_dir_path.clone();
+    file2.push("test2.txt");
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+    assert!(file2.exists());
+
+    let result = get_size(&path).unwrap();
+
+    assert_eq!(16, result);
+}
+
+#[test]
+fn it_get_file_size() {
+    let mut path = PathBuf::from(TEST_FOLDER);
+    path.push("it_get_file_size");
+
+    create_all(&path, true).unwrap();
+    assert!(path.exists());
+
+    let mut file = path.clone();
+    file.push("test1.txt");
+    fs_extra::file::write_all(&file, "content").unwrap();
+    assert!(file.exists());
+
+    let result = get_size(&path).unwrap();
+
+    assert_eq!(7, result);
+}
+
+#[test]
+fn it_get_size_not_found() {
+    let mut path = PathBuf::from(TEST_FOLDER);
+    path.push("it_get_size_not_found");
+
+    assert!(!path.exists());
+
+    match get_size(&path) {
+        Ok(_) => panic!("Should be a error!"),
+        Err(err) => {
+            match err.kind {
+                ErrorKind::NotFound => {}
+                _ => panic!("Wrong error!"),
+            }
+        }
+    };
+
+}
+
+
+#[test]
+fn it_get_dir_content() {
+    let mut path = PathBuf::from(TEST_FOLDER);
+    path.push("it_get_dir_content");
+    path.push("dir");
+
+    create_all(&path, true).unwrap();
+    assert!(path.exists());
+
+    let mut file1 = path.clone();
+    file1.push("test1.txt");
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    assert!(file1.exists());
+
+    let mut sub_dir_path = path.clone();
+    sub_dir_path.push("sub");
+    create(&sub_dir_path, true).unwrap();
+    let mut file2 = sub_dir_path.clone();
+    file2.push("test2.txt");
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+    assert!(file2.exists());
+
+    let result = get_dir_content(&path).unwrap();
+
+    assert_eq!(16, result.dir_size);
+    assert_eq!(2, result.files.len());
+    assert_eq!(2, result.directories.len());
+
+    let dir1 = file1.parent().unwrap().to_str().unwrap().to_string();
+    let dir2 = file2.parent().unwrap().to_str().unwrap().to_string();
+    let file1 = file1.to_str().unwrap().to_string();
+    let file2 = file2.to_str().unwrap().to_string();
+
+    let mut files_correct = true;
+    for file in result.files {
+        if file != file1 && file != file2 {
+            files_correct = false;
+        }
+    }
+    assert!(files_correct);
+
+    let mut directories_correct = true;
+    for dir in result.directories {
+        if dir != dir1 && dir != dir2 {
+            directories_correct = false;
+        }
+    }
+    assert!(directories_correct);
+}
+
+
+#[test]
+fn it_get_dir_content_path_file() {
+    let mut path = PathBuf::from(TEST_FOLDER);
+    path.push("it_get_dir_content_path_file");
+
+    create_all(&path, true).unwrap();
+    assert!(path.exists());
+
+    let mut file = path.clone();
+    file.push("test1.txt");
+    fs_extra::file::write_all(&file, "content1").unwrap();
+    assert!(file.exists());
+
+    let result = get_dir_content(&file).unwrap();
+
+    assert_eq!(8, result.dir_size);
+    assert_eq!(1, result.files.len());
+    assert_eq!(0, result.directories.len());
+    assert_eq!(file.to_str().unwrap().to_string(), result.files[0]);
+}
+
+#[test]
+fn it_get_dir_content_not_found() {
+    let mut path = PathBuf::from(TEST_FOLDER);
+    path.push("it_get_dir_content_not_found");
+
+    assert!(!path.exists());
+
+
+    match get_dir_content(&path) {
+        Ok(_) => panic!("Should be a error!"),
+        Err(err) => {
+            match err.kind {
+                ErrorKind::NotFound => {}
+                _ => panic!("Wrong error!"),
+            }
+        }
+    }
+
+}

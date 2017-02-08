@@ -18,7 +18,8 @@ pub mod error;
 /// about process work with files.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 /// use std::path::{Path, PathBuf};
 /// use std::{thread, time};
 /// use std::sync::mpsc::{self, TryRecvError};
@@ -84,7 +85,8 @@ pub mod file;
 /// about process work with directories and recursion operations.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 /// use std::path::{Path, PathBuf};
 /// use std::{thread, time};
 /// use std::sync::mpsc::{self, TryRecvError};
