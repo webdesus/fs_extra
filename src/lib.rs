@@ -96,7 +96,7 @@ pub mod file;
 /// fn example_copy() -> Result<()> {
 ///
 ///     let mut path_from = PathBuf::from("./temp");
-///     let test_name = "sub";
+///     let test_name = "dir";
 ///     path_from.push("test_folder");
 ///     let mut path_to = path_from.clone();
 ///     path_to.push("out");
