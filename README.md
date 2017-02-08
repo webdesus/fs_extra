@@ -6,6 +6,8 @@ A Rust library for more work functionality with file system.
 [![Crates.io Status](https://img.shields.io/crates/v/fs_extra.svg)](https://crates.io/crates/fs_extra)
 [![Docs](https://docs.rs/fs_extra/badge.svg)](https://docs.rs/fs_extra)
 
+[Documentation](https://docs.rs/fs_extra)
+
 
 ## Key features:
 
