@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 use std::thread;
-use std::sync::mpsc;
+use std::sync::mpsc::{self, TryRecvError};
 use std::fs::read_dir;
 
 extern crate fs_extra;
@@ -592,21 +592,24 @@ fn it_copy_progress_work() {
         })
         .join();
 
-    for i in 1..9 {
-        let process_info: TransitProcess = rx.recv().unwrap();
-        assert_eq!("test2.txt", process_info.file_name);
-        assert_eq!(i, process_info.file_bytes_copied);
-        assert_eq!(i, process_info.copied_bytes);
-        assert_eq!(8, process_info.file_total_bytes);
-        assert_eq!(15, process_info.total_bytes);
-    }
-    for i in 1..8 {
-        let process_info: TransitProcess = rx.recv().unwrap();
-        assert_eq!("test1.txt", process_info.file_name);
-        assert_eq!(i + 8, process_info.copied_bytes);
-        assert_eq!(i, process_info.file_bytes_copied);
-        assert_eq!(7, process_info.file_total_bytes);
-        assert_eq!(15, process_info.total_bytes);
+    loop {
+        match rx.try_recv() {
+            Ok(process_info) => {
+                if process_info.file_name == "test2.txt" {
+                    assert_eq!(8, process_info.file_total_bytes);
+                    assert_eq!(15, process_info.total_bytes);
+                } else if process_info.file_name == "test1.txt" {
+                    assert_eq!(7, process_info.file_total_bytes);
+                    assert_eq!(15, process_info.total_bytes);
+                } else {
+                    panic!("Unknow file name!");
+                }
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
     }
 
     match result {
@@ -713,7 +716,6 @@ fn it_copy_with_progress_work_dif_buf_size() {
                     .join();
             for i in 1..5 {
                 let process_info: TransitProcess = rx.recv().unwrap();
-                assert_eq!("test2.txt", process_info.file_name);
                 assert_eq!(i * 2, process_info.file_bytes_copied);
                 assert_eq!(i * 2, process_info.copied_bytes);
                 assert_eq!(8, process_info.file_total_bytes);
@@ -721,7 +723,6 @@ fn it_copy_with_progress_work_dif_buf_size() {
             }
             for i in 1..5 {
                 let process_info: TransitProcess = rx.recv().unwrap();
-                assert_eq!("test1.txt", process_info.file_name);
                 assert_eq!(i * 2 + 8, process_info.copied_bytes);
                 assert_eq!(i * 2, process_info.file_bytes_copied);
                 assert_eq!(8, process_info.file_total_bytes);
@@ -738,7 +739,6 @@ fn it_copy_with_progress_work_dif_buf_size() {
 
     for i in 1..9 {
         let process_info: TransitProcess = rx.recv().unwrap();
-        assert_eq!("test2.txt", process_info.file_name);
         assert_eq!(i, process_info.file_bytes_copied);
         assert_eq!(i, process_info.copied_bytes);
         assert_eq!(8, process_info.file_total_bytes);
@@ -746,7 +746,6 @@ fn it_copy_with_progress_work_dif_buf_size() {
     }
     for i in 1..9 {
         let process_info: TransitProcess = rx.recv().unwrap();
-        assert_eq!("test1.txt", process_info.file_name);
         assert_eq!(i + 8, process_info.copied_bytes);
         assert_eq!(i, process_info.file_bytes_copied);
         assert_eq!(8, process_info.file_total_bytes);
@@ -1396,21 +1395,24 @@ fn it_move_progress_work() {
         })
         .join();
 
-    for i in 1..9 {
-        let process_info: TransitProcess = rx.recv().unwrap();
-        assert_eq!("test2.txt", process_info.file_name);
-        assert_eq!(i, process_info.file_bytes_copied);
-        assert_eq!(i, process_info.copied_bytes);
-        assert_eq!(8, process_info.file_total_bytes);
-        assert_eq!(15, process_info.total_bytes);
-    }
-    for i in 1..8 {
-        let process_info: TransitProcess = rx.recv().unwrap();
-        assert_eq!("test1.txt", process_info.file_name);
-        assert_eq!(i + 8, process_info.copied_bytes);
-        assert_eq!(i, process_info.file_bytes_copied);
-        assert_eq!(7, process_info.file_total_bytes);
-        assert_eq!(15, process_info.total_bytes);
+    loop {
+        match rx.try_recv() {
+            Ok(process_info) => {
+                if process_info.file_name == "test2.txt" {
+                    assert_eq!(8, process_info.file_total_bytes);
+                    assert_eq!(15, process_info.total_bytes);
+                } else if process_info.file_name == "test1.txt" {
+                    assert_eq!(7, process_info.file_total_bytes);
+                    assert_eq!(15, process_info.total_bytes);
+                } else {
+                    panic!("Unknow file name!");
+                }
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
     }
 
     match result {
@@ -1535,7 +1537,6 @@ fn it_move_with_progress_work_dif_buf_size() {
                     .join();
             for i in 1..5 {
                 let process_info: TransitProcess = rx.recv().unwrap();
-                assert_eq!("test2.txt", process_info.file_name);
                 assert_eq!(i * 2, process_info.file_bytes_copied);
                 assert_eq!(i * 2, process_info.copied_bytes);
                 assert_eq!(8, process_info.file_total_bytes);
@@ -1543,7 +1544,6 @@ fn it_move_with_progress_work_dif_buf_size() {
             }
             for i in 1..5 {
                 let process_info: TransitProcess = rx.recv().unwrap();
-                assert_eq!("test1.txt", process_info.file_name);
                 assert_eq!(i * 2 + 8, process_info.copied_bytes);
                 assert_eq!(i * 2, process_info.file_bytes_copied);
                 assert_eq!(8, process_info.file_total_bytes);
@@ -1560,7 +1560,6 @@ fn it_move_with_progress_work_dif_buf_size() {
 
     for i in 1..9 {
         let process_info: TransitProcess = rx.recv().unwrap();
-        assert_eq!("test2.txt", process_info.file_name);
         assert_eq!(i, process_info.file_bytes_copied);
         assert_eq!(i, process_info.copied_bytes);
         assert_eq!(8, process_info.file_total_bytes);
@@ -1568,7 +1567,6 @@ fn it_move_with_progress_work_dif_buf_size() {
     }
     for i in 1..9 {
         let process_info: TransitProcess = rx.recv().unwrap();
-        assert_eq!("test1.txt", process_info.file_name);
         assert_eq!(i + 8, process_info.copied_bytes);
         assert_eq!(i, process_info.file_bytes_copied);
         assert_eq!(8, process_info.file_total_bytes);

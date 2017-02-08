@@ -15,7 +15,7 @@ pub struct CopyOptions {
 impl CopyOptions {
     /// Initialize struct CopyOptions with default value.
     ///
-    ///```
+    /// ```rust,ignore
     /// overwrite: false
     ///
     /// skip_exist: false
@@ -86,7 +86,7 @@ impl Clone for TransitProcess {
 ///
 /// #Examples
 ///
-/// ```
+/// ```rust,ignore
 /// extern crate fs_extra;
 /// use fs_extra::dir::create;
 ///
@@ -120,7 +120,7 @@ pub fn create<P>(path: P, erase: bool) -> Result<()>
 ///
 /// #Examples
 ///
-/// ```
+/// ```rust,ignore
 /// extern crate fs_extra;
 /// use fs_extra::dir::create_all;
 ///
@@ -149,7 +149,8 @@ pub fn create_all<P>(path: P, erase: bool) -> Result<()>
 /// * The current process does not have the permission rights to access `from` or write `to`.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 ///     extern crate fs_extra;
 ///     use fs_extra::dir::copy;
 ///
@@ -275,7 +276,7 @@ fn get_dir_content<P>(path: P) -> Result<DirContent>
 /// * The current process does not have the permission rights to access `from` or write `to`.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
 ///     extern crate fs_extra;
 ///     use fs_extra::dir::copy;
 ///
@@ -398,7 +399,8 @@ pub fn copy_with_progress<P, Q, F>(from: P,
 /// * The current process does not have the permission rights to access `from` or write `to`.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 ///     extern crate fs_extra;
 ///     use fs_extra::dir::move_dir;
 ///
@@ -440,7 +442,8 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 /// * The current process does not have the permission rights to access `from` or write `to`.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 ///     extern crate fs_extra;
 ///     use fs_extra::dir::move_dir_with_progress;
 ///
@@ -476,7 +479,8 @@ pub fn move_dir_with_progress<P, Q, F>(from: P,
 /// Removes directory.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 ///     extern crate fs_extra;
 ///     use fs_extra::dir::remove;
 ///

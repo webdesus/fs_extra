@@ -57,7 +57,7 @@ impl ErrorKind {
 ///
 ///#Examples
 ///
-/// ```
+/// ```rust,ignore
 /// extern crate fs_extra;
 /// use fs_extra::dir::create;
 ///
@@ -89,7 +89,8 @@ impl Error {
     /// Create a new fs_extra error from a kind of error error as well as an arbitrary error payload.
     ///
     ///#Examples
-    ///```
+    /// ```rust,ignore
+    ///
     /// extern crate fs_extra;
     /// use fs_extra::error::{Error, ErrorKind};
     ///

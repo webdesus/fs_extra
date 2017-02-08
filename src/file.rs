@@ -17,7 +17,8 @@ pub struct CopyOptions {
 impl CopyOptions {
     /// Initialize struct CopyOptions with default value.
     ///
-    ///```
+    /// ```rust,ignore
+    ///
     /// overwrite: false
     ///
     /// skip_exist: false
@@ -53,7 +54,9 @@ pub struct TransitProcess {
 /// * The current process does not have the permission rights to access `from` or write `to`.
 ///
 /// # Example
-/// ```
+///
+/// ```rust,ignore
+///
 ///     extern crate fs_extra;
 ///     use fs_extra::file::copy;
 ///
@@ -113,7 +116,8 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 /// * The current process does not have the permission rights to access `from` or write `to`.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 ///     extern crate fs_extra;
 ///     use fs_extra::file::copy_with_progress;
 ///
@@ -201,7 +205,8 @@ pub fn copy_with_progress<P, Q, F>(from: P,
 /// * The current process does not have the permission rights to access `from` or write `to`.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 ///     extern crate fs_extra;
 ///     use fs_extra::file::move_file;
 ///
@@ -239,7 +244,8 @@ pub fn move_file<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 /// * The current process does not have the permission rights to access `from` or write `to`.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 ///     extern crate fs_extra;
 ///     use fs_extra::file::move_file;
 ///
@@ -283,7 +289,8 @@ pub fn move_file_with_progress<P, Q, F>(from: P,
 /// * The current process does not have the permission rights to access `path`.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 ///     extern crate fs_extra;
 ///     use fs_extra::file::remove;
 ///
@@ -312,7 +319,8 @@ pub fn remove<P>(path: P) -> Result<()>
 /// * The current process does not have the permission rights to access `path`.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 ///     extern crate fs_extra;
 ///     use fs_extra::file::read_to_string;
 ///
@@ -351,7 +359,8 @@ pub fn read_to_string<P>(path: P) -> Result<String>
 /// * The current process does not have the permission rights to access `path`.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
+///
 ///     extern crate fs_extra;
 ///     use fs_extra::file::read_to_string;
 ///
