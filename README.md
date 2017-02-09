@@ -49,8 +49,17 @@ A Rust library for more work functionality with file system.
 | [fs_extra::dir::get_size](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.get_size.html)  | Returns the size of the file or directory  |
 | [fs_extra::dir::get_dir_content](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.get_dir_content.html)  | Removes directory  |
 
+## Usage
 
-
+Add this to your `Cargo.toml`:
+```toml
+[dependencies]
+fs_extra = "0.2.0"
+```
+and this to your crate root:
+```rust
+extern crate fs_extra;
+```
 ## Examples
 
 The following example shows how to copy a directory recursively and to follow the process.
