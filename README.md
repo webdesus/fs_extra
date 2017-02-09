@@ -46,6 +46,8 @@ A Rust library for more work functionality with file system.
 | [fs_extra::dir::move_dir](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.move_dir.html)  | Moves the directory contents from one place to another  |
 | [fs_extra::dir::move_dir_with_progress](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.move_dir_with_progress.html)  | Moves the directory contents from one place to another with recept information about process  |
 | [fs_extra::dir::remove](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.remove.html)  | Removes directory  |
+| [fs_extra::dir::get_size](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.get_size.html)  | Returns the size of the file or directory  |
+| [fs_extra::dir::get_dir_content](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.get_dir_content.html)  | Removes directory  |
 
 
 
