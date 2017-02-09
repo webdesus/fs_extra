@@ -1061,7 +1061,8 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
     };
     match move_file_with_progress(&test_file, &test_file_out, &options, func_test) {
         Ok(_) => {
-            assert!(test_file.exists());
+            assert!(!test_file.exists());
+            assert!(test_file_out.exists());
             assert_eq!(read_to_string(test_file_out).unwrap(), "test_data2");
             ()
         }

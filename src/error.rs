@@ -99,7 +99,7 @@ impl Error {
     /// // errors can also be created from other errors
     /// let custom_error2 = Error::new(ErrorKind::Interrupted, custom_error);
     ///
-    ///```
+    /// ```
     pub fn new(kind: ErrorKind, message: &str) -> Error {
         Error {
             kind: kind,

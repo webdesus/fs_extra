@@ -51,75 +51,64 @@ This example created a directory `dir` contains `test1.txt` file and sub directo
 Then copy `./temp/dir` and all containts to `./out/dir`
 
 ```rust
- use std::path::{Path, PathBuf};
- use std::{thread, time};
- use std::sync::mpsc::{self, TryRecvError};
+use std::path::Path;
+use std::{thread, time};
+use std::sync::mpsc::{self, TryRecvError};
 
- extern crate fs_extra;
- use fs_extra::dir::*;
- use fs_extra::error::*;
+extern crate fs_extra;
+use fs_extra::dir::*;
+use fs_extra::error::*;
 
- fn example_copy() -> Result<()> {
+fn example_copy() -> Result<()> {
 
-     let mut path_from = PathBuf::from("./temp");
-     let test_name = "dir";
-     path_from.push("test_folder");
-     let mut path_to = path_from.clone();
-     path_to.push("out");
-     path_from.push(&test_name);
+    let path_from = Path::new("./temp");
+    let path_to = path_from.join("out");
+    let test_folder = path_from.join("test_folder");
+    let dir = test_folder.join("dir");
+    let sub = dir.join("sub");
+    let file1 = dir.join("file1.txt");
+    let file2 = sub.join("file2.txt");
 
-     create_all(&path_from, true)?;
-     assert!(path_from.exists());
-     create_all(&path_to, true)?;
-     assert!(path_to.exists());
+    create_all(&sub, true)?;
+    create_all(&path_to, true)?;
+    fs_extra::file::write_all(&file1, "content1")?;
+    fs_extra::file::write_all(&file2, "content2")?;
 
-     let mut file1_path = path_from.clone();
-     file1_path.push("test1.txt");
-     let content1 = "content";
-     fs_extra::file::write_all(&file1_path, &content1)?;
-     assert!(file1_path.exists());
-
-     let mut sub_dir_path = path_from.clone();
-     sub_dir_path.push("sub");
-     create(&sub_dir_path, true)?;
-     let mut file2_path = sub_dir_path.clone();
-     file2_path.push("test2.txt");
-     let content2 = "content2";
-     fs_extra::file::write_all(&file2_path, &content2)?;
-     assert!(file2_path.exists());
-
-     let mut options = CopyOptions::new();
-
-     options.buffer_size = 1;
-     let (tx, rx) = mpsc::channel();
-     thread::spawn(move || {
-         let handler = |process_info: TransitProcess| {
-             tx.send(process_info).unwrap();
-             thread::sleep(time::Duration::from_millis(500));
-         };
-         copy_with_progress(&path_from, &path_to, &options, handler).unwrap();
-     });
+    assert!(dir.exists());
+    assert!(sub.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
 
 
-     loop {
-         match rx.try_recv() {
-             Ok(process_info) => {
-                 println!("{} of {} bytes",
-                          process_info.copied_bytes,
-                          process_info.total_bytes);
-             }
-             Err(TryRecvError::Disconnected) => {
-                 println!("finished");
-                 break;
-             }
-             Err(TryRecvError::Empty) => {}
-         }
-     }
-     Ok(())
+    let mut options = CopyOptions::new();
+    options.buffer_size = 1;
+    let (tx, rx) = mpsc::channel();
+    thread::spawn(move || {
+        let handler = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+            thread::sleep(time::Duration::from_millis(500));
+        };
+        copy_with_progress(&test_folder, &path_to, &options, handler).unwrap();
+    });
 
- }
- fn main() {
-     example_copy();
- }
+    loop {
+        match rx.try_recv() {
+            Ok(process_info) => {
+                println!("{} of {} bytes",
+                         process_info.copied_bytes,
+                         process_info.total_bytes);
+            }
+            Err(TryRecvError::Disconnected) => {
+                println!("finished");
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
+    }
+    Ok(())
+
+}
+fn main() {
+    example_copy();
 
 ```

@@ -21,7 +21,7 @@ impl CopyOptions {
     /// skip_exist: false
     ///
     /// buffer_size: 64000 //64kb
-    ///```
+    /// ```
     pub fn new() -> CopyOptions {
         CopyOptions {
             overwrite: false,
@@ -357,11 +357,11 @@ pub fn get_size<P>(path: P) -> Result<u64>
 pub fn copy_with_progress<P, Q, F>(from: P,
                                    to: Q,
                                    options: &CopyOptions,
-                                   progress_handler: F)
+                                   mut progress_handler: F)
                                    -> Result<u64>
     where P: AsRef<Path>,
           Q: AsRef<Path>,
-          F: Fn(TransitProcess) -> ()
+          F: FnMut(TransitProcess) -> ()
 {
 
     let from = from.as_ref();
@@ -481,11 +481,63 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
     where P: AsRef<Path>,
           Q: AsRef<Path>
 {
+    let from = from.as_ref();
+
+    if !from.exists() {
+        if let Some(msg) = from.to_str() {
+            let msg = format!("Path \"{}\" does not exist", msg);
+            err!(&msg, ErrorKind::NotFound);
+        }
+        err!("Path does not exist", ErrorKind::NotFound);
+    }
+
     let mut is_remove = true;
     if options.skip_exist && to.as_ref().exists() && !options.overwrite {
         is_remove = false;
     }
-    let result = copy(&from, to, options)?;
+
+    let mut to: PathBuf = to.as_ref().to_path_buf();
+    if !from.is_dir() {
+        if let Some(msg) = from.to_str() {
+            let msg = format!("Path \"{}\" is not a directory!", msg);
+            err!(&msg, ErrorKind::InvalidFolder);
+        }
+        err!("Path is not a directory!", ErrorKind::InvalidFolder);
+    }
+
+    if let Some(dir_name) = from.components().last() {
+        to.push(dir_name.as_os_str());
+    } else {
+        err!("Invalid folder from", ErrorKind::InvalidFolder);
+    }
+
+    if !to.exists() {
+        create(&to, false)?;
+    }
+
+    let mut result: u64 = 0;
+    for entry in read_dir(from)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            result += move_dir(path, to.clone(), &options)?;
+        } else {
+            let mut to = to.to_path_buf();
+            match path.file_name() {
+                None => err!("No file name"),
+                Some(file_name) => {
+                    to.push(file_name);
+
+                    let mut file_options = super::file::CopyOptions::new();
+                    file_options.overwrite = options.overwrite;
+                    file_options.skip_exist = options.skip_exist;
+                    result += super::file::move_file(&path, to.as_path().clone(), &file_options)?;
+
+                }
+            }
+        }
+    }
+
     if is_remove {
         remove(from)?;
     }
@@ -524,17 +576,98 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 pub fn move_dir_with_progress<P, Q, F>(from: P,
                                        to: Q,
                                        options: &CopyOptions,
-                                       progress_handler: F)
+                                       mut progress_handler: F)
                                        -> Result<u64>
     where P: AsRef<Path>,
           Q: AsRef<Path>,
-          F: Fn(TransitProcess) -> ()
+          F: FnMut(TransitProcess) -> ()
 {
     let mut is_remove = true;
     if options.skip_exist && to.as_ref().exists() && !options.overwrite {
         is_remove = false;
     }
-    let result = copy_with_progress(&from, to, options, progress_handler)?;
+    let from = from.as_ref();
+
+    if !from.exists() {
+        if let Some(msg) = from.to_str() {
+            let msg = format!("Path \"{}\" does not exist", msg);
+            err!(&msg, ErrorKind::NotFound);
+        }
+        err!("Path does not exist", ErrorKind::NotFound);
+    }
+
+    let mut to: PathBuf = to.as_ref().to_path_buf();
+    if !from.is_dir() {
+        if let Some(msg) = from.to_str() {
+            let msg = format!("Path \"{}\" is not a directory!", msg);
+            err!(&msg, ErrorKind::InvalidFolder);
+        }
+        err!("Path is not a directory!", ErrorKind::InvalidFolder);
+    }
+
+    if let Some(dir_name) = from.components().last() {
+        to.push(dir_name.as_os_str());
+    } else {
+        err!("Invalid folder from", ErrorKind::InvalidFolder);
+    }
+
+    let dir_content = get_dir_content(from)?;
+    for directory in dir_content.directories {
+        let tmp_to = Path::new(&directory).strip_prefix(from)?;
+        let dir = to.join(&tmp_to);
+        if !dir.exists() {
+            create(dir, false)?;
+        }
+
+    }
+
+    let mut result: u64 = 0;
+    let mut info_process = TransitProcess {
+        copied_bytes: 0,
+        total_bytes: dir_content.dir_size,
+        file_bytes_copied: 0,
+        file_total_bytes: 0,
+        file_name: String::new(),
+    };
+
+    for file in dir_content.files {
+        let mut to = to.to_path_buf();
+        let tp = Path::new(&file).strip_prefix(from)?;
+        let path = to.join(&tp);
+
+        let file_name = path.file_name();
+        if !file_name.is_some() {
+            err!("No file name");
+        }
+        let file_name = file_name.unwrap();
+        to.push(file_name);
+
+        let file_options = super::file::CopyOptions {
+            overwrite: options.overwrite,
+            skip_exist: options.skip_exist,
+            buffer_size: options.buffer_size,
+        };
+
+        if let Some(file_name) = file_name.to_str() {
+            info_process.file_name = file_name.to_string();
+        } else {
+            err!("Invalid file name", ErrorKind::InvalidFileName);
+        }
+
+        info_process.file_bytes_copied = 0;
+        info_process.file_total_bytes = Path::new(&file).metadata()?.len();
+
+        let copied_bytes = result;
+        let hadler = |info: super::file::TransitProcess| {
+            info_process.copied_bytes = copied_bytes + info.copied_bytes;
+            info_process.file_bytes_copied = info.copied_bytes;
+            progress_handler(info_process.clone());
+
+        };
+
+        result += super::file::move_file_with_progress(&file, &path, &file_options, hadler)?;
+
+    }
     if is_remove {
         remove(from)?;
     }

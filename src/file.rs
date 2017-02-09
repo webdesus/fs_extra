@@ -24,7 +24,7 @@ impl CopyOptions {
     /// skip_exist: false
     ///
     /// buffer_size: 64000 //64kb
-    ///```
+    /// ```
     pub fn new() -> CopyOptions {
         CopyOptions {
             overwrite: false,
@@ -266,8 +266,7 @@ pub fn move_file_with_progress<P, Q, F>(from: P,
           F: FnMut(TransitProcess) -> ()
 {
     let mut is_remove = true;
-    //TODO should be error in test overwrite=true and skip_exist=true
-    if options.skip_exist && to.as_ref().exists() {
+    if options.skip_exist && to.as_ref().exists() && !options.overwrite {
         is_remove = false;
     }
     let result = copy_with_progress(&from, to, options, progress_handler)?;
