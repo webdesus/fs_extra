@@ -4,6 +4,7 @@ version = "0.2.0"
 description = "Expanding opportunities standard library std::fs and std::io. Recursively copy folders with recept information about process and much more." 
 license = "MIT"
 authors = ["Denis Kurilenko <webdesus@gmail.com>"]
+keywords = ["filesystem", "recursion", "progress", "copy", "dir", "file"]
 homepage = "https://github.com/webdesus/fs_extra"
 documentation = "https://docs.rs/fs_extra"
 repository = "https://github.com/webdesus/fs_extra"
