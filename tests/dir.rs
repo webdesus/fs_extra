@@ -2039,9 +2039,8 @@ fn it_details_item_dir() {
     config.insert(DirEntryAttr::IsFile);
     config.insert(DirEntryAttr::Modified);
     config.insert(DirEntryAttr::Accessed);
-    config.insert(DirEntryAttr::Created);
     let item = get_details_entry(test_dir, &config).unwrap();
-    assert_eq!(11, item.len());
+    assert_eq!(10, item.len());
 
     let mut fields = 0;
     if let Some(name) = item.get(&DirEntryAttr::Name) {
@@ -2110,15 +2109,8 @@ fn it_details_item_dir() {
             }
         }
     }
-    if let Some(created) = item.get(&DirEntryAttr::Created) {
-        if let &DirEntryValue::SystemTime(created) = created {
-            if created.elapsed().unwrap().as_secs() == 0 {
-                fields += 1;
-            }
-        }
-    }
 
-    assert_eq!(11, fields);
+    assert_eq!(10, fields);
 
 }
 
@@ -2141,9 +2133,8 @@ fn it_details_file_item() {
     config.insert(DirEntryAttr::IsFile);
     config.insert(DirEntryAttr::Modified);
     config.insert(DirEntryAttr::Accessed);
-    config.insert(DirEntryAttr::Created);
     let item = get_details_entry(file, &config).unwrap();
-    assert_eq!(12, item.len());
+    assert_eq!(11, item.len());
 
     let mut fields = 0;
     if let Some(name) = item.get(&DirEntryAttr::Name) {
@@ -2218,15 +2209,8 @@ fn it_details_file_item() {
             }
         }
     }
-    if let Some(created) = item.get(&DirEntryAttr::Created) {
-        if let &DirEntryValue::SystemTime(created) = created {
-            if created.elapsed().unwrap().as_secs() == 0 {
-                fields += 1;
-            }
-        }
-    }
 
-    assert_eq!(12, fields);
+    assert_eq!(11, fields);
 
 }
 

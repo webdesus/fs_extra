@@ -97,6 +97,8 @@ pub enum DirEntryAttr {
     /// Last access time for directory entry.
     Accessed,
     /// Created time for directory entry.
+    ///
+    /// `Attention!`: Not supported UNIX platform.
     Created,
     /// Return or not return base information target folder.
     BaseInfo,
