@@ -25,6 +25,8 @@ A Rust library for more work functionality with file system.
 
 * Get size folder
 
+* Get collection directory entries 
+
 ## Functions:
 
 | Function | Description |
