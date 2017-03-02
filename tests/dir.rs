@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use std::thread;
 use std::sync::mpsc::{self, TryRecvError};
 use std::fs::read_dir;
+use std::collections::HashSet;
 
 extern crate fs_extra;
 use fs_extra::dir::*;
@@ -2018,6 +2019,320 @@ fn it_get_dir_content_not_found() {
                 _ => panic!("Wrong error!"),
             }
         }
+    }
+
+}
+
+#[test]
+fn it_details_item_dir() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_details_item_dir");
+    create_all(&test_dir, true).unwrap();
+    assert!(test_dir.exists());
+    let mut config = HashSet::new();
+    config.insert(DirEntryAttr::Name);
+    config.insert(DirEntryAttr::Ext);
+    config.insert(DirEntryAttr::FullName);
+    config.insert(DirEntryAttr::Path);
+    config.insert(DirEntryAttr::DosPath);
+    config.insert(DirEntryAttr::Size);
+    config.insert(DirEntryAttr::IsDir);
+    config.insert(DirEntryAttr::IsFile);
+    config.insert(DirEntryAttr::Modified);
+    config.insert(DirEntryAttr::Accessed);
+    config.insert(DirEntryAttr::Created);
+    let item = get_details_entry(test_dir, &config).unwrap();
+    assert_eq!(11, item.len());
+
+    let mut fields = 0;
+    if let Some(name) = item.get(&DirEntryAttr::Name) {
+        if let &DirEntryValue::String(ref name) = name {
+            assert_eq!("it_details_item_dir", name);
+            fields += 1;
+        }
+    }
+    if let Some(ext) = item.get(&DirEntryAttr::Ext) {
+        if let &DirEntryValue::String(ref ext) = ext {
+            assert_eq!("", ext);
+            fields += 1;
+        }
+    }
+    if let Some(fname) = item.get(&DirEntryAttr::FullName) {
+        if let &DirEntryValue::String(ref fname) = fname {
+            assert_eq!("it_details_item_dir", fname);
+            fields += 1;
+        }
+    }
+    if let Some(path) = item.get(&DirEntryAttr::Path) {
+        if let &DirEntryValue::String(ref path) = path {
+            if !path.is_empty() {
+                fields += 1;
+            }
+        }
+    }
+    if let Some(path) = item.get(&DirEntryAttr::DosPath) {
+        if let &DirEntryValue::String(ref path) = path {
+            if !path.is_empty() {
+                fields += 1;
+            }
+        }
+    }
+    if let Some(size) = item.get(&DirEntryAttr::Size) {
+        if let &DirEntryValue::U64(size) = size {
+            assert_eq!(0, size);
+            fields += 1;
+        }
+    }
+    if let Some(is_dir) = item.get(&DirEntryAttr::IsDir) {
+        if let &DirEntryValue::Boolean(is_dir) = is_dir {
+            assert_eq!(true, is_dir);
+            fields += 1;
+        }
+    }
+
+    if let Some(is_file) = item.get(&DirEntryAttr::IsFile) {
+        if let &DirEntryValue::Boolean(is_file) = is_file {
+            assert_eq!(false, is_file);
+            fields += 1;
+        }
+    }
+
+    if let Some(modified) = item.get(&DirEntryAttr::Modified) {
+        if let &DirEntryValue::SystemTime(modified) = modified {
+            if modified.elapsed().unwrap().as_secs() == 0 {
+                fields += 1;
+            }
+        }
+    }
+    if let Some(accessed) = item.get(&DirEntryAttr::Accessed) {
+        if let &DirEntryValue::SystemTime(accessed) = accessed {
+            if accessed.elapsed().unwrap().as_secs() == 0 {
+                fields += 1;
+            }
+        }
+    }
+    if let Some(created) = item.get(&DirEntryAttr::Created) {
+        if let &DirEntryValue::SystemTime(created) = created {
+            if created.elapsed().unwrap().as_secs() == 0 {
+                fields += 1;
+            }
+        }
+    }
+
+    assert_eq!(11, fields);
+
+}
+
+#[test]
+fn it_details_file_item() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_details_file_item");
+    create_all(&test_dir, true).unwrap();
+    let file = test_dir.join("file.txt");
+    fs_extra::file::write_all(&file, "content").unwrap();
+    assert!(file.exists());
+    let mut config = HashSet::new();
+    config.insert(DirEntryAttr::Name);
+    config.insert(DirEntryAttr::Ext);
+    config.insert(DirEntryAttr::FullName);
+    config.insert(DirEntryAttr::Path);
+    config.insert(DirEntryAttr::DosPath);
+    config.insert(DirEntryAttr::Size);
+    config.insert(DirEntryAttr::FileSize);
+    config.insert(DirEntryAttr::IsDir);
+    config.insert(DirEntryAttr::IsFile);
+    config.insert(DirEntryAttr::Modified);
+    config.insert(DirEntryAttr::Accessed);
+    config.insert(DirEntryAttr::Created);
+    let item = get_details_entry(file, &config).unwrap();
+    assert_eq!(12, item.len());
+
+    let mut fields = 0;
+    if let Some(name) = item.get(&DirEntryAttr::Name) {
+        if let &DirEntryValue::String(ref name) = name {
+            assert_eq!("file", name);
+            fields += 1;
+        }
+    }
+    if let Some(ext) = item.get(&DirEntryAttr::Ext) {
+        if let &DirEntryValue::String(ref ext) = ext {
+            assert_eq!("txt", ext);
+            fields += 1;
+        }
+    }
+    if let Some(fname) = item.get(&DirEntryAttr::FullName) {
+        if let &DirEntryValue::String(ref fname) = fname {
+            assert_eq!("file.txt", fname);
+            fields += 1;
+        }
+    }
+    if let Some(path) = item.get(&DirEntryAttr::Path) {
+        if let &DirEntryValue::String(ref path) = path {
+            if !path.is_empty() {
+                fields += 1;
+            }
+        }
+    }
+    if let Some(path) = item.get(&DirEntryAttr::DosPath) {
+        if let &DirEntryValue::String(ref path) = path {
+            if !path.is_empty() {
+                fields += 1;
+            }
+        }
+    }
+    if let Some(size) = item.get(&DirEntryAttr::Size) {
+        if let &DirEntryValue::U64(size) = size {
+            assert_eq!(7, size);
+            fields += 1;
+        }
+    }
+    if let Some(size) = item.get(&DirEntryAttr::FileSize) {
+        if let &DirEntryValue::U64(size) = size {
+            assert_eq!(7, size);
+            fields += 1;
+        }
+    }
+    if let Some(is_dir) = item.get(&DirEntryAttr::IsDir) {
+        if let &DirEntryValue::Boolean(is_dir) = is_dir {
+            assert_eq!(false, is_dir);
+            fields += 1;
+        }
+    }
+
+    if let Some(is_file) = item.get(&DirEntryAttr::IsFile) {
+        if let &DirEntryValue::Boolean(is_file) = is_file {
+            assert_eq!(true, is_file);
+            fields += 1;
+        }
+    }
+
+    if let Some(modified) = item.get(&DirEntryAttr::Modified) {
+        if let &DirEntryValue::SystemTime(modified) = modified {
+            if modified.elapsed().unwrap().as_secs() == 0 {
+                fields += 1;
+            }
+        }
+    }
+    if let Some(accessed) = item.get(&DirEntryAttr::Accessed) {
+        if let &DirEntryValue::SystemTime(accessed) = accessed {
+            if accessed.elapsed().unwrap().as_secs() == 0 {
+                fields += 1;
+            }
+        }
+    }
+    if let Some(created) = item.get(&DirEntryAttr::Created) {
+        if let &DirEntryValue::SystemTime(created) = created {
+            if created.elapsed().unwrap().as_secs() == 0 {
+                fields += 1;
+            }
+        }
+    }
+
+    assert_eq!(12, fields);
+
+}
+
+#[test]
+fn it_details_item_dir_short() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_details_item_dir_short");
+    create_all(&test_dir, true).unwrap();
+    assert!(test_dir.exists());
+    let mut config = HashSet::new();
+    config.insert(DirEntryAttr::Name);
+    config.insert(DirEntryAttr::Size);
+    let item = get_details_entry(test_dir, &config).unwrap();
+    assert_eq!(2, item.len());
+
+    if let Some(name) = item.get(&DirEntryAttr::Name) {
+        if let &DirEntryValue::String(ref name) = name {
+            assert_eq!("it_details_item_dir_short", name);
+        }
+    }
+    if let Some(size) = item.get(&DirEntryAttr::Size) {
+        if let &DirEntryValue::U64(size) = size {
+            assert_eq!(0, size);
+        }
+    }
+
+}
+
+#[test]
+fn it_details_item_file_short() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_details_item_short");
+    create_all(&test_dir, true).unwrap();
+    let file = test_dir.join("file.txt");
+    fs_extra::file::write_all(&file, "content").unwrap();
+    assert!(file.exists());
+    let mut config = HashSet::new();
+    config.insert(DirEntryAttr::Name);
+    config.insert(DirEntryAttr::Size);
+    let item = get_details_entry(file, &config).unwrap();
+    assert_eq!(2, item.len());
+
+    if let Some(name) = item.get(&DirEntryAttr::Name) {
+        if let &DirEntryValue::String(ref name) = name {
+            assert_eq!("file", name);
+        }
+    }
+    if let Some(size) = item.get(&DirEntryAttr::Size) {
+        if let &DirEntryValue::U64(size) = size {
+            assert_eq!(7, size);
+        }
+    }
+
+}
+
+
+#[test]
+fn it_ls() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_ls");
+    create_all(&test_dir, true).unwrap();
+    let file1 = test_dir.join("file1.txt");
+    let file2 = test_dir.join("file2.txt");
+    fs_extra::file::write_all(&file1, "content").unwrap();
+    fs_extra::file::write_all(&file2, "content").unwrap();
+    assert!(file1.exists());
+    assert!(file2.exists());
+    let mut config = HashSet::new();
+    config.insert(DirEntryAttr::Name);
+    config.insert(DirEntryAttr::Size);
+    config.insert(DirEntryAttr::IsDir);
+    config.insert(DirEntryAttr::BaseInfo);
+    let ls_result = ls(&test_dir, &config).unwrap();
+    assert_eq!(2, ls_result.items.len());
+    assert_eq!(3, ls_result.base.len());
+
+    if let Some(name) = ls_result.base.get(&DirEntryAttr::Name) {
+        if let &DirEntryValue::String(ref name) = name {
+            assert_eq!("it_ls", name);
+        }
+    }
+    if let Some(size) = ls_result.base.get(&DirEntryAttr::Size) {
+        if let &DirEntryValue::U64(size) = size {
+            assert_eq!(14, size);
+        }
+    }
+    if let Some(is_dir) = ls_result.base.get(&DirEntryAttr::IsDir) {
+        if let &DirEntryValue::Boolean(is_dir) = is_dir {
+            assert_eq!(true, is_dir);
+        }
+    }
+    for item in ls_result.items {
+        if let Some(name) = item.get(&DirEntryAttr::Name) {
+            if let &DirEntryValue::String(ref name) = name {
+                assert_eq!(String::from("file"), name[..4]);
+            }
+        }
+        if let Some(size) = item.get(&DirEntryAttr::Size) {
+            if let &DirEntryValue::U64(size) = size {
+                assert_eq!(7, size);
+            }
+        }
+        if let Some(is_dir) = item.get(&DirEntryAttr::IsDir) {
+            if let &DirEntryValue::Boolean(is_dir) = is_dir {
+                assert_eq!(false, is_dir);
+            }
+        }
+
+
     }
 
 }

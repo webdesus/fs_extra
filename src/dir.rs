@@ -1,6 +1,8 @@
 use std::path::{Path, PathBuf};
 use error::*;
 use std::fs::{create_dir, create_dir_all, remove_dir_all, read_dir};
+use std::time::SystemTime;
+use std::collections::{HashSet, HashMap};
 
 ///	Options and flags which can be used to configure how a file will be  copied  or moved.
 pub struct CopyOptions {
@@ -65,6 +67,228 @@ impl Clone for TransitProcess {
             file_name: self.file_name.clone(),
         }
     }
+}
+
+/// Available attributes for get information about directory entry.
+#[derive(Hash, Eq, PartialEq, Clone)]
+pub enum DirEntryAttr {
+    /// Folder name or file name without extension.
+    Name,
+    /// File extension.
+    Ext,
+    /// Folder name or file name with extention.
+    FullName,
+    /// Path to file or directory.
+    Path,
+    /// Dos path to file or directory.
+    DosPath,
+    /// File size in bytes.
+    FileSize,
+    /// Size file or directory in bytes.
+    ///
+    /// `Attention!`: This operation very expensive.
+    Size,
+    /// Return whether entry is directory or not.
+    IsDir,
+    /// Return whether entry is file or not.
+    IsFile,
+    /// Last modification time for directory entry.
+    Modified,
+    /// Last access time for directory entry.
+    Accessed,
+    /// Created time for directory entry.
+    Created,
+    /// Return or not return base information target folder.
+    BaseInfo,
+}
+
+/// Available types for directory entry.
+pub enum DirEntryValue {
+    /// String type
+    String(String),
+    /// Boolean type
+    Boolean(bool),
+    /// SystemTime type
+    SystemTime(SystemTime),
+    /// u64 type
+    U64(u64),
+}
+
+/// Result returned by the `ls` function.
+pub struct LsResult {
+    /// Base folder target path
+    pub base: HashMap<DirEntryAttr, DirEntryValue>,
+    /// Collection directory entry with information.
+    pub items: Vec<HashMap<DirEntryAttr, DirEntryValue>>,
+}
+
+/// Returned information about directory entry with information which you choose in config.
+///
+/// This function takes to arguments:
+///
+/// * `path` - Path to directory.
+///
+/// * `config` - Set attributes which you want see inside return data.
+///
+/// # Errors
+///
+/// This function will return an error in the following situations, but is not limited to just
+/// these cases:
+///
+/// * This `path` does not exist.
+/// * Invalid `path`.
+/// * The current process does not have the permission rights to access `path`.
+///
+/// #Examples
+///
+/// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::dir::{get_details_entry, DirEntryAttr};
+/// use std::collections::{HashMap, HashSet};
+///
+/// let mut config = HashSet::new();
+/// config.insert(DirEntryAttr::Name);
+/// config.insert(DirEntryAttr::Size);
+///
+/// let entry_info = get_details_entry("test", &config);
+/// assert_eq!(2, entry_info.len());
+/// ```
+pub fn get_details_entry<P>(path: P,
+                            config: &HashSet<DirEntryAttr>)
+                            -> Result<HashMap<DirEntryAttr, DirEntryValue>>
+    where P: AsRef<Path>
+{
+    let path = path.as_ref();
+    let metadata = path.metadata()?;
+    let mut item = HashMap::new();
+    if config.contains(&DirEntryAttr::Name) {
+        if metadata.is_dir() {
+            if let Some(file_name) = path.file_name() {
+                item.insert(DirEntryAttr::Name,
+                            DirEntryValue::String(file_name.to_os_string().into_string()?));
+            } else {
+                item.insert(DirEntryAttr::Name, DirEntryValue::String(String::new()));
+            }
+        } else {
+            if let Some(file_stem) = path.file_stem() {
+                item.insert(DirEntryAttr::Name,
+                            DirEntryValue::String(file_stem.to_os_string().into_string()?));
+            } else {
+                item.insert(DirEntryAttr::Name, DirEntryValue::String(String::new()));
+            }
+        }
+    }
+    if config.contains(&DirEntryAttr::Ext) {
+        if let Some(value) = path.extension() {
+            item.insert(DirEntryAttr::Ext,
+                        DirEntryValue::String(value.to_os_string().into_string()?));
+        } else {
+            item.insert(DirEntryAttr::Ext, DirEntryValue::String(String::from("")));
+        }
+    }
+    if config.contains(&DirEntryAttr::FullName) {
+        if let Some(file_name) = path.file_name() {
+            item.insert(DirEntryAttr::FullName,
+                        DirEntryValue::String(file_name.to_os_string().into_string()?));
+        } else {
+            item.insert(DirEntryAttr::FullName, DirEntryValue::String(String::new()));
+        }
+    }
+    if config.contains(&DirEntryAttr::Path) {
+        let mut path = path.canonicalize()?.as_os_str().to_os_string().into_string()?;
+        if path.find("\\\\?\\") == Some(0) {
+            path = path[4..].to_string();
+        }
+        item.insert(DirEntryAttr::Path, DirEntryValue::String(path));
+    }
+    if config.contains(&DirEntryAttr::DosPath) {
+        let path = path.canonicalize()?.as_os_str().to_os_string().into_string()?;
+        item.insert(DirEntryAttr::DosPath, DirEntryValue::String(path));
+    }
+    if config.contains(&DirEntryAttr::Size) {
+        item.insert(DirEntryAttr::Size, DirEntryValue::U64(get_size(&path)?));
+    }
+    if config.contains(&DirEntryAttr::FileSize) {
+        item.insert(DirEntryAttr::FileSize, DirEntryValue::U64(metadata.len()));
+    }
+    if config.contains(&DirEntryAttr::IsDir) {
+        item.insert(DirEntryAttr::IsDir,
+                    DirEntryValue::Boolean(metadata.is_dir()));
+    }
+    if config.contains(&DirEntryAttr::IsFile) {
+        item.insert(DirEntryAttr::IsFile,
+                    DirEntryValue::Boolean(metadata.is_file()));
+    }
+    if config.contains(&DirEntryAttr::Modified) {
+        item.insert(DirEntryAttr::Modified,
+                    DirEntryValue::SystemTime(metadata.modified()?));
+    }
+    if config.contains(&DirEntryAttr::Accessed) {
+        item.insert(DirEntryAttr::Accessed,
+                    DirEntryValue::SystemTime(metadata.accessed()?));
+    }
+    if config.contains(&DirEntryAttr::Created) {
+        item.insert(DirEntryAttr::Created,
+                    DirEntryValue::SystemTime(metadata.created()?));
+    }
+    Ok(item)
+
+}
+
+/// Returned collection directory entries with information which you choose in config.
+///
+/// This function takes to arguments:
+///
+/// * `path` - Path to directory.
+///
+/// * `config` - Set attributes which you want see inside return data.
+///
+/// # Errors
+///
+/// This function will return an error in the following situations, but is not limited to just
+/// these cases:
+///
+/// * This `path` directory does not exist.
+/// * Invalid `path`.
+/// * The current process does not have the permission rights to access `path`.
+///
+/// #Examples
+///
+/// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::dir::{ls, DirEntryAttr, LsResult};
+/// use std::collections::HashSet;
+///
+/// let mut config = HashSet::new();
+/// config.insert(DirEntryAttr::Name);
+/// config.insert(DirEntryAttr::Size);
+/// config.insert(DirEntryAttr::BaseInfo);
+///
+/// let result = ls("test", &config);
+/// assert_eq!(2, ls_result.items.len());
+/// assert_eq!(2, ls_result.base.len());
+/// ```
+pub fn ls<P>(path: P, config: &HashSet<DirEntryAttr>) -> Result<LsResult>
+    where P: AsRef<Path>
+{
+    let mut items = Vec::new();
+    let path = path.as_ref();
+    if !path.is_dir() {
+        err!("Path does not directory", ErrorKind::InvalidFolder);
+    }
+    for entry in read_dir(&path)? {
+        let path = entry?.path();
+        let item = get_details_entry(path, &config)?;
+        items.push(item);
+    }
+    let mut base = HashMap::new();
+    if config.contains(&DirEntryAttr::BaseInfo) {
+        base = get_details_entry(&path, &config)?;
+    }
+    Ok(LsResult {
+        items: items,
+        base: base,
+    })
 }
 
 /// Creates a new, empty directory at the provided path.
@@ -313,12 +537,10 @@ pub fn get_size<P>(path: P) -> Result<u64>
     if path.as_ref().is_dir() {
         for entry in read_dir(&path)? {
             let _path = entry?.path();
-
-            match get_dir_content(_path) {
-                Ok(items) => {
-                    result += items.dir_size;
-                }
-                Err(err) => return Err(err),
+            if _path.is_file() {
+                result += _path.metadata()?.len();
+            } else {
+                result += get_size(_path)?;
             }
         }
 

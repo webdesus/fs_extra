@@ -3,6 +3,7 @@ use std::error::Error as StdError;
 use std::io::ErrorKind as IoErrorKind;
 use std::io::Error as IoError;
 use std::path::StripPrefixError;
+use std::ffi::OsString;
 
 
 /// A list specifying general categories of fs_extra error.
@@ -28,6 +29,8 @@ pub enum ErrorKind {
     Io(IoError),
     /// Any StripPrefix error.
     StripPrefix(StripPrefixError),
+    /// Any OsString error.
+    OsString(OsString),
     /// Any fs_extra error not part of this list.
     Other,
 }
@@ -46,6 +49,7 @@ impl ErrorKind {
             ErrorKind::InvalidPath => "invalid path error",
             ErrorKind::Io(_) => "Io error",
             ErrorKind::StripPrefix(_) => "Strip prefix error",
+            ErrorKind::OsString(_) => "OsString error",
         }
     }
 }
@@ -125,6 +129,15 @@ impl From<StripPrefixError> for Error {
                    "StripPrefixError. Look inside for more details")
     }
 }
+
+impl From<OsString> for Error {
+    fn from(err: OsString) -> Error {
+        Error::new(ErrorKind::OsString(err),
+                   "OsString. Look inside for more details")
+    }
+}
+
+
 impl From<IoError> for Error {
     fn from(err: IoError) -> Error {
         let err_kind: ErrorKind;
