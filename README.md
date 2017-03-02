@@ -11,17 +11,19 @@ A Rust library for more work functionality with file system.
 
 ## Key features:
 
-* Copy files with recept information about process.
+* Copy files (optionally with information about the progress).
 
-* Copy directory recursively and recept information about process.
+* Copy directories recursively (optionally with information about the progress).
 
-* Move files with recept information about process.
+* Move files (optionally with information about the progress).
 
-* Move directories recursively and recept information about process.
+* Move directories recursively (optionally with information about the progress).
 
 * One method for create and write `String` content in file.
 
 * One method for open and read `String` content from file.
+
+* Get size folder
 
 ## Functions:
 
@@ -47,7 +49,7 @@ A Rust library for more work functionality with file system.
 | [fs_extra::dir::move_dir_with_progress](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.move_dir_with_progress.html)  | Moves the directory contents from one place to another with recept information about process  |
 | [fs_extra::dir::remove](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.remove.html)  | Removes directory  |
 | [fs_extra::dir::get_size](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.get_size.html)  | Returns the size of the file or directory  |
-| [fs_extra::dir::get_dir_content](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.get_dir_content.html)  | Removes directory  |
+| [fs_extra::dir::get_dir_content](https://docs.rs/fs_extra/0.2.0/fs_extra/dir/fn.get_dir_content.html)  | Return DirContent which containt information about directory  |
 
 ## Usage
 
