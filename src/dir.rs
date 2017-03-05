@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 use error::*;
-use std::fs::{create_dir, create_dir_all, remove_dir_all, read_dir};
+use std::fs::{create_dir, create_dir_all, remove_dir_all, read_dir, Metadata};
 use std::time::SystemTime;
 use std::collections::{HashSet, HashMap};
 
@@ -86,7 +86,7 @@ pub enum DirEntryAttr {
     FileSize,
     /// Size file or directory in bytes.
     ///
-    /// `Attention!`: This operation very expensive.
+    /// `Attention!`: This operation very expensive and sometimes required additional rights.
     Size,
     /// Return whether entry is directory or not.
     IsDir,
@@ -162,6 +162,15 @@ pub fn get_details_entry<P>(path: P,
 {
     let path = path.as_ref();
     let metadata = path.metadata()?;
+    get_details_entry_with_meta(path, config, metadata)
+}
+fn get_details_entry_with_meta<P>(path: P,
+                                  config: &HashSet<DirEntryAttr>,
+                                  metadata: Metadata)
+                                  -> Result<HashMap<DirEntryAttr, DirEntryValue>>
+    where P: AsRef<Path>
+{
+    let path = path.as_ref();
     let mut item = HashMap::new();
     if config.contains(&DirEntryAttr::Name) {
         if metadata.is_dir() {
@@ -197,14 +206,52 @@ pub fn get_details_entry<P>(path: P,
         }
     }
     if config.contains(&DirEntryAttr::Path) {
-        let mut path = path.canonicalize()?.as_os_str().to_os_string().into_string()?;
+        let mut result_path: PathBuf;
+        match path.canonicalize() {
+            Ok(new_path) => {
+                result_path = new_path;
+            }
+            Err(_) => {
+                if let Some(parent_path) = path.parent() {
+                    if let Some(name) = path.file_name() {
+                        result_path = parent_path.canonicalize()?;
+                        result_path.push(name);
+                    } else {
+                        err!("Error get part name path", ErrorKind::Other);
+                    }
+                } else {
+                    err!("Error get parent path", ErrorKind::Other);
+                }
+            }
+
+        }
+        let mut path = result_path.as_os_str().to_os_string().into_string()?;
         if path.find("\\\\?\\") == Some(0) {
             path = path[4..].to_string();
         }
         item.insert(DirEntryAttr::Path, DirEntryValue::String(path));
     }
     if config.contains(&DirEntryAttr::DosPath) {
-        let path = path.canonicalize()?.as_os_str().to_os_string().into_string()?;
+        let mut result_path: PathBuf;
+        match path.canonicalize() {
+            Ok(new_path) => {
+                result_path = new_path;
+            }
+            Err(_) => {
+                if let Some(parent_path) = path.parent() {
+                    if let Some(name) = path.file_name() {
+                        result_path = parent_path.canonicalize()?;
+                        result_path.push(name);
+                    } else {
+                        err!("Error get part name path", ErrorKind::Other);
+                    }
+                } else {
+                    err!("Error get parent path", ErrorKind::Other);
+                }
+            }
+
+        }
+        let path = result_path.as_os_str().to_os_string().into_string()?;
         item.insert(DirEntryAttr::DosPath, DirEntryValue::String(path));
     }
     if config.contains(&DirEntryAttr::Size) {
@@ -279,8 +326,10 @@ pub fn ls<P>(path: P, config: &HashSet<DirEntryAttr>) -> Result<LsResult>
         err!("Path does not directory", ErrorKind::InvalidFolder);
     }
     for entry in read_dir(&path)? {
-        let path = entry?.path();
-        let item = get_details_entry(path, &config)?;
+        let entry = entry?;
+        let path = entry.path();
+        let metadata = entry.metadata()?;
+        let item = get_details_entry_with_meta(path, &config, metadata)?;
         items.push(item);
     }
     let mut base = HashMap::new();
