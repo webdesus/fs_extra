@@ -60,7 +60,7 @@ A Rust library for more work functionality with file system.
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-fs_extra = "0.3.0"
+fs_extra = "0.3.1"
 ```
 and this to your crate root:
 ```rust

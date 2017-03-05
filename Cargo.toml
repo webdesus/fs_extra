@@ -1,6 +1,6 @@
 [package]
 name = "fs_extra"
-version = "0.3.0"
+version = "0.3.1"
 description = "Expanding opportunities standard library std::fs and std::io. Recursively copy folders with recept information about process and much more." 
 license = "MIT"
 authors = ["Denis Kurilenko <webdesus@gmail.com>"]
