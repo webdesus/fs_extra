@@ -132,5 +132,5 @@ fn example_copy() -> Result<()> {
 }
 fn main() {
     example_copy();
-
+}
 ```
