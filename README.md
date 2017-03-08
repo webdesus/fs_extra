@@ -7,7 +7,8 @@ A Rust library for more work functionality with file system.
 [![Docs](https://docs.rs/fs_extra/badge.svg)](https://docs.rs/fs_extra)
 
 [Documentation](https://docs.rs/fs_extra)
-[Migrations to 1.x.x version](wiki/Migrations-to-1.x.x-version)
+
+[Migrations to 1.x.x version](https://github.com/webdesus/fs_extra/wiki/Migrations-to-1.x.x-version)
 
 
 ## Key features:
