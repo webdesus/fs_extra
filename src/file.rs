@@ -56,12 +56,11 @@ pub struct TransitProcess {
 /// # Example
 ///
 /// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::file::copy;
 ///
-///     extern crate fs_extra;
-///     use fs_extra::file::copy;
-///
-///     let options = CopyOptions::new(); //Initialize default values for CopyOptions
-///     copy("dir1/foo.txt", "dir2/bar.txt", &options)?; // Copy dir1/foo.txt to dir2/bar.txt
+/// let options = CopyOptions::new(); //Initialize default values for CopyOptions
+/// copy("dir1/foo.txt", "dir2/bar.txt", &options)?; // Copy dir1/foo.txt to dir2/bar.txt
 ///
 /// ```
 pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
@@ -118,15 +117,14 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 ///
 /// # Example
 /// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::file::copy_with_progress;
 ///
-///     extern crate fs_extra;
-///     use fs_extra::file::copy_with_progress;
+/// let options = CopyOptions::new(); //Initialize default values for CopyOptions
+/// let handle = |process_info: TransitProcess|  println!("{}", process_info.total_bytes);
 ///
-///     let options = CopyOptions::new(); //Initialize default values for CopyOptions
-///     let handle = |process_info: TransitProcess|  println!("{}", process_info.total_bytes);
-///
-///     // Copy dir1/foo.txt to dir2/foo.txt
-///     copy_with_progress("dir1/foo.txt", "dir2/foo.txt", &options, handle)?;
+/// // Copy dir1/foo.txt to dir2/foo.txt
+/// copy_with_progress("dir1/foo.txt", "dir2/foo.txt", &options, handle)?;
 ///
 /// ```
 pub fn copy_with_progress<P, Q, F>(from: P,
@@ -208,12 +206,11 @@ pub fn copy_with_progress<P, Q, F>(from: P,
 ///
 /// # Example
 /// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::file::move_file;
 ///
-///     extern crate fs_extra;
-///     use fs_extra::file::move_file;
-///
-///     let options = CopyOptions::new(); //Initialize default values for CopyOptions
-///     move_file("dir1/foo.txt", "dir2/foo.txt", &options)?; // Move dir1/foo.txt to dir2/foo.txt
+/// let options = CopyOptions::new(); //Initialize default values for CopyOptions
+/// move_file("dir1/foo.txt", "dir2/foo.txt", &options)?; // Move dir1/foo.txt to dir2/foo.txt
 ///
 /// ```
 pub fn move_file<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
@@ -247,15 +244,14 @@ pub fn move_file<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 ///
 /// # Example
 /// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::file::move_file;
 ///
-///     extern crate fs_extra;
-///     use fs_extra::file::move_file;
+/// let options = CopyOptions::new(); //Initialize default values for CopyOptions
+/// let handle = |process_info: TransitProcess|  println!("{}", process_info.total_bytes);
 ///
-///     let options = CopyOptions::new(); //Initialize default values for CopyOptions
-///     let handle = |process_info: TransitProcess|  println!("{}", process_info.total_bytes);
-///
-///     // Move dir1/foo.txt to dir2/foo.txt
-///     move_file("dir1/foo.txt", "dir2/foo.txt", &options, handle)?;
+/// // Move dir1/foo.txt to dir2/foo.txt
+/// move_file("dir1/foo.txt", "dir2/foo.txt", &options, handle)?;
 ///
 /// ```
 pub fn move_file_with_progress<P, Q, F>(from: P,
@@ -291,11 +287,10 @@ pub fn move_file_with_progress<P, Q, F>(from: P,
 ///
 /// # Example
 /// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::file::remove;
 ///
-///     extern crate fs_extra;
-///     use fs_extra::file::remove;
-///
-///     remove("foo.txt" )?; // Remove foo.txt
+/// remove("foo.txt" )?; // Remove foo.txt
 ///
 /// ```
 pub fn remove<P>(path: P) -> Result<()>
@@ -321,12 +316,11 @@ pub fn remove<P>(path: P) -> Result<()>
 ///
 /// # Example
 /// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::file::read_to_string;
 ///
-///     extern crate fs_extra;
-///     use fs_extra::file::read_to_string;
-///
-///     let file_content = read_to_string("foo.txt" )?; // Get file conent from foo.txt
-///     println!("{}", file_content);
+/// let file_content = read_to_string("foo.txt" )?; // Get file conent from foo.txt
+/// println!("{}", file_content);
 ///
 /// ```
 pub fn read_to_string<P>(path: P) -> Result<String>
@@ -361,11 +355,10 @@ pub fn read_to_string<P>(path: P) -> Result<String>
 ///
 /// # Example
 /// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::file::read_to_string;
 ///
-///     extern crate fs_extra;
-///     use fs_extra::file::read_to_string;
-///
-///     write_all("foo.txt", "conents" )?; // Create file foo.txt and send content inside
+/// write_all("foo.txt", "conents" )?; // Create file foo.txt and send content inside
 ///
 /// ```
 pub fn write_all<P>(path: P, content: &str) -> Result<()>

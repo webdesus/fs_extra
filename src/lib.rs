@@ -270,7 +270,10 @@ impl Clone for TransitProcess {
 ///  use fs_extra::dir::copy;
 ///
 ///  let options = dir::CopyOptions::new(); //Initialize default values for CopyOptions
-///  let handle = |process_info: TransitProcess|  println!("{}", process_info.total_bytes);
+///  let handle = |process_info: TransitProcess| {
+///     println!("{}", process_info.total_bytes);
+///     fs_extra::dir::TransitProcessResult::ContinueOrAbort
+///  }
 ///  // copy dir1 and file1.txt to target/dir1 and target/file1.txt
 ///  let mut from_paths = Vec::new();
 ///  from_paths.push("source/dir1");
@@ -572,7 +575,10 @@ pub fn move_items<P, Q>(from_items: &Vec<P>, to: Q, options: &dir::CopyOptions) 
 ///  use fs_extra::dir::copy;
 ///
 ///  let options = dir::CopyOptions::new(); //Initialize default values for CopyOptions
-///  let handle = |process_info: TransitProcess|  println!("{}", process_info.total_bytes);
+///  let handle = |process_info: TransitProcess| {
+///     println!("{}", process_info.total_bytes);
+///     fs_extra::dir::TransitProcessResult::ContinueOrAbort
+///  }
 ///  // move dir1 and file1.txt to target/dir1 and target/file1.txt
 ///  let mut from_paths = Vec::new();
 ///  from_paths.push("source/dir1");

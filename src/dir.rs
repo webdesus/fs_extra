@@ -459,14 +459,13 @@ pub fn create_all<P>(path: P, erase: bool) -> Result<()>
 ///
 /// # Example
 /// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::dir::copy;
 ///
-///     extern crate fs_extra;
-///     use fs_extra::dir::copy;
+/// let options = CopyOptions::new(); //Initialize default values for CopyOptions
 ///
-///     let options = CopyOptions::new(); //Initialize default values for CopyOptions
-///
-///     // copy source/dir1 to target/dir1
-///     copy("source/dir1", "target/dir1", &options)?;
+/// // copy source/dir1 to target/dir1
+/// copy("source/dir1", "target/dir1", &options)?;
 ///
 /// ```
 pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
@@ -546,13 +545,13 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 ///
 /// # Examples
 /// ```rust,ignore
-///    extern crate fs_extra;
-///    use fs_extra::dir::get_dir_content;
+/// extern crate fs_extra;
+/// use fs_extra::dir::get_dir_content;
 ///
-///    let dir_content = get_dir_content("dir")?;
-///    for directory in dir_content.directories {
-///        println!("{}", directory); // print directory path
-///    }
+/// let dir_content = get_dir_content("dir")?;
+/// for directory in dir_content.directories {
+///     println!("{}", directory); // print directory path
+/// }
 /// ```
 ///
 pub fn get_dir_content<P>(path: P) -> Result<DirContent>
@@ -608,11 +607,11 @@ pub fn get_dir_content<P>(path: P) -> Result<DirContent>
 ///
 /// # Examples
 /// ```rust,ignore
-///    extern crate fs_extra;
-///    use fs_extra::dir::get_size;
+/// extern crate fs_extra;
+/// use fs_extra::dir::get_size;
 ///
-///    let folder_size = get_size("dir")?;
-///    println!("{}", folder_size); // print directory sile in bytes
+/// let folder_size = get_size("dir")?;
+/// println!("{}", folder_size); // print directory sile in bytes
 /// ```
 pub fn get_size<P>(path: P) -> Result<u64>
     where P: AsRef<Path>
@@ -651,14 +650,16 @@ pub fn get_size<P>(path: P) -> Result<u64>
 ///
 /// # Example
 /// ```rust,ignore
-///     extern crate fs_extra;
-///     use fs_extra::dir::copy;
+/// extern crate fs_extra;
+/// use fs_extra::dir::copy;
 ///
-///     let options = CopyOptions::new(); //Initialize default values for CopyOptions
-///     let handle = |process_info: TransitProcess|  println!("{}", process_info.total_bytes);
-///
-///     // copy source/dir1 to target/dir1
-///     copy_with_progress("source/dir1", "target/dir1", &options, handle)?;
+/// let options = CopyOptions::new(); //Initialize default values for CopyOptions
+/// let handle = |process_info: TransitProcess|  {
+///     println!("{}", process_info.total_bytes);
+///     fs_extra::dir::TransitProcessResult::ContinueOrAbort
+/// }
+/// // copy source/dir1 to target/dir1
+/// copy_with_progress("source/dir1", "target/dir1", &options, handle)?;
 ///
 /// ```
 pub fn copy_with_progress<P, Q, F>(from: P,
@@ -858,14 +859,13 @@ pub fn copy_with_progress<P, Q, F>(from: P,
 ///
 /// # Example
 /// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::dir::move_dir;
 ///
-///     extern crate fs_extra;
-///     use fs_extra::dir::move_dir;
+/// let options = CopyOptions::new(); //Initialize default values for CopyOptions
 ///
-///     let options = CopyOptions::new(); //Initialize default values for CopyOptions
-///
-///     // move source/dir1 to target/dir1
-///     move_dir("source/dir1", "target/dir1", &options)?;
+/// // move source/dir1 to target/dir1
+/// move_dir("source/dir1", "target/dir1", &options)?;
 ///
 /// ```
 pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
@@ -955,15 +955,17 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 ///
 /// # Example
 /// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::dir::move_dir_with_progress;
 ///
-///     extern crate fs_extra;
-///     use fs_extra::dir::move_dir_with_progress;
+/// let options = CopyOptions::new(); //Initialize default values for CopyOptions
+/// let handle = |process_info: TransitProcess| {
+///     println!("{}", process_info.total_bytes);
+///     fs_extra::dir::TransitProcessResult::ContinueOrAbort
+/// }
 ///
-///     let options = CopyOptions::new(); //Initialize default values for CopyOptions
-///     let handle = |process_info: TransitProcess|  println!("{}", process_info.total_bytes);
-///
-///     // move source/dir1 to target/dir1
-///     move_dir_with_progress("source/dir1", "target/dir1", &options, handle)?;
+/// // move source/dir1 to target/dir1
+/// move_dir_with_progress("source/dir1", "target/dir1", &options, handle)?;
 ///
 /// ```
 pub fn move_dir_with_progress<P, Q, F>(from: P,
@@ -1161,11 +1163,10 @@ pub fn move_dir_with_progress<P, Q, F>(from: P,
 ///
 /// # Example
 /// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::dir::remove;
 ///
-///     extern crate fs_extra;
-///     use fs_extra::dir::remove;
-///
-///     remove("source/dir1"); // remove dir1
+/// remove("source/dir1"); // remove dir1
 /// ```
 pub fn remove<P: AsRef<Path>>(path: P) -> Result<()> {
     if path.as_ref().exists() {
