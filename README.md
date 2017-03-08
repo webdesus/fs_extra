@@ -7,6 +7,7 @@ A Rust library for more work functionality with file system.
 [![Docs](https://docs.rs/fs_extra/badge.svg)](https://docs.rs/fs_extra)
 
 [Documentation](https://docs.rs/fs_extra)
+[Migrations to 1.x.x version](wiki/Migrations-to-1.x.x-version)
 
 
 ## Key features:
@@ -60,7 +61,7 @@ A Rust library for more work functionality with file system.
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-fs_extra = "0.3.1"
+fs_extra = "1.0.0"
 ```
 and this to your crate root:
 ```rust
