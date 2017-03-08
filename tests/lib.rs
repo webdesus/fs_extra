@@ -522,7 +522,10 @@ fn it_copy_progress_work() {
             from_paths.push(file1.0.as_path());
             from_paths.push(file2.0.as_path());
 
-            let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+            let func_test = |process_info: TransitProcess| {
+                tx.send(process_info).unwrap();
+                dir::TransitProcessResult::ContinueOrAbort
+            };
             let result = copy_items_with_progress(&from_paths, &path_to, &options, func_test)
                 .unwrap();
 
@@ -617,7 +620,11 @@ fn it_copy_with_progress_work_dif_buf_size() {
             from_paths.push(dir1.0.as_path().to_str().unwrap().to_string());
             from_paths.push(dir2.0.as_path().to_str().unwrap().to_string());
 
-            let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+            let func_test = |process_info: TransitProcess| {
+                tx.send(process_info).unwrap();
+                dir::TransitProcessResult::ContinueOrAbort
+            };
+
             let result = copy_items_with_progress(&from_paths, &path_to, &options, func_test)
                 .unwrap();
 
@@ -631,22 +638,23 @@ fn it_copy_with_progress_work_dif_buf_size() {
             options.buffer_size = 2;
             options.overwrite = true;
             let (tx, rx) = mpsc::channel();
-            let result =
-                thread::spawn(move || {
+            let result = thread::spawn(move || {
 
-                        let func_test =
-                            |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
-                        let result =
-                            copy_items_with_progress(&from_paths, &path_to, &options, func_test)
-                                .unwrap();
+                    let func_test = |process_info: TransitProcess| {
+                        tx.send(process_info).unwrap();
+                        dir::TransitProcessResult::ContinueOrAbort
+                    };
+                    let result =
+                        copy_items_with_progress(&from_paths, &path_to, &options, func_test)
+                            .unwrap();
 
-                        assert_eq!(40, result);
-                        assert!(compare_dir(&dir1.0, &path_to));
-                        assert!(compare_dir(&dir2.0, &path_to));
-                        assert!(files_eq(&file1.0, &file1.1));
-                        assert!(files_eq(&file2.0, &file2.1));
-                    })
-                    .join();
+                    assert_eq!(40, result);
+                    assert!(compare_dir(&dir1.0, &path_to));
+                    assert!(compare_dir(&dir2.0, &path_to));
+                    assert!(files_eq(&file1.0, &file1.1));
+                    assert!(files_eq(&file2.0, &file2.1));
+                })
+                .join();
             for i in 1..5 {
                 let process_info: TransitProcess = rx.recv().unwrap();
                 assert_eq!(i * 2, process_info.file_bytes_copied);
@@ -727,7 +735,12 @@ fn it_copy_with_progress_source_not_exist() {
     from_paths.push(file1.0.as_path());
 
 
-    let func_test = |process_info: TransitProcess| println!("{}", process_info.total_bytes);
+    let func_test = |process_info: TransitProcess| {
+        println!("{}", process_info.total_bytes);
+        dir::TransitProcessResult::ContinueOrAbort
+    };
+
+
     let options = dir::CopyOptions::new();
     match copy_items_with_progress(&from_paths, &path_to, &options, func_test) {
         Ok(_) => panic!("Should be a error!"),
@@ -804,7 +817,11 @@ fn it_copy_with_progress_exist_overwrite() {
             from_paths.push(file1.0.as_path());
             from_paths.push(file2.0.as_path());
 
-            let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+            let func_test = |process_info: TransitProcess| {
+                tx.send(process_info).unwrap();
+                dir::TransitProcessResult::ContinueOrAbort
+            };
+
             let result = copy_items_with_progress(&from_paths, &path_to, &options, func_test)
                 .unwrap();
 
@@ -891,7 +908,12 @@ fn it_copy_with_progress_exist_not_overwrite() {
     from_paths.push(file2.0.as_path());
 
     let options = dir::CopyOptions::new();
-    let func_test = |process_info: TransitProcess| println!("{}", process_info.total_bytes);
+    let func_test = |process_info: TransitProcess| {
+        println!("{}", process_info.total_bytes);
+        dir::TransitProcessResult::ContinueOrAbort
+    };
+
+
     match copy_items_with_progress(&from_paths, &path_to, &options, func_test) {
         Ok(_) => panic!("Should be a error!"),
         Err(err) => {
@@ -971,7 +993,11 @@ fn it_copy_with_progress_exist_skip_exist() {
             from_paths.push(file1.0.as_path());
             from_paths.push(file2.0.as_path());
 
-            let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+            let func_test = |process_info: TransitProcess| {
+                tx.send(process_info).unwrap();
+                dir::TransitProcessResult::ContinueOrAbort
+            };
+
             let result = copy_items_with_progress(&from_paths, &path_to, &options, func_test)
                 .unwrap();
 
@@ -1062,7 +1088,11 @@ fn it_copy_with_progress_exist_overwrite_and_skip_exist() {
             from_paths.push(file1.0.as_path());
             from_paths.push(file2.0.as_path());
 
-            let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+            let func_test = |process_info: TransitProcess| {
+                tx.send(process_info).unwrap();
+                dir::TransitProcessResult::ContinueOrAbort
+            };
+
             let result = copy_items_with_progress(&from_paths, &path_to, &options, func_test)
                 .unwrap();
 
@@ -1567,7 +1597,10 @@ fn it_move_progress_work() {
             from_paths.push(file1.0.as_path());
             from_paths.push(file2.0.as_path());
 
-            let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+            let func_test = |process_info: TransitProcess| {
+                tx.send(process_info).unwrap();
+                dir::TransitProcessResult::ContinueOrAbort
+            };
             let result = move_items_with_progress(&from_paths, &path_to, &options, func_test)
                 .unwrap();
 
@@ -1644,7 +1677,10 @@ fn it_move_with_progress_source_not_exist() {
     from_paths.push(file1.0.as_path());
 
 
-    let func_test = |process_info: TransitProcess| println!("{}", process_info.total_bytes);
+    let func_test = |process_info: TransitProcess| {
+        println!("{}", process_info.total_bytes);
+        dir::TransitProcessResult::ContinueOrAbort
+    };
     let options = dir::CopyOptions::new();
     match move_items_with_progress(&from_paths, &path_to, &options, func_test) {
         Ok(_) => panic!("Should be a error!"),
@@ -1721,7 +1757,10 @@ fn it_move_with_progress_exist_overwrite() {
             from_paths.push(file1.0.as_path());
             from_paths.push(file2.0.as_path());
 
-            let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+            let func_test = |process_info: TransitProcess| {
+                tx.send(process_info).unwrap();
+                dir::TransitProcessResult::ContinueOrAbort
+            };
             let result = move_items_with_progress(&from_paths, &path_to, &options, func_test)
                 .unwrap();
 
@@ -1813,7 +1852,10 @@ fn it_move_with_progress_exist_not_overwrite() {
     from_paths.push(file2.0.as_path());
 
     let options = dir::CopyOptions::new();
-    let func_test = |process_info: TransitProcess| println!("{}", process_info.total_bytes);
+    let func_test = |process_info: TransitProcess| {
+        println!("{}", process_info.total_bytes);
+        dir::TransitProcessResult::ContinueOrAbort
+    };
     match move_items_with_progress(&from_paths, &path_to, &options, func_test) {
         Ok(_) => panic!("Should be a error!"),
         Err(err) => {
@@ -1896,7 +1938,10 @@ fn it_move_with_progress_exist_skip_exist() {
             from_paths.push(file1.0.as_path());
             from_paths.push(file2.0.as_path());
 
-            let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+            let func_test = |process_info: TransitProcess| {
+                tx.send(process_info).unwrap();
+                dir::TransitProcessResult::ContinueOrAbort
+            };
             let result = move_items_with_progress(&from_paths, &path_to, &options, func_test)
                 .unwrap();
 
@@ -1993,7 +2038,10 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
             from_paths.push(file1.0.as_path());
             from_paths.push(file2.0.as_path());
 
-            let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+            let func_test = |process_info: TransitProcess| {
+                tx.send(process_info).unwrap();
+                dir::TransitProcessResult::ContinueOrAbort
+            };
             let result = move_items_with_progress(&from_paths, &path_to, &options, func_test)
                 .unwrap();
 
@@ -2073,4 +2121,1085 @@ fn it_remove_work() {
     assert!(!file5.exists());
 
 
+}
+
+
+#[test]
+fn it_copy_with_progress_exist_user_decide_overwrite() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_copy_with_progress_exist_user_decide_overwrite");
+    let path_to = test_dir.join("out");
+    let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
+    let dir2 = (test_dir.join("dir2"), path_to.join("dir2"));
+    let sub = (dir1.0.join("sub"), dir1.1.join("sub"));
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+    let file2 = (test_dir.join("file2.txt"), path_to.join("file2.txt"));
+    let file3 = (dir1.0.join("file3.txt"), dir1.1.join("file3.txt"));
+    let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
+    let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
+
+
+    dir::create_all(&dir1.0, true).unwrap();
+    dir::create_all(&dir1.1, true).unwrap();
+    dir::create_all(&dir2.0, true).unwrap();
+    dir::create_all(&dir2.1, true).unwrap();
+    dir::create_all(&sub.0, true).unwrap();
+    dir::create_all(&sub.1, true).unwrap();
+
+
+    assert!(&dir1.0.exists());
+    assert!(&dir1.1.exists());
+    assert!(&dir2.0.exists());
+    assert!(&dir2.1.exists());
+    assert!(&sub.0.exists());
+    assert!(&sub.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+    fs_extra::file::write_all(&file4.0, "content4").unwrap();
+    fs_extra::file::write_all(&file5.0, "content5").unwrap();
+
+    fs_extra::file::write_all(&file1.1, "old content11").unwrap();
+    fs_extra::file::write_all(&file2.1, "old content12").unwrap();
+    fs_extra::file::write_all(&file3.1, "old content13").unwrap();
+    fs_extra::file::write_all(&file4.1, "old content14").unwrap();
+    fs_extra::file::write_all(&file5.1, "old content15").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+    assert!(file4.0.exists());
+    assert!(file5.0.exists());
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+    assert!(file4.1.exists());
+    assert!(file5.1.exists());
+
+    let mut options = dir::CopyOptions::new();
+    assert!(!compare_dir(&dir1.0, &dir1.1));
+    assert!(!compare_dir(&dir2.0, &dir2.1));
+    assert!(!files_eq(&file1.0, &file1.1));
+    assert!(!files_eq(&file2.0, &file2.1));
+    options.buffer_size = 1;
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+            let mut count_exist_files = 0;
+            let mut from_paths = Vec::new();
+            from_paths.push(dir1.0.as_path());
+            from_paths.push(dir2.0.as_path());
+            from_paths.push(file1.0.as_path());
+            from_paths.push(file2.0.as_path());
+
+            let result: u64;
+            {
+                let func_test = |process_info: TransitProcess| {
+                    let result: dir::TransitProcessResult;
+                    match process_info.state {
+                        dir::TransitState::Exists => {
+                            count_exist_files += 1;
+                            result = dir::TransitProcessResult::Overwrite;
+                            tx.send(process_info).unwrap();
+                        }
+                        _ => result = dir::TransitProcessResult::Abort,
+                    };
+                    result
+                };
+
+                result = copy_items_with_progress(&from_paths, &path_to, &options, func_test)
+                    .unwrap();
+            }
+            assert_eq!(5, count_exist_files);
+
+            assert_eq!(40, result);
+            assert!(dir1.0.exists());
+            assert!(dir1.1.exists());
+            assert!(dir2.0.exists());
+            assert!(dir2.1.exists());
+            assert!(compare_dir(&dir1.0, &path_to));
+            assert!(compare_dir(&dir2.0, &path_to));
+            assert!(files_eq(&file1.0, &file1.1));
+            assert!(files_eq(&file2.0, &file2.1));
+
+        })
+        .join();
+
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+    rx.try_recv().unwrap();
+}
+
+
+#[test]
+fn it_copy_with_progress_exist_user_decide_overwrite_all() {
+    let test_dir = Path::new(TEST_FOLDER)
+        .join("it_copy_with_progress_exist_user_decide_overwrite_all");
+    let path_to = test_dir.join("out");
+    let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
+    let dir2 = (test_dir.join("dir2"), path_to.join("dir2"));
+    let sub = (dir1.0.join("sub"), dir1.1.join("sub"));
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+    let file2 = (test_dir.join("file2.txt"), path_to.join("file2.txt"));
+    let file3 = (dir1.0.join("file3.txt"), dir1.1.join("file3.txt"));
+    let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
+    let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
+
+
+    dir::create_all(&dir1.0, true).unwrap();
+    dir::create_all(&dir1.1, true).unwrap();
+    dir::create_all(&dir2.0, true).unwrap();
+    dir::create_all(&dir2.1, true).unwrap();
+    dir::create_all(&sub.0, true).unwrap();
+    dir::create_all(&sub.1, true).unwrap();
+
+
+    assert!(&dir1.0.exists());
+    assert!(&dir1.1.exists());
+    assert!(&dir2.0.exists());
+    assert!(&dir2.1.exists());
+    assert!(&sub.0.exists());
+    assert!(&sub.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+    fs_extra::file::write_all(&file4.0, "content4").unwrap();
+    fs_extra::file::write_all(&file5.0, "content5").unwrap();
+
+    fs_extra::file::write_all(&file1.1, "old content11").unwrap();
+    fs_extra::file::write_all(&file2.1, "old content12").unwrap();
+    fs_extra::file::write_all(&file3.1, "old content13").unwrap();
+    fs_extra::file::write_all(&file4.1, "old content14").unwrap();
+    fs_extra::file::write_all(&file5.1, "old content15").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+    assert!(file4.0.exists());
+    assert!(file5.0.exists());
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+    assert!(file4.1.exists());
+    assert!(file5.1.exists());
+
+    let mut options = dir::CopyOptions::new();
+    assert!(!compare_dir(&dir1.0, &dir1.1));
+    assert!(!compare_dir(&dir2.0, &dir2.1));
+    assert!(!files_eq(&file1.0, &file1.1));
+    assert!(!files_eq(&file2.0, &file2.1));
+    options.buffer_size = 1;
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+            let mut count_exist_files = 0;
+            let mut from_paths = Vec::new();
+            from_paths.push(dir1.0.as_path());
+            from_paths.push(dir2.0.as_path());
+            from_paths.push(file1.0.as_path());
+            from_paths.push(file2.0.as_path());
+
+            let result: u64;
+            {
+                let func_test = |process_info: TransitProcess| {
+                    let result: dir::TransitProcessResult;
+                    match process_info.state {
+                        dir::TransitState::Exists => {
+                            count_exist_files += 1;
+                            result = dir::TransitProcessResult::OverwriteAll;
+                            tx.send(process_info).unwrap();
+                        }
+                        _ => result = dir::TransitProcessResult::Abort,
+                    };
+                    result
+                };
+
+                result = copy_items_with_progress(&from_paths, &path_to, &options, func_test)
+                    .unwrap();
+            }
+            assert_eq!(1, count_exist_files);
+
+            assert_eq!(40, result);
+            assert!(dir1.0.exists());
+            assert!(dir1.1.exists());
+            assert!(dir2.0.exists());
+            assert!(dir2.1.exists());
+            assert!(compare_dir(&dir1.0, &path_to));
+            assert!(compare_dir(&dir2.0, &path_to));
+            assert!(files_eq(&file1.0, &file1.1));
+            assert!(files_eq(&file2.0, &file2.1));
+
+        })
+        .join();
+
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+    rx.try_recv().unwrap();
+}
+
+#[test]
+fn it_copy_with_progress_exist_user_decide_skip() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_copy_with_progress_exist_user_decide_skip");
+    let path_to = test_dir.join("out");
+    let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
+    let dir2 = (test_dir.join("dir2"), path_to.join("dir2"));
+    let sub = (dir1.0.join("sub"), dir1.1.join("sub"));
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+    let file2 = (test_dir.join("file2.txt"), path_to.join("file2.txt"));
+    let file3 = (dir1.0.join("file3.txt"), dir1.1.join("file3.txt"));
+    let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
+    let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
+
+
+    dir::create_all(&dir1.0, true).unwrap();
+    dir::create_all(&dir1.1, true).unwrap();
+    dir::create_all(&dir2.0, true).unwrap();
+    dir::create_all(&dir2.1, true).unwrap();
+    dir::create_all(&sub.0, true).unwrap();
+    dir::create_all(&sub.1, true).unwrap();
+
+
+    assert!(&dir1.0.exists());
+    assert!(&dir1.1.exists());
+    assert!(&dir2.0.exists());
+    assert!(&dir2.1.exists());
+    assert!(&sub.0.exists());
+    assert!(&sub.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+    fs_extra::file::write_all(&file4.0, "content4").unwrap();
+    fs_extra::file::write_all(&file5.0, "content5").unwrap();
+
+    fs_extra::file::write_all(&file1.1, "old content11").unwrap();
+    fs_extra::file::write_all(&file2.1, "old content12").unwrap();
+    fs_extra::file::write_all(&file3.1, "old content13").unwrap();
+    fs_extra::file::write_all(&file4.1, "old content14").unwrap();
+    fs_extra::file::write_all(&file5.1, "old content15").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+    assert!(file4.0.exists());
+    assert!(file5.0.exists());
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+    assert!(file4.1.exists());
+    assert!(file5.1.exists());
+
+    let mut options = dir::CopyOptions::new();
+    assert!(!compare_dir(&dir1.0, &dir1.1));
+    assert!(!compare_dir(&dir2.0, &dir2.1));
+    assert!(!files_eq(&file1.0, &file1.1));
+    assert!(!files_eq(&file2.0, &file2.1));
+    options.buffer_size = 1;
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+            let mut count_exist_files = 0;
+            let mut from_paths = Vec::new();
+            from_paths.push(dir1.0.as_path());
+            from_paths.push(dir2.0.as_path());
+            from_paths.push(file1.0.as_path());
+            from_paths.push(file2.0.as_path());
+
+            let result: u64;
+            {
+                let func_test = |process_info: TransitProcess| {
+                    let result: dir::TransitProcessResult;
+                    match process_info.state {
+                        dir::TransitState::Exists => {
+                            count_exist_files += 1;
+                            result = dir::TransitProcessResult::Skip;
+                            tx.send(process_info).unwrap();
+                        }
+                        _ => result = dir::TransitProcessResult::Abort,
+                    };
+                    result
+                };
+
+                result = copy_items_with_progress(&from_paths, &path_to, &options, func_test)
+                    .unwrap();
+            }
+            assert_eq!(5, count_exist_files);
+
+            assert_eq!(0, result);
+            assert!(dir1.0.exists());
+            assert!(dir1.1.exists());
+            assert!(dir2.0.exists());
+            assert!(dir2.1.exists());
+            assert!(!compare_dir(&dir1.0, &path_to));
+            assert!(!compare_dir(&dir2.0, &path_to));
+            assert!(!files_eq(&file1.0, &file1.1));
+            assert!(!files_eq(&file2.0, &file2.1));
+
+        })
+        .join();
+
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+    rx.try_recv().unwrap();
+}
+
+#[test]
+fn it_copy_with_progress_exist_user_decide_skip_all() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_copy_with_progress_exist_user_decide_skip_all");
+    let path_to = test_dir.join("out");
+    let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
+    let dir2 = (test_dir.join("dir2"), path_to.join("dir2"));
+    let sub = (dir1.0.join("sub"), dir1.1.join("sub"));
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+    let file2 = (test_dir.join("file2.txt"), path_to.join("file2.txt"));
+    let file3 = (dir1.0.join("file3.txt"), dir1.1.join("file3.txt"));
+    let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
+    let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
+
+
+    dir::create_all(&dir1.0, true).unwrap();
+    dir::create_all(&dir1.1, true).unwrap();
+    dir::create_all(&dir2.0, true).unwrap();
+    dir::create_all(&dir2.1, true).unwrap();
+    dir::create_all(&sub.0, true).unwrap();
+    dir::create_all(&sub.1, true).unwrap();
+
+
+    assert!(&dir1.0.exists());
+    assert!(&dir1.1.exists());
+    assert!(&dir2.0.exists());
+    assert!(&dir2.1.exists());
+    assert!(&sub.0.exists());
+    assert!(&sub.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+    fs_extra::file::write_all(&file4.0, "content4").unwrap();
+    fs_extra::file::write_all(&file5.0, "content5").unwrap();
+
+    fs_extra::file::write_all(&file1.1, "old content11").unwrap();
+    fs_extra::file::write_all(&file2.1, "old content12").unwrap();
+    fs_extra::file::write_all(&file3.1, "old content13").unwrap();
+    fs_extra::file::write_all(&file4.1, "old content14").unwrap();
+    fs_extra::file::write_all(&file5.1, "old content15").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+    assert!(file4.0.exists());
+    assert!(file5.0.exists());
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+    assert!(file4.1.exists());
+    assert!(file5.1.exists());
+
+    let mut options = dir::CopyOptions::new();
+    assert!(!compare_dir(&dir1.0, &dir1.1));
+    assert!(!compare_dir(&dir2.0, &dir2.1));
+    assert!(!files_eq(&file1.0, &file1.1));
+    assert!(!files_eq(&file2.0, &file2.1));
+    options.buffer_size = 1;
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+            let mut count_exist_files = 0;
+            let mut from_paths = Vec::new();
+            from_paths.push(dir1.0.as_path());
+            from_paths.push(dir2.0.as_path());
+            from_paths.push(file1.0.as_path());
+            from_paths.push(file2.0.as_path());
+
+            let result: u64;
+            {
+                let func_test = |process_info: TransitProcess| {
+                    let result: dir::TransitProcessResult;
+                    match process_info.state {
+                        dir::TransitState::Exists => {
+                            count_exist_files += 1;
+                            result = dir::TransitProcessResult::SkipAll;
+                            tx.send(process_info).unwrap();
+                        }
+                        _ => result = dir::TransitProcessResult::Abort,
+                    };
+                    result
+                };
+
+                result = copy_items_with_progress(&from_paths, &path_to, &options, func_test)
+                    .unwrap();
+            }
+            assert_eq!(1, count_exist_files);
+
+            assert_eq!(0, result);
+            assert!(dir1.0.exists());
+            assert!(dir1.1.exists());
+            assert!(dir2.0.exists());
+            assert!(dir2.1.exists());
+            assert!(!compare_dir(&dir1.0, &path_to));
+            assert!(!compare_dir(&dir2.0, &path_to));
+            assert!(!files_eq(&file1.0, &file1.1));
+            assert!(!files_eq(&file2.0, &file2.1));
+
+        })
+        .join();
+
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+    rx.try_recv().unwrap();
+}
+
+#[test]
+fn it_copy_with_progress_exist_user_decide_retry() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_copy_with_progress_exist_user_decide_retry");
+    let path_to = test_dir.join("out");
+    let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
+    let dir2 = (test_dir.join("dir2"), path_to.join("dir2"));
+    let sub = (dir1.0.join("sub"), dir1.1.join("sub"));
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+    let file2 = (test_dir.join("file2.txt"), path_to.join("file2.txt"));
+    let file3 = (dir1.0.join("file3.txt"), dir1.1.join("file3.txt"));
+    let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
+    let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
+
+
+    dir::create_all(&dir1.0, true).unwrap();
+    dir::create_all(&dir1.1, true).unwrap();
+    dir::create_all(&dir2.0, true).unwrap();
+    dir::create_all(&dir2.1, true).unwrap();
+    dir::create_all(&sub.0, true).unwrap();
+    dir::create_all(&sub.1, true).unwrap();
+
+
+    assert!(&dir1.0.exists());
+    assert!(&dir1.1.exists());
+    assert!(&dir2.0.exists());
+    assert!(&dir2.1.exists());
+    assert!(&sub.0.exists());
+    assert!(&sub.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+    fs_extra::file::write_all(&file4.0, "content4").unwrap();
+    fs_extra::file::write_all(&file5.0, "content5").unwrap();
+
+    fs_extra::file::write_all(&file1.1, "old content11").unwrap();
+    fs_extra::file::write_all(&file2.1, "old content12").unwrap();
+    fs_extra::file::write_all(&file3.1, "old content13").unwrap();
+    fs_extra::file::write_all(&file4.1, "old content14").unwrap();
+    fs_extra::file::write_all(&file5.1, "old content15").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+    assert!(file4.0.exists());
+    assert!(file5.0.exists());
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+    assert!(file4.1.exists());
+    assert!(file5.1.exists());
+
+    let mut options = dir::CopyOptions::new();
+    assert!(!compare_dir(&dir1.0, &dir1.1));
+    assert!(!compare_dir(&dir2.0, &dir2.1));
+    assert!(!files_eq(&file1.0, &file1.1));
+    assert!(!files_eq(&file2.0, &file2.1));
+    options.buffer_size = 1;
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+            let mut count_exist_files = 0;
+            let mut from_paths = Vec::new();
+            from_paths.push(dir1.0.as_path());
+            from_paths.push(dir2.0.as_path());
+            from_paths.push(file1.0.as_path());
+            from_paths.push(file2.0.as_path());
+
+            let result: u64;
+            {
+                let func_test = |process_info: TransitProcess| {
+                    let result: dir::TransitProcessResult;
+                    match process_info.state {
+                        dir::TransitState::Exists => {
+                            if count_exist_files == 3 || count_exist_files > 6 {
+                                result = dir::TransitProcessResult::Skip;
+                            } else {
+                                result = dir::TransitProcessResult::Retry;
+                            }
+
+                            count_exist_files += 1;
+                            tx.send(process_info).unwrap();
+                        }
+                        _ => result = dir::TransitProcessResult::Abort,
+                    };
+                    result
+                };
+
+                result = copy_items_with_progress(&from_paths, &path_to, &options, func_test)
+                    .unwrap();
+            }
+            assert_eq!(11, count_exist_files);
+
+            assert_eq!(0, result);
+            assert!(dir1.0.exists());
+            assert!(dir1.1.exists());
+            assert!(dir2.0.exists());
+            assert!(dir2.1.exists());
+            assert!(!compare_dir(&dir1.0, &path_to));
+            assert!(!compare_dir(&dir2.0, &path_to));
+            assert!(!files_eq(&file1.0, &file1.1));
+            assert!(!files_eq(&file2.0, &file2.1));
+
+        })
+        .join();
+
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+    rx.try_recv().unwrap();
+}
+
+
+
+
+
+#[test]
+fn it_move_with_progress_exist_user_decide_overwrite() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_move_with_progress_exist_user_decide_overwrite");
+    let path_to = test_dir.join("out");
+    let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
+    let dir2 = (test_dir.join("dir2"), path_to.join("dir2"));
+    let sub = (dir1.0.join("sub"), dir1.1.join("sub"));
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+    let file2 = (test_dir.join("file2.txt"), path_to.join("file2.txt"));
+    let file3 = (dir1.0.join("file3.txt"), dir1.1.join("file3.txt"));
+    let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
+    let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
+
+
+    dir::create_all(&dir1.0, true).unwrap();
+    dir::create_all(&dir1.1, true).unwrap();
+    dir::create_all(&dir2.0, true).unwrap();
+    dir::create_all(&dir2.1, true).unwrap();
+    dir::create_all(&sub.0, true).unwrap();
+    dir::create_all(&sub.1, true).unwrap();
+
+
+    assert!(&dir1.0.exists());
+    assert!(&dir1.1.exists());
+    assert!(&dir2.0.exists());
+    assert!(&dir2.1.exists());
+    assert!(&sub.0.exists());
+    assert!(&sub.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+    fs_extra::file::write_all(&file4.0, "content4").unwrap();
+    fs_extra::file::write_all(&file5.0, "content5").unwrap();
+
+    fs_extra::file::write_all(&file1.1, "old content11").unwrap();
+    fs_extra::file::write_all(&file2.1, "old content12").unwrap();
+    fs_extra::file::write_all(&file3.1, "old content13").unwrap();
+    fs_extra::file::write_all(&file4.1, "old content14").unwrap();
+    fs_extra::file::write_all(&file5.1, "old content15").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+    assert!(file4.0.exists());
+    assert!(file5.0.exists());
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+    assert!(file4.1.exists());
+    assert!(file5.1.exists());
+
+    let mut options = dir::CopyOptions::new();
+    assert!(!compare_dir(&dir1.0, &dir1.1));
+    assert!(!compare_dir(&dir2.0, &dir2.1));
+    assert!(!files_eq(&file1.0, &file1.1));
+    assert!(!files_eq(&file2.0, &file2.1));
+    options.buffer_size = 1;
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+            let mut count_exist_files = 0;
+            let mut from_paths = Vec::new();
+            from_paths.push(dir1.0.as_path());
+            from_paths.push(dir2.0.as_path());
+            from_paths.push(file1.0.as_path());
+            from_paths.push(file2.0.as_path());
+
+            let result: u64;
+            {
+                let func_test = |process_info: TransitProcess| {
+                    let result: dir::TransitProcessResult;
+                    match process_info.state {
+                        dir::TransitState::Exists => {
+                            count_exist_files += 1;
+                            result = dir::TransitProcessResult::Overwrite;
+                            tx.send(process_info).unwrap();
+                        }
+                        _ => result = dir::TransitProcessResult::Abort,
+                    };
+                    result
+                };
+
+                result = move_items_with_progress(&from_paths, &path_to, &options, func_test)
+                    .unwrap();
+            }
+            assert_eq!(5, count_exist_files);
+
+            assert_eq!(40, result);
+            assert!(!dir1.0.exists());
+            assert!(!dir2.0.exists());
+            assert!(dir1.1.exists());
+            assert!(dir2.1.exists());
+
+        })
+        .join();
+
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+    rx.try_recv().unwrap();
+}
+
+
+#[test]
+fn it_move_with_progress_exist_user_decide_overwrite_all() {
+    let test_dir = Path::new(TEST_FOLDER)
+        .join("it_move_with_progress_exist_user_decide_overwrite_all");
+    let path_to = test_dir.join("out");
+    let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
+    let dir2 = (test_dir.join("dir2"), path_to.join("dir2"));
+    let sub = (dir1.0.join("sub"), dir1.1.join("sub"));
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+    let file2 = (test_dir.join("file2.txt"), path_to.join("file2.txt"));
+    let file3 = (dir1.0.join("file3.txt"), dir1.1.join("file3.txt"));
+    let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
+    let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
+
+
+    dir::create_all(&dir1.0, true).unwrap();
+    dir::create_all(&dir1.1, true).unwrap();
+    dir::create_all(&dir2.0, true).unwrap();
+    dir::create_all(&dir2.1, true).unwrap();
+    dir::create_all(&sub.0, true).unwrap();
+    dir::create_all(&sub.1, true).unwrap();
+
+
+    assert!(&dir1.0.exists());
+    assert!(&dir1.1.exists());
+    assert!(&dir2.0.exists());
+    assert!(&dir2.1.exists());
+    assert!(&sub.0.exists());
+    assert!(&sub.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+    fs_extra::file::write_all(&file4.0, "content4").unwrap();
+    fs_extra::file::write_all(&file5.0, "content5").unwrap();
+
+    fs_extra::file::write_all(&file1.1, "old content11").unwrap();
+    fs_extra::file::write_all(&file2.1, "old content12").unwrap();
+    fs_extra::file::write_all(&file3.1, "old content13").unwrap();
+    fs_extra::file::write_all(&file4.1, "old content14").unwrap();
+    fs_extra::file::write_all(&file5.1, "old content15").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+    assert!(file4.0.exists());
+    assert!(file5.0.exists());
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+    assert!(file4.1.exists());
+    assert!(file5.1.exists());
+
+    let mut options = dir::CopyOptions::new();
+    assert!(!compare_dir(&dir1.0, &dir1.1));
+    assert!(!compare_dir(&dir2.0, &dir2.1));
+    assert!(!files_eq(&file1.0, &file1.1));
+    assert!(!files_eq(&file2.0, &file2.1));
+    options.buffer_size = 1;
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+            let mut count_exist_files = 0;
+            let mut from_paths = Vec::new();
+            from_paths.push(dir1.0.as_path());
+            from_paths.push(dir2.0.as_path());
+            from_paths.push(file1.0.as_path());
+            from_paths.push(file2.0.as_path());
+
+            let result: u64;
+            {
+                let func_test = |process_info: TransitProcess| {
+                    let result: dir::TransitProcessResult;
+                    match process_info.state {
+                        dir::TransitState::Exists => {
+                            count_exist_files += 1;
+                            result = dir::TransitProcessResult::OverwriteAll;
+                            tx.send(process_info).unwrap();
+                        }
+                        _ => result = dir::TransitProcessResult::Abort,
+                    };
+                    result
+                };
+
+                result = move_items_with_progress(&from_paths, &path_to, &options, func_test)
+                    .unwrap();
+            }
+            assert_eq!(1, count_exist_files);
+
+            assert_eq!(40, result);
+            assert!(!dir1.0.exists());
+            assert!(!dir2.0.exists());
+            assert!(dir1.1.exists());
+            assert!(dir2.1.exists());
+
+        })
+        .join();
+
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+    rx.try_recv().unwrap();
+}
+
+#[test]
+fn it_move_with_progress_exist_user_decide_skip() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_move_with_progress_exist_user_decide_skip");
+    let path_to = test_dir.join("out");
+    let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
+    let dir2 = (test_dir.join("dir2"), path_to.join("dir2"));
+    let sub = (dir1.0.join("sub"), dir1.1.join("sub"));
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+    let file2 = (test_dir.join("file2.txt"), path_to.join("file2.txt"));
+    let file3 = (dir1.0.join("file3.txt"), dir1.1.join("file3.txt"));
+    let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
+    let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
+
+
+    dir::create_all(&dir1.0, true).unwrap();
+    dir::create_all(&dir1.1, true).unwrap();
+    dir::create_all(&dir2.0, true).unwrap();
+    dir::create_all(&dir2.1, true).unwrap();
+    dir::create_all(&sub.0, true).unwrap();
+    dir::create_all(&sub.1, true).unwrap();
+
+
+    assert!(&dir1.0.exists());
+    assert!(&dir1.1.exists());
+    assert!(&dir2.0.exists());
+    assert!(&dir2.1.exists());
+    assert!(&sub.0.exists());
+    assert!(&sub.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+    fs_extra::file::write_all(&file4.0, "content4").unwrap();
+    fs_extra::file::write_all(&file5.0, "content5").unwrap();
+
+    fs_extra::file::write_all(&file1.1, "old content11").unwrap();
+    fs_extra::file::write_all(&file2.1, "old content12").unwrap();
+    fs_extra::file::write_all(&file3.1, "old content13").unwrap();
+    fs_extra::file::write_all(&file4.1, "old content14").unwrap();
+    fs_extra::file::write_all(&file5.1, "old content15").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+    assert!(file4.0.exists());
+    assert!(file5.0.exists());
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+    assert!(file4.1.exists());
+    assert!(file5.1.exists());
+
+    let mut options = dir::CopyOptions::new();
+    assert!(!compare_dir(&dir1.0, &dir1.1));
+    assert!(!compare_dir(&dir2.0, &dir2.1));
+    assert!(!files_eq(&file1.0, &file1.1));
+    assert!(!files_eq(&file2.0, &file2.1));
+    options.buffer_size = 1;
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+            let mut count_exist_files = 0;
+            let mut from_paths = Vec::new();
+            from_paths.push(dir1.0.as_path());
+            from_paths.push(dir2.0.as_path());
+            from_paths.push(file1.0.as_path());
+            from_paths.push(file2.0.as_path());
+
+            let result: u64;
+            {
+                let func_test = |process_info: TransitProcess| {
+                    let result: dir::TransitProcessResult;
+                    match process_info.state {
+                        dir::TransitState::Exists => {
+                            count_exist_files += 1;
+                            result = dir::TransitProcessResult::Skip;
+                            tx.send(process_info).unwrap();
+                        }
+                        _ => result = dir::TransitProcessResult::Abort,
+                    };
+                    result
+                };
+
+                result = move_items_with_progress(&from_paths, &path_to, &options, func_test)
+                    .unwrap();
+            }
+            assert_eq!(5, count_exist_files);
+
+            assert_eq!(0, result);
+            assert!(dir1.0.exists());
+            assert!(dir2.0.exists());
+            assert!(dir1.1.exists());
+            assert!(dir2.1.exists());
+
+        })
+        .join();
+
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+    rx.try_recv().unwrap();
+}
+
+#[test]
+fn it_move_with_progress_exist_user_decide_skip_all() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_move_with_progress_exist_user_decide_skip_all");
+    let path_to = test_dir.join("out");
+    let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
+    let dir2 = (test_dir.join("dir2"), path_to.join("dir2"));
+    let sub = (dir1.0.join("sub"), dir1.1.join("sub"));
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+    let file2 = (test_dir.join("file2.txt"), path_to.join("file2.txt"));
+    let file3 = (dir1.0.join("file3.txt"), dir1.1.join("file3.txt"));
+    let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
+    let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
+
+
+    dir::create_all(&dir1.0, true).unwrap();
+    dir::create_all(&dir1.1, true).unwrap();
+    dir::create_all(&dir2.0, true).unwrap();
+    dir::create_all(&dir2.1, true).unwrap();
+    dir::create_all(&sub.0, true).unwrap();
+    dir::create_all(&sub.1, true).unwrap();
+
+
+    assert!(&dir1.0.exists());
+    assert!(&dir1.1.exists());
+    assert!(&dir2.0.exists());
+    assert!(&dir2.1.exists());
+    assert!(&sub.0.exists());
+    assert!(&sub.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+    fs_extra::file::write_all(&file4.0, "content4").unwrap();
+    fs_extra::file::write_all(&file5.0, "content5").unwrap();
+
+    fs_extra::file::write_all(&file1.1, "old content11").unwrap();
+    fs_extra::file::write_all(&file2.1, "old content12").unwrap();
+    fs_extra::file::write_all(&file3.1, "old content13").unwrap();
+    fs_extra::file::write_all(&file4.1, "old content14").unwrap();
+    fs_extra::file::write_all(&file5.1, "old content15").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+    assert!(file4.0.exists());
+    assert!(file5.0.exists());
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+    assert!(file4.1.exists());
+    assert!(file5.1.exists());
+
+    let mut options = dir::CopyOptions::new();
+    assert!(!compare_dir(&dir1.0, &dir1.1));
+    assert!(!compare_dir(&dir2.0, &dir2.1));
+    assert!(!files_eq(&file1.0, &file1.1));
+    assert!(!files_eq(&file2.0, &file2.1));
+    options.buffer_size = 1;
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+            let mut count_exist_files = 0;
+            let mut from_paths = Vec::new();
+            from_paths.push(dir1.0.as_path());
+            from_paths.push(dir2.0.as_path());
+            from_paths.push(file1.0.as_path());
+            from_paths.push(file2.0.as_path());
+
+            let result: u64;
+            {
+                let func_test = |process_info: TransitProcess| {
+                    let result: dir::TransitProcessResult;
+                    match process_info.state {
+                        dir::TransitState::Exists => {
+                            count_exist_files += 1;
+                            result = dir::TransitProcessResult::SkipAll;
+                            tx.send(process_info).unwrap();
+                        }
+                        _ => result = dir::TransitProcessResult::Abort,
+                    };
+                    result
+                };
+
+                result = move_items_with_progress(&from_paths, &path_to, &options, func_test)
+                    .unwrap();
+            }
+            assert_eq!(1, count_exist_files);
+
+            assert_eq!(0, result);
+            assert!(dir1.0.exists());
+            assert!(dir2.0.exists());
+            assert!(dir1.1.exists());
+            assert!(dir2.1.exists());
+            assert!(file1.0.exists());
+            assert!(file2.0.exists());
+
+        })
+        .join();
+
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+    rx.try_recv().unwrap();
+}
+
+#[test]
+fn it_move_with_progress_exist_user_decide_retry() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_move_with_progress_exist_user_decide_retry");
+    let path_to = test_dir.join("out");
+    let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
+    let dir2 = (test_dir.join("dir2"), path_to.join("dir2"));
+    let sub = (dir1.0.join("sub"), dir1.1.join("sub"));
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+    let file2 = (test_dir.join("file2.txt"), path_to.join("file2.txt"));
+    let file3 = (dir1.0.join("file3.txt"), dir1.1.join("file3.txt"));
+    let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
+    let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
+
+
+    dir::create_all(&dir1.0, true).unwrap();
+    dir::create_all(&dir1.1, true).unwrap();
+    dir::create_all(&dir2.0, true).unwrap();
+    dir::create_all(&dir2.1, true).unwrap();
+    dir::create_all(&sub.0, true).unwrap();
+    dir::create_all(&sub.1, true).unwrap();
+
+
+    assert!(&dir1.0.exists());
+    assert!(&dir1.1.exists());
+    assert!(&dir2.0.exists());
+    assert!(&dir2.1.exists());
+    assert!(&sub.0.exists());
+    assert!(&sub.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+    fs_extra::file::write_all(&file4.0, "content4").unwrap();
+    fs_extra::file::write_all(&file5.0, "content5").unwrap();
+
+    fs_extra::file::write_all(&file1.1, "old content11").unwrap();
+    fs_extra::file::write_all(&file2.1, "old content12").unwrap();
+    fs_extra::file::write_all(&file3.1, "old content13").unwrap();
+    fs_extra::file::write_all(&file4.1, "old content14").unwrap();
+    fs_extra::file::write_all(&file5.1, "old content15").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+    assert!(file4.0.exists());
+    assert!(file5.0.exists());
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+    assert!(file4.1.exists());
+    assert!(file5.1.exists());
+
+    let mut options = dir::CopyOptions::new();
+    assert!(!compare_dir(&dir1.0, &dir1.1));
+    assert!(!compare_dir(&dir2.0, &dir2.1));
+    assert!(!files_eq(&file1.0, &file1.1));
+    assert!(!files_eq(&file2.0, &file2.1));
+    options.buffer_size = 1;
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+            let mut count_exist_files = 0;
+            let mut from_paths = Vec::new();
+            from_paths.push(dir1.0.as_path());
+            from_paths.push(dir2.0.as_path());
+            from_paths.push(file1.0.as_path());
+            from_paths.push(file2.0.as_path());
+
+            let result: u64;
+            {
+                let func_test = |process_info: TransitProcess| {
+                    let result: dir::TransitProcessResult;
+                    match process_info.state {
+                        dir::TransitState::Exists => {
+                            if count_exist_files == 3 || count_exist_files > 6 {
+                                result = dir::TransitProcessResult::Skip;
+                            } else {
+                                result = dir::TransitProcessResult::Retry;
+                            }
+
+                            count_exist_files += 1;
+                            tx.send(process_info).unwrap();
+                        }
+                        _ => result = dir::TransitProcessResult::Abort,
+                    };
+                    result
+                };
+
+                result = move_items_with_progress(&from_paths, &path_to, &options, func_test)
+                    .unwrap();
+            }
+            assert_eq!(11, count_exist_files);
+
+            assert_eq!(0, result);
+            assert!(dir1.0.exists());
+            assert!(dir2.0.exists());
+            assert!(dir1.1.exists());
+            assert!(dir2.1.exists());
+
+        })
+        .join();
+
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+    rx.try_recv().unwrap();
 }

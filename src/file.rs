@@ -72,10 +72,11 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
     let from = from.as_ref();
     if !from.exists() {
         if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" does not exist", msg);
+            let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
             err!(&msg, ErrorKind::NotFound);
         }
-        err!("Path does not exist", ErrorKind::NotFound);
+        err!("Path does not exist or you don't have access!",
+             ErrorKind::NotFound);
     }
 
     if !from.is_file() {
@@ -140,10 +141,11 @@ pub fn copy_with_progress<P, Q, F>(from: P,
     let from = from.as_ref();
     if !from.exists() {
         if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" does not exist", msg);
+            let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
             err!(&msg, ErrorKind::NotFound);
         }
-        err!("Path does not exist", ErrorKind::NotFound);
+        err!("Path does not exist or you don't have access!",
+             ErrorKind::NotFound);
     }
 
     if !from.is_file() {
