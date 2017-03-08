@@ -109,6 +109,7 @@ fn example_copy() -> Result<()> {
         let handler = |process_info: TransitProcess| {
             tx.send(process_info).unwrap();
             thread::sleep(time::Duration::from_millis(500));
+            fs_extra::dir::TransitProcessResult::ContinueOrAbort
         };
         copy_with_progress(&test_folder, &path_to, &options, handler).unwrap();
     });
