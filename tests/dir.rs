@@ -1070,8 +1070,84 @@ fn it_copy_with_progress_exist_overwrite_and_skip_exist() {
 
 }
 
+#[test]
+fn it_copy_mirror_work() {
+    let mut path_from = PathBuf::from(TEST_FOLDER);
+    let test_name = "sub";
+    path_from.push("it_copy_mirror_work");
+    let mut path_to = path_from.clone();
+    path_to.push("out");
+    path_from.push(&test_name);
 
+    create_all(&path_from, true).unwrap();
+    assert!(path_from.exists());
+    create_all(&path_to, true).unwrap();
+    assert!(path_to.exists());
 
+    let mut file1_path = path_from.clone();
+    file1_path.push("test1.txt");
+    let content1 = "content1";
+    fs_extra::file::write_all(&file1_path, &content1).unwrap();
+    assert!(file1_path.exists());
+
+    let mut sub_dir_path = path_from.clone();
+    sub_dir_path.push("sub");
+    create(&sub_dir_path, true).unwrap();
+    let mut file2_path = sub_dir_path.clone();
+    file2_path.push("test2.txt");
+    let content2 = "content2";
+    fs_extra::file::write_all(&file2_path, &content2).unwrap();
+    assert!(file2_path.exists());
+
+    let mut options = CopyOptions::new();
+    options.mirror_copy = true;
+    options.overwrite = true;
+    let result = copy(&path_from, &path_to, &options).unwrap();
+
+    assert_eq!(16, result);
+    assert!(path_to.exists());
+    assert!(path_from.exists());
+    assert!(compare_dir_mirror(&path_from, &path_to));
+}
+
+fn compare_dir_mirror<P, Q>(path_from: P, path_to: Q) -> bool
+    where P: AsRef<Path>,
+          Q: AsRef<Path>
+{
+    let path_to = path_to.as_ref().to_path_buf();
+
+    for entry in read_dir(&path_from).unwrap() {
+        let entry = entry.unwrap();
+        let path = entry.path();
+        if path.is_dir() {
+            match path_from.as_ref().components().last() {
+                None => panic!("Invalid folder from"),
+                Some(dir_name) => {
+                    let mut target_dir = path_to.to_path_buf();
+                    target_dir.push(dir_name.as_os_str());
+                    if !compare_dir_mirror(path, &target_dir) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            let mut target_file = path_to.to_path_buf();
+            match path.file_name() {
+                None => panic!("No file name"),
+                Some(file_name) => {
+                    target_file.push(file_name);
+                    if !target_file.exists() {
+                        return false;
+                    } else if !files_eq(&path, target_file.clone()) {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
+    true
+}
 
 #[test]
 fn it_move_work() {

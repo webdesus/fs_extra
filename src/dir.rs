@@ -13,6 +13,8 @@ pub struct CopyOptions {
     pub skip_exist: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
+    /// Sets the option true for mirroring directory structure when copying directory.
+    pub mirror_copy: bool,
 }
 
 impl CopyOptions {
@@ -30,6 +32,7 @@ impl CopyOptions {
             overwrite: false,
             skip_exist: false,
             buffer_size: 64000, //64kb
+            mirror_copy: false,
         }
     }
 }
@@ -463,7 +466,9 @@ pub fn create_all<P>(path: P, erase: bool) -> Result<()>
 /// use fs_extra::dir::copy;
 ///
 /// let options = CopyOptions::new(); //Initialize default values for CopyOptions
-///
+/// // options.mirror_copy = true; // To mirror copy the whole structure of the source directory
+/// 
+/// 
 /// // copy source/dir1 to target/dir1
 /// copy("source/dir1", "target/dir1", &options)?;
 ///
@@ -491,23 +496,45 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
     }
     let mut to: PathBuf = to.as_ref().to_path_buf();
 
-    if let Some(dir_name) = from.components().last() {
-        to.push(dir_name.as_os_str());
+    if options.mirror_copy {
+        if !to.exists() {
+            create_dir_all(&to)?;
+        }
     } else {
-        err!("Invalid folder from", ErrorKind::InvalidFolder);
-    }
+        if let Some(dir_name) = from.components().last() {
+            to.push(dir_name.as_os_str());
+        } else {
+            err!("Invalid folder from", ErrorKind::InvalidFolder);
+        }
 
-    if !to.exists() {
-        create(&to, false)?;
+        if !to.exists() {
+            create(&to, false)?;
+        }
     }
-
+    
     let mut result: u64 = 0;
     for entry in read_dir(from)? {
         let entry = entry?;
         let path = entry.path();
+        println!("from-sub: {:?}", path);
         if path.is_dir() {
-            result += copy(path, to.clone(), &options)?;
+            if options.mirror_copy {
+                println!("is_dir:{:?}", path);
+                match path.components().last() {
+                    None => err!("No dir name"),
+                    Some(dir_name) => {
+                        let mut to = to.to_path_buf();
+                        to.push(dir_name.as_os_str());
+                        println!("from: {:?}", path);
+                        println!("to: {:?}", to);
+                        result += copy(path.clone(), to.clone(), &options)?;
+                    },
+                }
+            } else {
+               result += copy(path.clone(), to.clone(), &options)?;
+            }
         } else {
+            println!("is_file:{:?}", path);
             let mut to = to.to_path_buf();
             match path.file_name() {
                 None => err!("No file name"),
@@ -517,8 +544,9 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
                     let mut file_options = super::file::CopyOptions::new();
                     file_options.overwrite = options.overwrite;
                     file_options.skip_exist = options.skip_exist;
+                    println!("from: {:?}", path);
+                    println!("to: {:?}", to);
                     result += super::file::copy(&path, to.as_path().clone(), &file_options)?;
-
                 }
             }
         }
