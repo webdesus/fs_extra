@@ -516,17 +516,13 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
     for entry in read_dir(from)? {
         let entry = entry?;
         let path = entry.path();
-        println!("from-sub: {:?}", path);
         if path.is_dir() {
             if options.mirror_copy {
-                println!("is_dir:{:?}", path);
                 match path.components().last() {
                     None => err!("No dir name"),
                     Some(dir_name) => {
                         let mut to = to.to_path_buf();
                         to.push(dir_name.as_os_str());
-                        println!("from: {:?}", path);
-                        println!("to: {:?}", to);
                         result += copy(path.clone(), to.clone(), &options)?;
                     },
                 }
@@ -534,7 +530,6 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
                result += copy(path.clone(), to.clone(), &options)?;
             }
         } else {
-            println!("is_file:{:?}", path);
             let mut to = to.to_path_buf();
             match path.file_name() {
                 None => err!("No file name"),
@@ -544,8 +539,6 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
                     let mut file_options = super::file::CopyOptions::new();
                     file_options.overwrite = options.overwrite;
                     file_options.skip_exist = options.skip_exist;
-                    println!("from: {:?}", path);
-                    println!("to: {:?}", to);
                     result += super::file::copy(&path, to.as_path().clone(), &file_options)?;
                 }
             }
