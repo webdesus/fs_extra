@@ -13,8 +13,8 @@ pub struct CopyOptions {
     pub skip_exist: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
-    /// Sets the option true for mirroring directory structure when copying directory.
-    pub mirror_copy: bool,
+    /// Sets the option true for recursively copying a directory with a new name or place it inside the destination.
+    pub copy_inside: bool,
 }
 
 impl CopyOptions {
@@ -32,7 +32,7 @@ impl CopyOptions {
             overwrite: false,
             skip_exist: false,
             buffer_size: 64000, //64kb
-            mirror_copy: false,
+            copy_inside: false,
         }
     }
 }
@@ -477,6 +477,13 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
     where P: AsRef<Path>,
           Q: AsRef<Path>
 {
+    copy_inside(from, to, false, options)
+}
+
+pub fn copy_inside<P, Q>(from: P, to: Q, is_sub_folder: bool, options: &CopyOptions) -> Result<u64>
+    where P: AsRef<Path>,
+          Q: AsRef<Path>
+{
     let from = from.as_ref();
 
     if !from.exists() {
@@ -496,9 +503,22 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
     }
     let mut to: PathBuf = to.as_ref().to_path_buf();
 
-    if options.mirror_copy {
+
+    if options.copy_inside {
         if !to.exists() {
             create_dir_all(&to)?;
+        } else {
+            if !is_sub_folder {
+                if let Some(dir_name) = from.components().last() {
+                to.push(dir_name.as_os_str());
+                } else {
+                    err!("Invalid folder from", ErrorKind::InvalidFolder);
+                }
+            }
+
+            if !to.exists() {
+                create(&to, false)?;
+            }
         }
     } else {
         if let Some(dir_name) = from.components().last() {
@@ -511,23 +531,23 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
             create(&to, false)?;
         }
     }
-    
+
     let mut result: u64 = 0;
     for entry in read_dir(from)? {
         let entry = entry?;
         let path = entry.path();
         if path.is_dir() {
-            if options.mirror_copy {
+            if options.copy_inside {
                 match path.components().last() {
                     None => err!("No dir name"),
                     Some(dir_name) => {
                         let mut to = to.to_path_buf();
                         to.push(dir_name.as_os_str());
-                        result += copy(path.clone(), to.clone(), &options)?;
+                        result += copy_inside(path.clone(), to.clone(), true, &options)?;
                     },
                 }
             } else {
-               result += copy(path.clone(), to.clone(), &options)?;
+                result += copy_inside(path.clone(), to.clone(), true, &options)?;
             }
         } else {
             let mut to = to.to_path_buf();

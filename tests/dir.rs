@@ -1071,21 +1071,19 @@ fn it_copy_with_progress_exist_overwrite_and_skip_exist() {
 }
 
 #[test]
-fn it_copy_mirror_work() {
+fn it_copy_inside_work_target_dir_not_exist() {
     let mut path_from = PathBuf::from(TEST_FOLDER);
-    let test_name = "sub";
-    path_from.push("it_copy_mirror_work");
+    let test_name = "d1";
+    path_from.push("it_copy_inside_work_target_dir_not_exist");
     let mut path_to = path_from.clone();
-    path_to.push("out");
+    path_to.push("d2");
     path_from.push(&test_name);
 
     create_all(&path_from, true).unwrap();
     assert!(path_from.exists());
-    create_all(&path_to, true).unwrap();
-    assert!(path_to.exists());
 
     let mut file1_path = path_from.clone();
-    file1_path.push("test1.txt");
+    file1_path.push("f1");
     let content1 = "content1";
     fs_extra::file::write_all(&file1_path, &content1).unwrap();
     assert!(file1_path.exists());
@@ -1094,25 +1092,131 @@ fn it_copy_mirror_work() {
     sub_dir_path.push("sub");
     create(&sub_dir_path, true).unwrap();
     let mut file2_path = sub_dir_path.clone();
-    file2_path.push("test2.txt");
+    file2_path.push("f2");
     let content2 = "content2";
     fs_extra::file::write_all(&file2_path, &content2).unwrap();
     assert!(file2_path.exists());
 
     let mut options = CopyOptions::new();
-    options.mirror_copy = true;
+    options.copy_inside = true;
     options.overwrite = true;
     let result = copy(&path_from, &path_to, &options).unwrap();
 
     assert_eq!(16, result);
     assert!(path_to.exists());
     assert!(path_from.exists());
-    assert!(compare_dir_mirror(&path_from, &path_to));
+    assert!(compare_dir_recursively(&path_from, &path_to));
 }
 
-fn compare_dir_mirror<P, Q>(path_from: P, path_to: Q) -> bool
-    where P: AsRef<Path>,
-          Q: AsRef<Path>
+#[test]
+fn it_copy_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir() {
+    let mut path_from = PathBuf::from(TEST_FOLDER);
+    let test_name = "d1";
+    path_from.push("it_copy_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir");
+    let mut path_to = path_from.clone();
+    path_to.push("d2");
+    let mut path_to_sub_fzz = path_to.clone();
+    path_to_sub_fzz.push("fzz");
+    path_from.push(&test_name);
+
+    create_all(&path_from, true).unwrap();
+    assert!(path_from.exists());
+    create_all(&path_to, true).unwrap();
+    assert!(path_to.exists());
+    create_all(&path_to_sub_fzz, true).unwrap();
+    assert!(path_to_sub_fzz.exists());
+
+    let mut file1_path = path_from.clone();
+    file1_path.push("f1");
+    let content1 = "content1";
+    fs_extra::file::write_all(&file1_path, &content1).unwrap();
+    assert!(file1_path.exists());
+
+    let mut sub_dir_path = path_from.clone();
+    sub_dir_path.push("sub");
+    create(&sub_dir_path, true).unwrap();
+    let mut file2_path = sub_dir_path.clone();
+    file2_path.push("f2");
+    let content2 = "content2";
+    fs_extra::file::write_all(&file2_path, &content2).unwrap();
+    assert!(file2_path.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+    options.overwrite = true;
+    let result = copy(&path_from, &path_to, &options).unwrap();
+
+    assert_eq!(16, result);
+    assert!(path_to.exists());
+    assert!(path_from.exists());
+    assert!(compare_dir(&path_from, &path_to));
+}
+
+#[test]
+fn it_copy_inside_work_target_dir_exist_with_source_dir_exist() {
+    let mut path_from = PathBuf::from(TEST_FOLDER);
+    let test_name = "d1";
+    path_from.push("it_copy_inside_work_target_dir_exist_with_source_dir_exist");
+    let mut path_to = path_from.clone();
+    path_to.push("d2");
+    path_from.push(&test_name);
+
+    create_all(&path_from, true).unwrap();
+    assert!(path_from.exists());
+    create_all(&path_to, true).unwrap();
+    assert!(path_to.exists());
+
+    let mut file1_path = path_from.clone();
+    file1_path.push("f1");
+    let content1 = "content1";
+    fs_extra::file::write_all(&file1_path, &content1).unwrap();
+    assert!(file1_path.exists());
+
+    let mut sub_dir_path = path_from.clone();
+    sub_dir_path.push("sub");
+    create(&sub_dir_path, true).unwrap();
+    let mut file2_path = sub_dir_path.clone();
+    file2_path.push("f2");
+    let content2 = "content2";
+    fs_extra::file::write_all(&file2_path, &content2).unwrap();
+    assert!(file2_path.exists());
+
+    // sub folder the same as d1
+    let mut file1_path = path_to.clone();
+    file1_path.push("d1");
+    create_all(&file1_path, true).unwrap();
+    file1_path.push("f1");
+    let content1 = "content11";
+    fs_extra::file::write_all(&file1_path, &content1).unwrap();
+    assert!(file1_path.exists());
+
+    let mut file2_path = path_to.clone();
+    file2_path.push("d1");
+    file2_path.push("sub");
+    create_all(&file2_path, true).unwrap();
+    file2_path.push("f2");
+    let content2 = "content22";
+    fs_extra::file::write_all(&file2_path, &content2).unwrap();
+    assert!(file2_path.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+    options.overwrite = true;
+    let result = copy(&path_from, &path_to, &options).unwrap();
+
+    assert_eq!(16, result);
+    assert!(path_to.exists());
+    assert!(path_from.exists());
+    assert!(compare_dir(&path_from, &path_to));
+}
+
+
+// The compare_dir method assumes that the folder `path_to` must have a sub folder named the last component of the `path_from`.
+// In order to compare two folders with different name but share the same structure, rewrite a new compare method to do that!
+fn compare_dir_recursively<P, Q>(path_from: P, path_to: Q) -> bool
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
 {
     let path_to = path_to.as_ref().to_path_buf();
 
@@ -1120,12 +1224,12 @@ fn compare_dir_mirror<P, Q>(path_from: P, path_to: Q) -> bool
         let entry = entry.unwrap();
         let path = entry.path();
         if path.is_dir() {
-            match path_from.as_ref().components().last() {
+            match path.components().last() {
                 None => panic!("Invalid folder from"),
                 Some(dir_name) => {
                     let mut target_dir = path_to.to_path_buf();
                     target_dir.push(dir_name.as_os_str());
-                    if !compare_dir_mirror(path, &target_dir) {
+                    if !compare_dir_recursively(path.clone(), &target_dir) {
                         return false;
                     }
                 }
