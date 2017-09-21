@@ -1072,151 +1072,160 @@ fn it_copy_with_progress_exist_overwrite_and_skip_exist() {
 
 #[test]
 fn it_copy_inside_work_target_dir_not_exist() {
-    let mut path_from = PathBuf::from(TEST_FOLDER);
-    let test_name = "d1";
-    path_from.push("it_copy_inside_work_target_dir_not_exist");
-    let mut path_to = path_from.clone();
-    path_to.push("d2");
-    path_from.push(&test_name);
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_copy_inside_work_target_dir_not_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
 
-    create_all(&path_from, true).unwrap();
-    assert!(path_from.exists());
+    create_all(&root_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
 
-    let mut file1_path = path_from.clone();
-    file1_path.push("f1");
-    let content1 = "content1";
-    fs_extra::file::write_all(&file1_path, &content1).unwrap();
-    assert!(file1_path.exists());
+    if root_dir2.exists() {
+        remove(&root_dir2).unwrap();
+    }
 
-    let mut sub_dir_path = path_from.clone();
-    sub_dir_path.push("sub");
-    create(&sub_dir_path, true).unwrap();
-    let mut file2_path = sub_dir_path.clone();
-    file2_path.push("f2");
-    let content2 = "content2";
-    fs_extra::file::write_all(&file2_path, &content2).unwrap();
-    assert!(file2_path.exists());
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(!root_dir2.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
 
     let mut options = CopyOptions::new();
     options.copy_inside = true;
-    options.overwrite = true;
-    let result = copy(&path_from, &path_to, &options).unwrap();
+    let result = copy(&root_dir1, &root_dir2, &options).unwrap();
 
     assert_eq!(16, result);
-    assert!(path_to.exists());
-    assert!(path_from.exists());
-    assert!(compare_dir_recursively(&path_from, &path_to));
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(compare_dir_recursively(&root_dir1, &root_dir2));
 }
 
 #[test]
 fn it_copy_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir() {
-    let mut path_from = PathBuf::from(TEST_FOLDER);
-    let test_name = "d1";
-    path_from.push("it_copy_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir");
-    let mut path_to = path_from.clone();
-    path_to.push("d2");
-    let mut path_to_sub_fzz = path_to.clone();
-    path_to_sub_fzz.push("fzz");
-    path_from.push(&test_name);
+    let path_root = Path::new(TEST_FOLDER);
+    let root =
+        path_root.join("it_copy_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
 
-    create_all(&path_from, true).unwrap();
-    assert!(path_from.exists());
-    create_all(&path_to, true).unwrap();
-    assert!(path_to.exists());
-    create_all(&path_to_sub_fzz, true).unwrap();
-    assert!(path_to_sub_fzz.exists());
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+    fs_extra::file::write_all(&file3, "content3").unwrap();
 
-    let mut file1_path = path_from.clone();
-    file1_path.push("f1");
-    let content1 = "content1";
-    fs_extra::file::write_all(&file1_path, &content1).unwrap();
-    assert!(file1_path.exists());
+    if root_dir2_dir1.exists() {
+        remove(&root_dir2_dir1).unwrap();
+    }
 
-    let mut sub_dir_path = path_from.clone();
-    sub_dir_path.push("sub");
-    create(&sub_dir_path, true).unwrap();
-    let mut file2_path = sub_dir_path.clone();
-    file2_path.push("f2");
-    let content2 = "content2";
-    fs_extra::file::write_all(&file2_path, &content2).unwrap();
-    assert!(file2_path.exists());
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(!root_dir2_dir1.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
 
     let mut options = CopyOptions::new();
     options.copy_inside = true;
-    options.overwrite = true;
-    let result = copy(&path_from, &path_to, &options).unwrap();
+    let result = copy(&root_dir1, &root_dir2, &options).unwrap();
 
     assert_eq!(16, result);
-    assert!(path_to.exists());
-    assert!(path_from.exists());
-    assert!(compare_dir(&path_from, &path_to));
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(compare_dir(&root_dir1, &root_dir2));
 }
 
 #[test]
 fn it_copy_inside_work_target_dir_exist_with_source_dir_exist() {
-    let mut path_from = PathBuf::from(TEST_FOLDER);
-    let test_name = "d1";
-    path_from.push("it_copy_inside_work_target_dir_exist_with_source_dir_exist");
-    let mut path_to = path_from.clone();
-    path_to.push("d2");
-    path_from.push(&test_name);
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_copy_inside_work_target_dir_exist_with_source_dir_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir1_sub = root_dir2_dir1.join("sub");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
+    let old_file1 = root_dir2_dir1.join("file1.txt");
+    let old_file2 = root_dir2_dir1_sub.join("file2.txt");
 
-    create_all(&path_from, true).unwrap();
-    assert!(path_from.exists());
-    create_all(&path_to, true).unwrap();
-    assert!(path_to.exists());
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    create_all(&root_dir2_dir1, true).unwrap();
+    create_all(&root_dir2_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+    fs_extra::file::write_all(&file3, "content3").unwrap();
+    fs_extra::file::write_all(&old_file1, "old_content1").unwrap();
+    fs_extra::file::write_all(&old_file2, "old_content2").unwrap();
 
-    let mut file1_path = path_from.clone();
-    file1_path.push("f1");
-    let content1 = "content1";
-    fs_extra::file::write_all(&file1_path, &content1).unwrap();
-    assert!(file1_path.exists());
-
-    let mut sub_dir_path = path_from.clone();
-    sub_dir_path.push("sub");
-    create(&sub_dir_path, true).unwrap();
-    let mut file2_path = sub_dir_path.clone();
-    file2_path.push("f2");
-    let content2 = "content2";
-    fs_extra::file::write_all(&file2_path, &content2).unwrap();
-    assert!(file2_path.exists());
-
-    // sub folder the same as d1
-    let mut file1_path = path_to.clone();
-    file1_path.push("d1");
-    create_all(&file1_path, true).unwrap();
-    file1_path.push("f1");
-    let content1 = "content11";
-    fs_extra::file::write_all(&file1_path, &content1).unwrap();
-    assert!(file1_path.exists());
-
-    let mut file2_path = path_to.clone();
-    file2_path.push("d1");
-    file2_path.push("sub");
-    create_all(&file2_path, true).unwrap();
-    file2_path.push("f2");
-    let content2 = "content22";
-    fs_extra::file::write_all(&file2_path, &content2).unwrap();
-    assert!(file2_path.exists());
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir1_sub.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
+    assert!(old_file1.exists());
+    assert!(old_file2.exists());
 
     let mut options = CopyOptions::new();
     options.copy_inside = true;
+    match copy(&root_dir1, &root_dir2, &options) {
+        Err(err) => {
+            match err.kind {
+                ErrorKind::AlreadyExists => {
+                    assert_eq!(1, 1);
+                }
+                _ => {
+                    panic!(format!("wrong error {}", err.to_string()));
+                }
+            }
+        }
+        Ok(_) => {
+            panic!("should be error");
+        }
+    }
     options.overwrite = true;
-    let result = copy(&path_from, &path_to, &options).unwrap();
+
+    let result = copy(&root_dir1, &root_dir2, &options).unwrap();
 
     assert_eq!(16, result);
-    assert!(path_to.exists());
-    assert!(path_from.exists());
-    assert!(compare_dir(&path_from, &path_to));
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir1_sub.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(compare_dir(&root_dir1, &root_dir2));
 }
 
 
 // The compare_dir method assumes that the folder `path_to` must have a sub folder named the last component of the `path_from`.
 // In order to compare two folders with different name but share the same structure, rewrite a new compare method to do that!
 fn compare_dir_recursively<P, Q>(path_from: P, path_to: Q) -> bool
-where
-    P: AsRef<Path>,
-    Q: AsRef<Path>,
+    where P: AsRef<Path>,
+          Q: AsRef<Path>
 {
     let path_to = path_to.as_ref().to_path_buf();
 
