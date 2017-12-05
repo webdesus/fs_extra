@@ -526,7 +526,7 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
     let mut result: u64 = 0;
     for file in dir_content.files {
 
-        let mut to = to.to_path_buf();
+        let to = to.to_path_buf();
         let tp = Path::new(&file).strip_prefix(from)?;
         let path = to.join(&tp);
 
@@ -968,7 +968,7 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
     }
     let mut result: u64 = 0;
     for file in dir_content.files {
-        let mut to = to.to_path_buf();
+        let to = to.to_path_buf();
         let tp = Path::new(&file).strip_prefix(from)?;
         let path = to.join(&tp);
 
