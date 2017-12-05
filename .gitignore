@@ -10,3 +10,5 @@ Cargo.lock
 /tests/temp/dir/*/*
 /tests/temp/lib/*/*
 
+.vscode/
+
