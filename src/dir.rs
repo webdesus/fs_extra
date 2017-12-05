@@ -530,13 +530,6 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
         let tp = Path::new(&file).strip_prefix(from)?;
         let path = to.join(&tp);
 
-        let file_name = path.file_name();
-        if !file_name.is_some() {
-            err!("No file name");
-        }
-        let file_name = file_name.unwrap();
-        to.push(file_name);
-
         let file_options = super::file::CopyOptions {
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
@@ -978,13 +971,6 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
         let mut to = to.to_path_buf();
         let tp = Path::new(&file).strip_prefix(from)?;
         let path = to.join(&tp);
-
-        let file_name = path.file_name();
-        if !file_name.is_some() {
-            err!("No file name");
-        }
-        let file_name = file_name.unwrap();
-        to.push(file_name);
 
         let file_options = super::file::CopyOptions {
             overwrite: options.overwrite,
