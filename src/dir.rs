@@ -927,7 +927,7 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 
     if !from.exists() {
         if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
+            let msg = format!("Path \"{}\" does not exist", msg);
             err!(&msg, ErrorKind::NotFound);
         }
         err!("Path does not exist or you don't have access!",
@@ -937,10 +937,12 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
     let mut to: PathBuf = to.as_ref().to_path_buf();
     if !from.is_dir() {
         if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" is not a directory!", msg);
+          let msg = format!("Path \"{}\" is not a directory or you don't have access!",
+                              msg); 
             err!(&msg, ErrorKind::InvalidFolder);
         }
-        err!("Path is not a directory!", ErrorKind::InvalidFolder);
+        err!("Path is not a directory or you don't have access!",
+             ErrorKind::InvalidFolder); 
     }
 
     if options.copy_inside {
