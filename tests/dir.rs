@@ -1070,8 +1070,197 @@ fn it_copy_with_progress_exist_overwrite_and_skip_exist() {
 
 }
 
+#[test]
+fn it_copy_inside_work_target_dir_not_exist() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_copy_inside_work_target_dir_not_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+
+    if root_dir2.exists() {
+        remove(&root_dir2).unwrap();
+    }
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(!root_dir2.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+    let result = copy(&root_dir1, &root_dir2, &options).unwrap();
+
+    assert_eq!(16, result);
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(compare_dir_recursively(&root_dir1, &root_dir2));
+}
+
+#[test]
+fn it_copy_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root =
+        path_root.join("it_copy_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+    fs_extra::file::write_all(&file3, "content3").unwrap();
+
+    if root_dir2_dir1.exists() {
+        remove(&root_dir2_dir1).unwrap();
+    }
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(!root_dir2_dir1.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+    let result = copy(&root_dir1, &root_dir2, &options).unwrap();
+
+    assert_eq!(16, result);
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(compare_dir(&root_dir1, &root_dir2));
+}
+
+#[test]
+fn it_copy_inside_work_target_dir_exist_with_source_dir_exist() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_copy_inside_work_target_dir_exist_with_source_dir_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir1_sub = root_dir2_dir1.join("sub");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
+    let old_file1 = root_dir2_dir1.join("file1.txt");
+    let old_file2 = root_dir2_dir1_sub.join("file2.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    create_all(&root_dir2_dir1, true).unwrap();
+    create_all(&root_dir2_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+    fs_extra::file::write_all(&file3, "content3").unwrap();
+    fs_extra::file::write_all(&old_file1, "old_content1").unwrap();
+    fs_extra::file::write_all(&old_file2, "old_content2").unwrap();
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir1_sub.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
+    assert!(old_file1.exists());
+    assert!(old_file2.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+    match copy(&root_dir1, &root_dir2, &options) {
+        Err(err) => {
+            match err.kind {
+                ErrorKind::AlreadyExists => {
+                    assert_eq!(1, 1);
+                }
+                _ => {
+                    panic!(format!("wrong error {}", err.to_string()));
+                }
+            }
+        }
+        Ok(_) => {
+            panic!("should be error");
+        }
+    }
+    options.overwrite = true;
+
+    let result = copy(&root_dir1, &root_dir2, &options).unwrap();
+
+    assert_eq!(16, result);
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir1_sub.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(compare_dir(&root_dir1, &root_dir2));
+}
 
 
+// The compare_dir method assumes that the folder `path_to` must have a sub folder named the last component of the `path_from`.
+// In order to compare two folders with different name but share the same structure, rewrite a new compare method to do that!
+fn compare_dir_recursively<P, Q>(path_from: P, path_to: Q) -> bool
+    where P: AsRef<Path>,
+          Q: AsRef<Path>
+{
+    let path_to = path_to.as_ref().to_path_buf();
+
+    for entry in read_dir(&path_from).unwrap() {
+        let entry = entry.unwrap();
+        let path = entry.path();
+        if path.is_dir() {
+            match path.components().last() {
+                None => panic!("Invalid folder from"),
+                Some(dir_name) => {
+                    let mut target_dir = path_to.to_path_buf();
+                    target_dir.push(dir_name.as_os_str());
+                    if !compare_dir_recursively(path.clone(), &target_dir) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            let mut target_file = path_to.to_path_buf();
+            match path.file_name() {
+                None => panic!("No file name"),
+                Some(file_name) => {
+                    target_file.push(file_name);
+                    if !target_file.exists() {
+                        return false;
+                    } else if !files_eq(&path, target_file.clone()) {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
+    true
+}
 
 #[test]
 fn it_move_work() {
@@ -1385,6 +1574,168 @@ fn it_move_exist_overwrite_and_skip_exist() {
     assert!(!path_from.exists());
 }
 
+#[test]
+fn it_move_inside_work_target_dir_not_exist() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_move_inside_work_target_dir_not_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+
+    if root_dir2.exists() {
+        remove(&root_dir2).unwrap();
+    }
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(!root_dir2.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+    let result = move_dir(&root_dir1, &root_dir2, &options).unwrap();
+
+    assert_eq!(16, result);
+    assert!(!root_dir1.exists());
+    let root_dir2_sub = root_dir2.join("sub");
+    let root_dir2_file1 = root_dir2.join("file1.txt");
+    let root_dir2_sub_file2 = root_dir2_sub.join("file2.txt");
+    assert!(root_dir2.exists());
+    assert!(root_dir2_sub.exists());
+    assert!(root_dir2_file1.exists());
+    assert!(root_dir2_sub_file2.exists());
+}
+
+#[test]
+fn it_move_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root =
+        path_root.join("it_move_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+    fs_extra::file::write_all(&file3, "content3").unwrap();
+
+    if root_dir2_dir1.exists() {
+        remove(&root_dir2_dir1).unwrap();
+    }
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(!root_dir2_dir1.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+    let result = move_dir(&root_dir1, &root_dir2, &options).unwrap();
+
+    assert_eq!(16, result);
+    assert!(!root_dir1.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir3.exists());
+    let root_dir2_dir1_file1 = root_dir2_dir1.join("file1.txt");
+    let root_dir2_dir1_sub = root_dir2_dir1.join("sub");
+    let root_dir2_dir1_sub_file2 = root_dir2_dir1_sub.join("file2.txt");
+    let root_dir2_dir3_file3 = root_dir2_dir3.join("file3.txt");
+    assert!(root_dir2_dir1_file1.exists());
+    assert!(root_dir2_dir1_sub.exists());
+    assert!(root_dir2_dir1_sub_file2.exists());
+    assert!(root_dir2_dir3_file3.exists());
+}
+
+#[test]
+fn it_move_inside_work_target_dir_exist_with_source_dir_exist() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_move_inside_work_target_dir_exist_with_source_dir_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir1_sub = root_dir2_dir1.join("sub");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
+    let old_file1 = root_dir2_dir1.join("file1.txt");
+    let old_file2 = root_dir2_dir1_sub.join("file2.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    create_all(&root_dir2_dir1, true).unwrap();
+    create_all(&root_dir2_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+    fs_extra::file::write_all(&file3, "content3").unwrap();
+    fs_extra::file::write_all(&old_file1, "old_content1").unwrap();
+    fs_extra::file::write_all(&old_file2, "old_content2").unwrap();
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir1_sub.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
+    assert!(old_file1.exists());
+    assert!(old_file2.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+    match copy(&root_dir1, &root_dir2, &options) {
+        Err(err) => {
+            match err.kind {
+                ErrorKind::AlreadyExists => {
+                    assert_eq!(1, 1);
+                }
+                _ => {
+                    panic!(format!("wrong error {}", err.to_string()));
+                }
+            }
+        }
+        Ok(_) => {
+            panic!("should be error");
+        }
+    }
+    options.overwrite = true;
+    let result = move_dir(&root_dir1, &root_dir2, &options).unwrap();
+
+    assert_eq!(16, result);
+    assert!(!root_dir1.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir1_sub.exists());
+    assert!(root_dir2_dir3.exists());
+    let root_dir2_dir1_file1 = root_dir2_dir1.join("file1.txt");
+    let root_dir2_dir1_sub_file2 = root_dir2_dir1_sub.join("file2.txt");
+    let root_dir2_dir3_file3 = root_dir2_dir3.join("file3.txt");
+    assert!(root_dir2_dir1_file1.exists());
+    assert!(root_dir2_dir1_sub_file2.exists());
+    assert!(root_dir2_dir3_file3.exists());
+}
 
 #[test]
 fn it_move_progress_work() {
@@ -2731,6 +3082,330 @@ fn it_copy_with_progress_exist_user_decide_retry() {
 }
 
 #[test]
+fn it_copy_with_progress_inside_work_target_dir_not_exist() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_copy_with_progress_inside_work_target_dir_not_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+
+    if root_dir2.exists() {
+        remove(&root_dir2).unwrap();
+    }
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(!root_dir2.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+            TransitProcessResult::ContinueOrAbort
+        };
+        let result = copy_with_progress(&root_dir1, &root_dir2, &options, func_test).unwrap();
+
+        assert_eq!(15, result);
+        assert!(root_dir1.exists());
+        assert!(root_dir1_sub.exists());
+        assert!(root_dir2.exists());
+        assert!(compare_dir_recursively(&root_dir1, &root_dir2));
+
+    })
+    .join();
+
+    loop {
+        match rx.try_recv() {
+            Ok(process_info) => {
+               if process_info.file_name == "file2.txt" {
+                    assert_eq!(8, process_info.file_total_bytes);
+                    assert_eq!(15, process_info.total_bytes);
+                } else if process_info.file_name == "file1.txt" {
+                    assert_eq!(7, process_info.file_total_bytes);
+                    assert_eq!(15, process_info.total_bytes);
+                } else {
+                    panic!("Unknow file name!");
+                }
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
+    }
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err)
+    }
+}
+
+#[test]
+fn it_copy_with_progress_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root =
+        path_root.join("it_copy_with_progress_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content22").unwrap();
+    fs_extra::file::write_all(&file3, "content333").unwrap();
+
+    if root_dir2_dir1.exists() {
+        remove(&root_dir2_dir1).unwrap();
+    }
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(!root_dir2_dir1.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+            TransitProcessResult::ContinueOrAbort
+        };
+        let result = copy_with_progress(&root_dir1, &root_dir2, &options, func_test).unwrap();
+
+        assert_eq!(17, result);
+        assert!(root_dir1.exists());
+        assert!(root_dir1_sub.exists());
+        assert!(root_dir2.exists());
+        assert!(root_dir2_dir1.exists());
+        assert!(root_dir2_dir3.exists());
+        assert!(compare_dir(&root_dir1, &root_dir2));
+    })
+    .join();
+
+    loop {
+        match rx.try_recv() {
+            Ok(process_info) => {
+                if process_info.file_name == "file2.txt" {
+                    assert_eq!(9, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else if process_info.file_name == "file1.txt" {
+                    assert_eq!(8, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else {
+                    panic!("Unknow file name!");
+                }
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
+    }
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+}
+
+#[test]
+fn it_copy_with_progress_inside_no_overwrite_work_target_dir_exist_with_source_dir_exist() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_copy_with_progress_inside_no_overwrite_work_target_dir_exist_with_source_dir_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir1_sub = root_dir2_dir1.join("sub");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
+    let old_file1 = root_dir2_dir1.join("file1.txt");
+    let old_file2 = root_dir2_dir1_sub.join("file2.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    create_all(&root_dir2_dir1, true).unwrap();
+    create_all(&root_dir2_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content22").unwrap();
+    fs_extra::file::write_all(&file3, "content333").unwrap();
+    fs_extra::file::write_all(&old_file1, "old_content1").unwrap();
+    fs_extra::file::write_all(&old_file2, "old_content22").unwrap();
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir1_sub.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
+    assert!(old_file1.exists());
+    assert!(old_file2.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+            TransitProcessResult::Skip
+        };
+        let result = copy_with_progress(&root_dir1, &root_dir2, &options, func_test).unwrap();
+
+        assert_eq!(0, result);
+        assert!(root_dir1.exists());
+        assert!(root_dir1_sub.exists());
+        assert!(root_dir2.exists());
+        assert!(root_dir2_dir1.exists());
+        assert!(root_dir2_dir1_sub.exists());
+        assert!(root_dir2_dir3.exists());
+        assert!(!files_eq(file1, old_file1));
+        assert!(!files_eq(file2, old_file2));
+    })
+    .join();
+
+    loop {
+        match rx.try_recv() {
+            Ok(process_info) => {
+                if process_info.file_name == "file2.txt" {
+                    assert_eq!(9, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else if process_info.file_name == "file1.txt" {
+                    assert_eq!(8, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else {
+                    panic!("Unknow file name!");
+                }
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
+    }
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+}
+
+#[test]
+fn it_copy_with_progress_inside_overwrite_work_target_dir_exist_with_source_dir_exist() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_copy_with_progress_inside_overwrite_work_target_dir_exist_with_source_dir_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir1_sub = root_dir2_dir1.join("sub");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
+    let old_file1 = root_dir2_dir1.join("file1.txt");
+    let old_file2 = root_dir2_dir1_sub.join("file2.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    create_all(&root_dir2_dir1, true).unwrap();
+    create_all(&root_dir2_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content22").unwrap();
+    fs_extra::file::write_all(&file3, "content333").unwrap();
+    fs_extra::file::write_all(&old_file1, "old_content1").unwrap();
+    fs_extra::file::write_all(&old_file2, "old_content22").unwrap();
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir1_sub.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
+    assert!(old_file1.exists());
+    assert!(old_file2.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+    options.overwrite = true;
+
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+            TransitProcessResult::ContinueOrAbort
+        };
+        let result = copy_with_progress(&root_dir1, &root_dir2, &options, func_test).unwrap();
+
+        assert_eq!(17, result);
+        assert!(root_dir1.exists());
+        assert!(root_dir1_sub.exists());
+        assert!(root_dir2.exists());
+        assert!(root_dir2_dir1.exists());
+        assert!(root_dir2_dir1_sub.exists());
+        assert!(root_dir2_dir3.exists());
+        assert!(compare_dir(&root_dir1, &root_dir2)); 
+    })
+    .join();
+
+    loop {
+        match rx.try_recv() {
+            Ok(process_info) => {
+                if process_info.file_name == "file2.txt" {
+                    assert_eq!(9, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else if process_info.file_name == "file1.txt" {
+                    assert_eq!(8, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else {
+                    panic!("Unknow file name!");
+                }
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
+    }
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+}
+
+#[test]
 fn it_move_with_progress_exist_user_decide_overwrite() {
     let test_dir = Path::new(TEST_FOLDER).join("it_move_with_progress_exist_user_decide_overwrite");
     let out = test_dir.join("out");
@@ -3060,4 +3735,353 @@ fn it_move_with_progress_exist_user_decide_retry() {
         Err(err) => panic!(err),
     }
     rx.try_recv().unwrap();
+}
+
+#[test]
+fn it_move_dir_with_progress_inside_work_target_dir_not_exist() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_move_dir_with_progress_inside_work_target_dir_not_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+
+    if root_dir2.exists() {
+        remove(&root_dir2).unwrap();
+    }
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(!root_dir2.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+            TransitProcessResult::ContinueOrAbort
+        };
+        let result = move_dir_with_progress(&root_dir1, &root_dir2, &options, func_test).unwrap();
+
+        assert_eq!(15, result);
+        assert!(!root_dir1.exists());
+        let root_dir2_sub = root_dir2.join("sub");
+        let root_dir2_file1 = root_dir2.join("file1.txt");
+        let root_dir2_sub_file2 = root_dir2_sub.join("file2.txt");
+        assert!(root_dir2.exists());
+        assert!(root_dir2_sub.exists());
+        assert!(root_dir2_file1.exists());
+        assert!(root_dir2_sub_file2.exists());
+    })
+    .join();
+
+    loop {
+        match rx.try_recv() {
+            Ok(process_info) => {
+               if process_info.file_name == "file2.txt" {
+                    assert_eq!(8, process_info.file_total_bytes);
+                    assert_eq!(15, process_info.total_bytes);
+                } else if process_info.file_name == "file1.txt" {
+                    assert_eq!(7, process_info.file_total_bytes);
+                    assert_eq!(15, process_info.total_bytes);
+                } else {
+                    panic!("Unknow file name!");
+                }
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
+    }
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err)
+    }
+}
+
+#[test]
+fn it_move_dir_with_progress_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root =
+        path_root.join("it_move_dir_with_progress_inside_work_target_dir_exist_with_no_source_dir_named_sub_dir");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content22").unwrap();
+    fs_extra::file::write_all(&file3, "content333").unwrap();
+
+    if root_dir2_dir1.exists() {
+        remove(&root_dir2_dir1).unwrap();
+    }
+
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(!root_dir2_dir1.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+            TransitProcessResult::ContinueOrAbort
+        };
+        let result = move_dir_with_progress(&root_dir1, &root_dir2, &options, func_test).unwrap();
+
+        assert_eq!(17, result);
+        assert!(!root_dir1.exists());
+        assert!(root_dir2.exists());
+        assert!(root_dir2_dir1.exists());
+        assert!(root_dir2_dir3.exists());
+        let root_dir2_dir1_file1 = root_dir2_dir1.join("file1.txt");
+        let root_dir2_dir1_sub = root_dir2_dir1.join("sub");
+        let root_dir2_dir1_sub_file2 = root_dir2_dir1_sub.join("file2.txt");
+        let root_dir2_dir3_file3 = root_dir2_dir3.join("file3.txt");
+        assert!(root_dir2_dir1_file1.exists());
+        assert!(root_dir2_dir1_sub.exists());
+        assert!(root_dir2_dir1_sub_file2.exists());
+        assert!(root_dir2_dir3_file3.exists());
+    })
+    .join();
+
+    loop {
+        match rx.try_recv() {
+            Ok(process_info) => {
+                if process_info.file_name == "file2.txt" {
+                    assert_eq!(9, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else if process_info.file_name == "file1.txt" {
+                    assert_eq!(8, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else {
+                    panic!("Unknow file name!");
+                }
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
+    }
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+}
+
+#[test]
+fn it_move_dir_with_progress_inside_no_overwrite_work_target_dir_exist_with_source_dir_exist() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_move_dir_with_progress_inside_no_overwrite_work_target_dir_exist_with_source_dir_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir1_sub = root_dir2_dir1.join("sub");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
+    let old_file1 = root_dir2_dir1.join("file1.txt");
+    let old_file2 = root_dir2_dir1_sub.join("file2.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    create_all(&root_dir2_dir1, true).unwrap();
+    create_all(&root_dir2_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content22").unwrap();
+    fs_extra::file::write_all(&file3, "content333").unwrap();
+    fs_extra::file::write_all(&old_file1, "old_content1").unwrap();
+    fs_extra::file::write_all(&old_file2, "old_content22").unwrap();
+    
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir1_sub.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
+    assert!(old_file1.exists());
+    assert!(old_file2.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+            TransitProcessResult::Skip
+        };
+        let result = move_dir_with_progress(&root_dir1, &root_dir2, &options, func_test).unwrap();
+
+        assert_eq!(0, result);
+
+        assert!(root_dir1.exists());
+        assert!(file1.exists());
+        assert!(root_dir1_sub.exists());
+        assert!(file2.exists());
+
+        assert!(root_dir2.exists());
+        assert!(root_dir2_dir1.exists());
+        assert!(root_dir2_dir1_sub.exists());
+        assert!(root_dir2_dir3.exists());
+        let root_dir2_dir1_file1 = root_dir2_dir1.join("file1.txt");
+        let root_dir2_dir1_sub_file2 = root_dir2_dir1_sub.join("file2.txt");
+        let root_dir2_dir3_file3 = root_dir2_dir3.join("file3.txt");
+        assert!(root_dir2_dir1_file1.exists());
+        assert!(root_dir2_dir1_sub_file2.exists());
+        assert!(root_dir2_dir3_file3.exists());
+        assert!(!files_eq(file1, old_file1));
+        assert!(!files_eq(file2, old_file2));
+    })
+    .join();
+
+    loop {
+        match rx.try_recv() {
+            Ok(process_info) => {
+                if process_info.file_name == "file2.txt" {
+                    assert_eq!(9, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else if process_info.file_name == "file1.txt" {
+                    assert_eq!(8, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else {
+                    panic!("Unknow file name!");
+                }
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
+    }
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+}
+
+#[test]
+fn it_move_dir_with_progress_inside_overwrite_work_target_dir_exist_with_source_dir_exist() {
+    let path_root = Path::new(TEST_FOLDER);
+    let root = path_root.join("it_move_dir_with_progress_inside_overwrite_work_target_dir_exist_with_source_dir_exist");
+    let root_dir1 = root.join("dir1");
+    let root_dir1_sub = root_dir1.join("sub");
+    let root_dir2 = root.join("dir2");
+    let root_dir2_dir1 = root_dir2.join("dir1");
+    let root_dir2_dir1_sub = root_dir2_dir1.join("sub");
+    let root_dir2_dir3 = root_dir2.join("dir3");
+    let file1 = root_dir1.join("file1.txt");
+    let file2 = root_dir1_sub.join("file2.txt");
+    let file3 = root_dir2_dir3.join("file3.txt");
+    let old_file1 = root_dir2_dir1.join("file1.txt");
+    let old_file2 = root_dir2_dir1_sub.join("file2.txt");
+
+    create_all(&root_dir1_sub, true).unwrap();
+    create_all(&root_dir2_dir3, true).unwrap();
+    create_all(&root_dir2_dir1, true).unwrap();
+    create_all(&root_dir2_dir1_sub, true).unwrap();
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content22").unwrap();
+    fs_extra::file::write_all(&file3, "content333").unwrap();
+    fs_extra::file::write_all(&old_file1, "old_content1").unwrap();
+    fs_extra::file::write_all(&old_file2, "old_content22").unwrap();
+    
+    assert!(root_dir1.exists());
+    assert!(root_dir1_sub.exists());
+    assert!(root_dir2.exists());
+    assert!(root_dir2_dir1.exists());
+    assert!(root_dir2_dir1_sub.exists());
+    assert!(root_dir2_dir3.exists());
+    assert!(file1.exists());
+    assert!(file2.exists());
+    assert!(file3.exists());
+    assert!(old_file1.exists());
+    assert!(old_file2.exists());
+
+    let mut options = CopyOptions::new();
+    options.copy_inside = true;
+    options.overwrite = true;
+
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+            TransitProcessResult::ContinueOrAbort
+        };
+        let result = move_dir_with_progress(&root_dir1, &root_dir2, &options, func_test).unwrap();
+
+        assert_eq!(17, result);
+
+        assert!(!root_dir1.exists());
+
+        assert!(root_dir2.exists());
+        assert!(root_dir2_dir1.exists());
+        assert!(root_dir2_dir1_sub.exists());
+        assert!(root_dir2_dir3.exists());
+        let root_dir2_dir1_file1 = root_dir2_dir1.join("file1.txt");
+        let root_dir2_dir1_sub_file2 = root_dir2_dir1_sub.join("file2.txt");
+        let root_dir2_dir3_file3 = root_dir2_dir3.join("file3.txt");
+        assert!(root_dir2_dir1_file1.exists());
+        assert!(root_dir2_dir1_sub_file2.exists());
+        assert!(root_dir2_dir3_file3.exists());
+    })
+    .join();
+
+    loop {
+        match rx.try_recv() {
+            Ok(process_info) => {
+                if process_info.file_name == "file2.txt" {
+                    assert_eq!(9, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else if process_info.file_name == "file1.txt" {
+                    assert_eq!(8, process_info.file_total_bytes);
+                    assert_eq!(17, process_info.total_bytes);
+                } else {
+                    panic!("Unknow file name!");
+                }
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
+    }
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
 }
