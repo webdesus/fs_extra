@@ -13,6 +13,8 @@ pub struct CopyOptions {
     pub skip_exist: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
+    /// Sets the option true for recursively copying a directory with a new name or place it inside the destination.
+    pub copy_inside: bool,
 }
 
 impl CopyOptions {
@@ -30,6 +32,7 @@ impl CopyOptions {
             overwrite: false,
             skip_exist: false,
             buffer_size: 64000, //64kb
+            copy_inside: false,
         }
     }
 }
@@ -463,6 +466,8 @@ pub fn create_all<P>(path: P, erase: bool) -> Result<()>
 /// use fs_extra::dir::copy;
 ///
 /// let options = CopyOptions::new(); //Initialize default values for CopyOptions
+/// // options.mirror_copy = true; // To mirror copy the whole structure of the source directory
+///
 ///
 /// // copy source/dir1 to target/dir1
 /// copy("source/dir1", "target/dir1", &options)?;
@@ -490,43 +495,66 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
         err!("Path is not a directory!", ErrorKind::InvalidFolder);
     }
     let mut to: PathBuf = to.as_ref().to_path_buf();
-
-    if let Some(dir_name) = from.components().last() {
-        to.push(dir_name.as_os_str());
-    } else {
-        err!("Invalid folder from", ErrorKind::InvalidFolder);
-    }
-
-    if !to.exists() {
-        create(&to, false)?;
-    }
-
-    let mut result: u64 = 0;
-    for entry in read_dir(from)? {
-        let entry = entry?;
-        let path = entry.path();
-        if path.is_dir() {
-            result += copy(path, to.clone(), &options)?;
-        } else {
-            let mut to = to.to_path_buf();
-            match path.file_name() {
-                None => err!("No file name"),
-                Some(file_name) => {
-                    to.push(file_name);
-
-                    let mut file_options = super::file::CopyOptions::new();
-                    file_options.overwrite = options.overwrite;
-                    file_options.skip_exist = options.skip_exist;
-                    result += super::file::copy(&path, to.as_path().clone(), &file_options)?;
-
-                }
+    if options.copy_inside {
+        if to.exists() {
+            if let Some(dir_name) = from.components().last() {
+                to.push(dir_name.as_os_str());
+            } else {
+                err!("Invalid folder from", ErrorKind::InvalidFolder);
             }
+        }
+    } else {
+        if let Some(dir_name) = from.components().last() {
+            to.push(dir_name.as_os_str());
+        } else {
+            err!("Invalid folder from", ErrorKind::InvalidFolder);
         }
     }
 
+    let dir_content = get_dir_content(from)?;
+    for directory in dir_content.directories {
+        let tmp_to = Path::new(&directory).strip_prefix(from)?;
+        let dir = to.join(&tmp_to);
+        if !dir.exists() {
+            if options.copy_inside {
+                create_all(dir, false)?;
+            } else {
+                create(dir, false)?;
+            }
+        }
+    }
+    let mut result: u64 = 0;
+    for file in dir_content.files {
+
+        let to = to.to_path_buf();
+        let tp = Path::new(&file).strip_prefix(from)?;
+        let path = to.join(&tp);
+
+        let file_options = super::file::CopyOptions {
+            overwrite: options.overwrite,
+            skip_exist: options.skip_exist,
+            buffer_size: options.buffer_size,
+        };
+        let mut result_copy: Result<u64>;
+        let mut work = true;
+
+        while work {
+
+            result_copy = super::file::copy(&file, &path, &file_options);
+            match result_copy {
+                Ok(val) => {
+                    result += val;
+                    work = false;
+                }
+                Err(err) => {
+                    let err_msg = err.to_string();
+                    err!(err_msg.as_str(), err.kind)
+                }            
+            }
+        }
+    }
     Ok(result)
 }
-
 
 /// Return DirContent which containt information about directory:
 ///
@@ -671,7 +699,6 @@ pub fn copy_with_progress<P, Q, F>(from: P,
           Q: AsRef<Path>,
           F: FnMut(TransitProcess) -> TransitProcessResult
 {
-
     let from = from.as_ref();
 
     if !from.exists() {
@@ -692,10 +719,20 @@ pub fn copy_with_progress<P, Q, F>(from: P,
         err!("Path is not a directory!", ErrorKind::InvalidFolder);
     }
 
-    if let Some(dir_name) = from.components().last() {
-        to.push(dir_name.as_os_str());
+    if options.copy_inside {
+        if to.exists() {
+            if let Some(dir_name) = from.components().last() {
+                to.push(dir_name.as_os_str());
+            } else {
+                err!("Invalid folder from", ErrorKind::InvalidFolder);
+            }
+        }
     } else {
-        err!("Invalid folder from", ErrorKind::InvalidFolder);
+        if let Some(dir_name) = from.components().last() {
+            to.push(dir_name.as_os_str());
+        } else {
+            err!("Invalid folder from", ErrorKind::InvalidFolder);
+        }
     }
 
     let dir_content = get_dir_content(from)?;
@@ -703,7 +740,11 @@ pub fn copy_with_progress<P, Q, F>(from: P,
         let tmp_to = Path::new(&directory).strip_prefix(from)?;
         let dir = to.join(&tmp_to);
         if !dir.exists() {
-            create(dir, false)?;
+            if options.copy_inside {
+                create_all(dir, false)?;
+            } else {
+                create(dir, false)?;
+            }
         }
 
     }
@@ -842,7 +883,6 @@ pub fn copy_with_progress<P, Q, F>(from: P,
     Ok(result)
 }
 
-
 /// Moves the directory contents from one place to another.
 /// This function will also copy the permission bits of the original files to
 /// destionation files (not for directories).
@@ -872,6 +912,10 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
     where P: AsRef<Path>,
           Q: AsRef<Path>
 {
+    let mut is_remove = true;
+    if options.skip_exist && to.as_ref().exists() && !options.overwrite {
+        is_remove = false;
+    }
     let from = from.as_ref();
 
     if !from.exists() {
@@ -879,64 +923,85 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
             let msg = format!("Path \"{}\" does not exist", msg);
             err!(&msg, ErrorKind::NotFound);
         }
-        err!("Path does not exist", ErrorKind::NotFound);
-    }
-
-    let mut is_remove = true;
-    if options.skip_exist && to.as_ref().exists() && !options.overwrite {
-        is_remove = false;
+        err!("Path does not exist or you don't have access!",
+             ErrorKind::NotFound);
     }
 
     let mut to: PathBuf = to.as_ref().to_path_buf();
     if !from.is_dir() {
         if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" is not a directory or you don't have access!",
-                              msg);
+          let msg = format!("Path \"{}\" is not a directory or you don't have access!",
+                              msg); 
             err!(&msg, ErrorKind::InvalidFolder);
         }
         err!("Path is not a directory or you don't have access!",
-             ErrorKind::InvalidFolder);
+             ErrorKind::InvalidFolder); 
     }
 
-    if let Some(dir_name) = from.components().last() {
-        to.push(dir_name.as_os_str());
+    if options.copy_inside {
+        if to.exists() {
+            if let Some(dir_name) = from.components().last() {
+                to.push(dir_name.as_os_str());
+            } else {
+                err!("Invalid folder from", ErrorKind::InvalidFolder);
+            }
+        }
     } else {
-        err!("Invalid folder from", ErrorKind::InvalidFolder);
-    }
-
-    if !to.exists() {
-        create(&to, false)?;
-    }
-
-    let mut result: u64 = 0;
-    for entry in read_dir(from)? {
-        let entry = entry?;
-        let path = entry.path();
-        if path.is_dir() {
-            result += move_dir(path, to.clone(), &options)?;
+        if let Some(dir_name) = from.components().last() {
+            to.push(dir_name.as_os_str());
         } else {
-            let mut to = to.to_path_buf();
-            match path.file_name() {
-                None => err!("No file name"),
-                Some(file_name) => {
-                    to.push(file_name);
+            err!("Invalid folder from", ErrorKind::InvalidFolder);
+        }
+    }
 
-                    let mut file_options = super::file::CopyOptions::new();
-                    file_options.overwrite = options.overwrite;
-                    file_options.skip_exist = options.skip_exist;
-                    result += super::file::move_file(&path, to.as_path().clone(), &file_options)?;
+    let dir_content = get_dir_content(from)?;
+    for directory in dir_content.directories {
+        let tmp_to = Path::new(&directory).strip_prefix(from)?;
+        let dir = to.join(&tmp_to);
+        if !dir.exists() {
+            if options.copy_inside {
+                create_all(dir, false)?;
+            } else {
+                create(dir, false)?;
+            }
+        }
+    }
+    let mut result: u64 = 0;
+    for file in dir_content.files {
+        let to = to.to_path_buf();
+        let tp = Path::new(&file).strip_prefix(from)?;
+        let path = to.join(&tp);
 
+        let file_options = super::file::CopyOptions {
+            overwrite: options.overwrite,
+            skip_exist: options.skip_exist,
+            buffer_size: options.buffer_size,
+        };
+
+        let mut result_copy: Result<u64>;
+        let mut work = true;
+        while work {
+            {
+
+                result_copy = super::file::move_file(&file, &path, &file_options);
+                match result_copy {
+                    Ok(val) => {
+                        result += val;
+                        work = false;
+                    }
+                    Err(err) => {
+                        let err_msg = err.to_string();
+                        err!(err_msg.as_str(), err.kind)
+                    }            
                 }
             }
         }
     }
-
     if is_remove {
         remove(from)?;
     }
 
     Ok(result)
-
 }
 
 /// Moves the directory contents from one place to another with recept information about process.
@@ -1001,10 +1066,20 @@ pub fn move_dir_with_progress<P, Q, F>(from: P,
         err!("Path is not a directory!", ErrorKind::InvalidFolder);
     }
 
-    if let Some(dir_name) = from.components().last() {
-        to.push(dir_name.as_os_str());
+    if options.copy_inside {
+        if to.exists() {
+            if let Some(dir_name) = from.components().last() {
+                to.push(dir_name.as_os_str());
+            } else {
+                err!("Invalid folder from", ErrorKind::InvalidFolder);
+            }
+        }
     } else {
-        err!("Invalid folder from", ErrorKind::InvalidFolder);
+        if let Some(dir_name) = from.components().last() {
+            to.push(dir_name.as_os_str());
+        } else {
+            err!("Invalid folder from", ErrorKind::InvalidFolder);
+        }
     }
 
     let dir_content = get_dir_content(from)?;
@@ -1012,9 +1087,12 @@ pub fn move_dir_with_progress<P, Q, F>(from: P,
         let tmp_to = Path::new(&directory).strip_prefix(from)?;
         let dir = to.join(&tmp_to);
         if !dir.exists() {
-            create(dir, false)?;
+            if options.copy_inside {
+                create_all(dir, false)?;
+            } else {
+                create(dir, false)?;
+            }
         }
-
     }
 
     let mut result: u64 = 0;
