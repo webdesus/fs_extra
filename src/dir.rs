@@ -13,7 +13,7 @@ pub struct CopyOptions {
     pub skip_exist: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
-    /// Sets the option true for recursively copying a directory with a new name or place it inside the destination.
+    /// Sets the option true for recursively copying a directory with a new name or place it inside the destination.(same behaviors like cp -r in Unix)
     pub copy_inside: bool,
 }
 
@@ -26,6 +26,8 @@ impl CopyOptions {
     /// skip_exist: false
     ///
     /// buffer_size: 64000 //64kb
+    ///
+    /// copy_inside: false
     /// ```
     pub fn new() -> CopyOptions {
         CopyOptions {
