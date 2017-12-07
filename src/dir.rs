@@ -39,6 +39,20 @@ impl CopyOptions {
     }
 }
 
+#[derive(Clone)]
+pub struct DirOptions {
+    pub depth: u64,
+}
+
+impl DirOptions {
+    pub fn new() -> DirOptions {
+        DirOptions {
+            depth: 0 //  0 - all; 1 - only first level; 2 - second level; ... etc.   
+        }
+    }
+}
+
+
 /// A structure which imclude information about directory
 pub struct DirContent {
     /// Directory size.
@@ -616,6 +630,25 @@ pub fn get_dir_content<P>(path: P) -> Result<DirContent>
 where
     P: AsRef<Path>,
 {
+    let options = DirOptions::new();
+    get_dir_content2(path, &options)
+}
+
+pub fn get_dir_content2<P>(path: P, options: &DirOptions) -> Result<DirContent>
+where
+    P: AsRef<Path>,
+{
+    let mut depth = 0;
+    if options.depth != 0 {
+        depth = options.depth + 1;
+    }
+    _get_dir_content(path, depth)
+}
+
+fn _get_dir_content<P>(path: P, mut depth: u64) -> Result<DirContent>
+where
+    P: AsRef<Path>,
+{
     let mut directories = Vec::new();
     let mut files = Vec::new();
     let mut dir_size = 0;
@@ -627,18 +660,23 @@ where
 
     if path.as_ref().is_dir() {
         directories.push(item);
-        for entry in read_dir(&path)? {
-            let _path = entry?.path();
+        if depth == 0 || depth > 1 {
+            for entry in read_dir(&path)? {
+                let _path = entry?.path();
 
-            match get_dir_content(_path) {
-                Ok(items) => {
-                    let mut _files = items.files;
-                    let mut _dirrectories = items.directories;
-                    dir_size += items.dir_size;
-                    files.append(&mut _files);
-                    directories.append(&mut _dirrectories);
+                if depth > 1 {
+                    depth -= 1;
                 }
-                Err(err) => return Err(err),
+                match _get_dir_content(_path, depth) {
+                    Ok(items) => {
+                        let mut _files = items.files;
+                        let mut _dirrectories = items.directories;
+                        dir_size += items.dir_size;
+                        files.append(&mut _files);
+                        directories.append(&mut _dirrectories);
+                    }
+                    Err(err) => return Err(err),
+                }
             }
         }
 

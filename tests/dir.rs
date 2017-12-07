@@ -2409,6 +2409,151 @@ fn it_get_dir_content() {
     assert!(directories_correct);
 }
 
+#[test]
+fn it_get_dir_content_many_levels() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_get_dir_content_many_levels");
+    let d_level_1 = test_dir.join("d_level_1");
+    let d_level_2 = d_level_1.join("d_level_2");
+    let d_level_3 = d_level_2.join("d_level_3");
+    let d_level_4 = d_level_3.join("d_level_4");
+    let d_level_5 = d_level_4.join("d_level_5");
+
+    let file1 = d_level_1.join("file1.txt");
+    let file2 = d_level_2.join("file2.txt");
+    let file3 = d_level_3.join("file3.txt");
+    let file4 = d_level_4.join("file4.txt");
+    let file5 = d_level_5.join("file5.txt");
+
+    create_all(&d_level_1, true).unwrap();
+    create_all(&d_level_2, true).unwrap();
+    create_all(&d_level_3, true).unwrap();
+    create_all(&d_level_4, true).unwrap();
+    create_all(&d_level_5, true).unwrap();
+
+    assert!(&d_level_1.exists());
+    assert!(&d_level_2.exists());
+    assert!(&d_level_3.exists());
+    assert!(&d_level_4.exists());
+    assert!(&d_level_5.exists());
+
+    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file2, "content2").unwrap();
+    fs_extra::file::write_all(&file3, "content3").unwrap();
+    fs_extra::file::write_all(&file4, "content4").unwrap();
+    fs_extra::file::write_all(&file5, "content5").unwrap();
+
+    let mut options = DirOptions::new();
+    let result = get_dir_content2(&d_level_1, &options).unwrap();
+
+    assert_eq!(40, result.dir_size);
+    assert_eq!(5, result.files.len());
+    assert_eq!(5, result.directories.len());
+
+    let mut directories = Vec::new();
+    directories.push(file1.parent().unwrap().to_str().unwrap().to_string());
+    directories.push(file2.parent().unwrap().to_str().unwrap().to_string());
+    directories.push(file3.parent().unwrap().to_str().unwrap().to_string());
+    directories.push(file4.parent().unwrap().to_str().unwrap().to_string());
+    directories.push(file5.parent().unwrap().to_str().unwrap().to_string());
+
+    let mut files = Vec::new();
+    files.push(file1.to_str().unwrap().to_string());
+    files.push(file2.to_str().unwrap().to_string());
+    files.push(file3.to_str().unwrap().to_string());
+    files.push(file4.to_str().unwrap().to_string());
+    files.push(file5.to_str().unwrap().to_string());
+
+    let mut files_correct = true;
+    for file in result.files {
+        if !files.contains(&file) {
+            files_correct = false;
+        }
+    }
+    assert!(files_correct);
+
+    let mut directories_correct = true;
+    for dir in result.directories {
+        if !directories.contains(&dir) {
+            directories_correct = false;
+        }
+    }
+    assert!(directories_correct);
+
+    // first level
+    options.depth = 1;
+    let result = get_dir_content2(&d_level_1, &options).unwrap();
+
+    assert_eq!(8, result.dir_size);
+    assert_eq!(1, result.files.len());
+    assert_eq!(2, result.directories.len());
+    files_correct = true;
+    for file in &result.files {
+        if !files.contains(&file) {
+            files_correct = false;
+        }
+    }
+    assert!(files_correct);
+    assert!(result.files.contains(&file1.to_str().unwrap().to_string()));
+
+    directories_correct = true;
+    for dir in &result.directories {
+        if !directories.contains(&dir) {
+            directories_correct = false;
+        }
+    }
+    assert!(directories_correct);
+    assert!(result.directories.contains(
+        &file1.parent().unwrap().to_str().unwrap().to_string(),
+    ));
+    assert!(result.directories.contains(
+        &file2.parent().unwrap().to_str().unwrap().to_string(),
+    ));
+
+    // fourth level
+    options.depth = 4;
+    let result = get_dir_content2(&d_level_1, &options).unwrap();
+
+    assert_eq!(32, result.dir_size);
+    assert_eq!(4, result.files.len());
+    assert_eq!(5, result.directories.len());
+    files_correct = true;
+    for file in &result.files {
+        if !files.contains(&file) {
+            files_correct = false;
+        }
+    }
+    assert!(files_correct);
+    assert!(result.files.contains(&file1.to_str().unwrap().to_string()));
+    assert!(result.files.contains(&file2.to_str().unwrap().to_string()));
+    assert!(result.files.contains(&file3.to_str().unwrap().to_string()));
+    assert!(result.files.contains(&file4.to_str().unwrap().to_string()));
+
+
+    directories_correct = true;
+    for dir in &result.directories {
+        if !directories.contains(&dir) {
+            directories_correct = false;
+        }
+    }
+    assert!(directories_correct);
+    assert!(result.directories.contains(
+        &file1.parent().unwrap().to_str().unwrap().to_string(),
+    ));
+    assert!(result.directories.contains(
+        &file2.parent().unwrap().to_str().unwrap().to_string(),
+    ));
+    assert!(result.directories.contains(
+        &file3.parent().unwrap().to_str().unwrap().to_string(),
+    ));
+    assert!(result.directories.contains(
+        &file4.parent().unwrap().to_str().unwrap().to_string(),
+    ));
+    assert!(result.directories.contains(
+        &file5.parent().unwrap().to_str().unwrap().to_string(),
+    ));
+}
+
+
 
 #[test]
 fn it_get_dir_content_path_file() {
