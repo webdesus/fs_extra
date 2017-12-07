@@ -188,8 +188,9 @@ use std::path::Path;
 /// ```
 ///
 pub fn copy_items<P, Q>(from: &Vec<P>, to: Q, options: &dir::CopyOptions) -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
 {
     let mut result: u64 = 0;
     for item in from {
@@ -281,14 +282,16 @@ impl Clone for TransitProcess {
 ///  copy_items_with_progress(&from_paths, "target", &options, handle)?;
 /// ```
 ///
-pub fn copy_items_with_progress<P, Q, F>(from: &Vec<P>,
-                                         to: Q,
-                                         options: &dir::CopyOptions,
-                                         mut progress_handler: F)
-                                         -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>,
-          F: FnMut(TransitProcess) -> dir::TransitProcessResult
+pub fn copy_items_with_progress<P, Q, F>(
+    from: &Vec<P>,
+    to: Q,
+    options: &dir::CopyOptions,
+    mut progress_handler: F,
+) -> Result<u64>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+    F: FnMut(TransitProcess) -> dir::TransitProcessResult,
 {
 
     let mut total_size = 0;
@@ -415,12 +418,16 @@ pub fn copy_items_with_progress<P, Q, F>(from: &Vec<P>,
                                 let user_decide = progress_handler(info_process);
                                 match user_decide {
                                     dir::TransitProcessResult::Overwrite => {
-                                        err!("Overwrite denied for this situation!",
-                                             ErrorKind::Other);
+                                        err!(
+                                            "Overwrite denied for this situation!",
+                                            ErrorKind::Other
+                                        );
                                     }
                                     dir::TransitProcessResult::OverwriteAll => {
-                                        err!("Overwrite denied for this situation!",
-                                             ErrorKind::Other);
+                                        err!(
+                                            "Overwrite denied for this situation!",
+                                            ErrorKind::Other
+                                        );
                                     }
                                     dir::TransitProcessResult::Skip => {
                                         file_options.skip_exist = true;
@@ -487,8 +494,9 @@ pub fn copy_items_with_progress<P, Q, F>(from: &Vec<P>,
 /// ```
 ///
 pub fn move_items<P, Q>(from_items: &Vec<P>, to: Q, options: &dir::CopyOptions) -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
 {
     let mut total_size = 0;
     let mut list_paths = Vec::new();
@@ -586,14 +594,16 @@ pub fn move_items<P, Q>(from_items: &Vec<P>, to: Q, options: &dir::CopyOptions) 
 ///  move_items_with_progress(&from_paths, "target", &options, handle)?;
 /// ```
 ///
-pub fn move_items_with_progress<P, Q, F>(from_items: &Vec<P>,
-                                         to: Q,
-                                         options: &dir::CopyOptions,
-                                         mut progress_handler: F)
-                                         -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>,
-          F: FnMut(TransitProcess) -> dir::TransitProcessResult
+pub fn move_items_with_progress<P, Q, F>(
+    from_items: &Vec<P>,
+    to: Q,
+    options: &dir::CopyOptions,
+    mut progress_handler: F,
+) -> Result<u64>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+    F: FnMut(TransitProcess) -> dir::TransitProcessResult,
 {
     let mut total_size = 0;
     let mut list_paths = Vec::new();
@@ -720,12 +730,16 @@ pub fn move_items_with_progress<P, Q, F>(from_items: &Vec<P>,
                                 let user_decide = progress_handler(info_process);
                                 match user_decide {
                                     dir::TransitProcessResult::Overwrite => {
-                                        err!("Overwrite denied for this situation!",
-                                             ErrorKind::Other);
+                                        err!(
+                                            "Overwrite denied for this situation!",
+                                            ErrorKind::Other
+                                        );
                                     }
                                     dir::TransitProcessResult::OverwriteAll => {
-                                        err!("Overwrite denied for this situation!",
-                                             ErrorKind::Other);
+                                        err!(
+                                            "Overwrite denied for this situation!",
+                                            ErrorKind::Other
+                                        );
                                     }
                                     dir::TransitProcessResult::Skip => {
                                         file_options.skip_exist = true;
@@ -774,7 +788,8 @@ pub fn move_items_with_progress<P, Q, F>(from_items: &Vec<P>,
 /// ```
 ///
 pub fn remove_items<P>(from_items: &Vec<P>) -> Result<()>
-    where P: AsRef<Path>
+where
+    P: AsRef<Path>,
 {
     for item in from_items {
         let item = item.as_ref();

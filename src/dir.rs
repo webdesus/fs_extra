@@ -194,35 +194,43 @@ pub struct LsResult {
 /// let entry_info = get_details_entry("test", &config);
 /// assert_eq!(2, entry_info.len());
 /// ```
-pub fn get_details_entry<P>(path: P,
-                            config: &HashSet<DirEntryAttr>)
-                            -> Result<HashMap<DirEntryAttr, DirEntryValue>>
-    where P: AsRef<Path>
+pub fn get_details_entry<P>(
+    path: P,
+    config: &HashSet<DirEntryAttr>,
+) -> Result<HashMap<DirEntryAttr, DirEntryValue>>
+where
+    P: AsRef<Path>,
 {
     let path = path.as_ref();
     let metadata = path.metadata()?;
     get_details_entry_with_meta(path, config, metadata)
 }
-fn get_details_entry_with_meta<P>(path: P,
-                                  config: &HashSet<DirEntryAttr>,
-                                  metadata: Metadata)
-                                  -> Result<HashMap<DirEntryAttr, DirEntryValue>>
-    where P: AsRef<Path>
+fn get_details_entry_with_meta<P>(
+    path: P,
+    config: &HashSet<DirEntryAttr>,
+    metadata: Metadata,
+) -> Result<HashMap<DirEntryAttr, DirEntryValue>>
+where
+    P: AsRef<Path>,
 {
     let path = path.as_ref();
     let mut item = HashMap::new();
     if config.contains(&DirEntryAttr::Name) {
         if metadata.is_dir() {
             if let Some(file_name) = path.file_name() {
-                item.insert(DirEntryAttr::Name,
-                            DirEntryValue::String(file_name.to_os_string().into_string()?));
+                item.insert(
+                    DirEntryAttr::Name,
+                    DirEntryValue::String(file_name.to_os_string().into_string()?),
+                );
             } else {
                 item.insert(DirEntryAttr::Name, DirEntryValue::String(String::new()));
             }
         } else {
             if let Some(file_stem) = path.file_stem() {
-                item.insert(DirEntryAttr::Name,
-                            DirEntryValue::String(file_stem.to_os_string().into_string()?));
+                item.insert(
+                    DirEntryAttr::Name,
+                    DirEntryValue::String(file_stem.to_os_string().into_string()?),
+                );
             } else {
                 item.insert(DirEntryAttr::Name, DirEntryValue::String(String::new()));
             }
@@ -230,16 +238,20 @@ fn get_details_entry_with_meta<P>(path: P,
     }
     if config.contains(&DirEntryAttr::Ext) {
         if let Some(value) = path.extension() {
-            item.insert(DirEntryAttr::Ext,
-                        DirEntryValue::String(value.to_os_string().into_string()?));
+            item.insert(
+                DirEntryAttr::Ext,
+                DirEntryValue::String(value.to_os_string().into_string()?),
+            );
         } else {
             item.insert(DirEntryAttr::Ext, DirEntryValue::String(String::from("")));
         }
     }
     if config.contains(&DirEntryAttr::FullName) {
         if let Some(file_name) = path.file_name() {
-            item.insert(DirEntryAttr::FullName,
-                        DirEntryValue::String(file_name.to_os_string().into_string()?));
+            item.insert(
+                DirEntryAttr::FullName,
+                DirEntryValue::String(file_name.to_os_string().into_string()?),
+            );
         } else {
             item.insert(DirEntryAttr::FullName, DirEntryValue::String(String::new()));
         }
@@ -300,24 +312,34 @@ fn get_details_entry_with_meta<P>(path: P,
         item.insert(DirEntryAttr::FileSize, DirEntryValue::U64(metadata.len()));
     }
     if config.contains(&DirEntryAttr::IsDir) {
-        item.insert(DirEntryAttr::IsDir,
-                    DirEntryValue::Boolean(metadata.is_dir()));
+        item.insert(
+            DirEntryAttr::IsDir,
+            DirEntryValue::Boolean(metadata.is_dir()),
+        );
     }
     if config.contains(&DirEntryAttr::IsFile) {
-        item.insert(DirEntryAttr::IsFile,
-                    DirEntryValue::Boolean(metadata.is_file()));
+        item.insert(
+            DirEntryAttr::IsFile,
+            DirEntryValue::Boolean(metadata.is_file()),
+        );
     }
     if config.contains(&DirEntryAttr::Modified) {
-        item.insert(DirEntryAttr::Modified,
-                    DirEntryValue::SystemTime(metadata.modified()?));
+        item.insert(
+            DirEntryAttr::Modified,
+            DirEntryValue::SystemTime(metadata.modified()?),
+        );
     }
     if config.contains(&DirEntryAttr::Accessed) {
-        item.insert(DirEntryAttr::Accessed,
-                    DirEntryValue::SystemTime(metadata.accessed()?));
+        item.insert(
+            DirEntryAttr::Accessed,
+            DirEntryValue::SystemTime(metadata.accessed()?),
+        );
     }
     if config.contains(&DirEntryAttr::Created) {
-        item.insert(DirEntryAttr::Created,
-                    DirEntryValue::SystemTime(metadata.created()?));
+        item.insert(
+            DirEntryAttr::Created,
+            DirEntryValue::SystemTime(metadata.created()?),
+        );
     }
     Ok(item)
 
@@ -357,7 +379,8 @@ fn get_details_entry_with_meta<P>(path: P,
 /// assert_eq!(2, ls_result.base.len());
 /// ```
 pub fn ls<P>(path: P, config: &HashSet<DirEntryAttr>) -> Result<LsResult>
-    where P: AsRef<Path>
+where
+    P: AsRef<Path>,
 {
     let mut items = Vec::new();
     let path = path.as_ref();
@@ -407,7 +430,8 @@ pub fn ls<P>(path: P, config: &HashSet<DirEntryAttr>) -> Result<LsResult>
 /// create("dir", false); // create directory
 /// ```
 pub fn create<P>(path: P, erase: bool) -> Result<()>
-    where P: AsRef<Path>
+where
+    P: AsRef<Path>,
 {
     if erase && path.as_ref().exists() {
         remove(&path)?;
@@ -440,7 +464,8 @@ pub fn create<P>(path: P, erase: bool) -> Result<()>
 ///
 /// create_all("/some/dir", false); // create directory some and dir
 pub fn create_all<P>(path: P, erase: bool) -> Result<()>
-    where P: AsRef<Path>
+where
+    P: AsRef<Path>,
 {
     if erase && path.as_ref().exists() {
         remove(&path)?;
@@ -476,8 +501,9 @@ pub fn create_all<P>(path: P, erase: bool) -> Result<()>
 ///
 /// ```
 pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
 {
     let from = from.as_ref();
 
@@ -486,8 +512,10 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
             let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
             err!(&msg, ErrorKind::NotFound);
         }
-        err!("Path does not exist Or you don't have access!",
-             ErrorKind::NotFound);
+        err!(
+            "Path does not exist Or you don't have access!",
+            ErrorKind::NotFound
+        );
     }
     if !from.is_dir() {
         if let Some(msg) = from.to_str() {
@@ -585,7 +613,8 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 /// ```
 ///
 pub fn get_dir_content<P>(path: P) -> Result<DirContent>
-    where P: AsRef<Path>
+where
+    P: AsRef<Path>,
 {
     let mut directories = Vec::new();
     let mut files = Vec::new();
@@ -644,7 +673,8 @@ pub fn get_dir_content<P>(path: P) -> Result<DirContent>
 /// println!("{}", folder_size); // print directory sile in bytes
 /// ```
 pub fn get_size<P>(path: P) -> Result<u64>
-    where P: AsRef<Path>
+where
+    P: AsRef<Path>,
 {
     let mut result = 0;
 
@@ -692,14 +722,16 @@ pub fn get_size<P>(path: P) -> Result<u64>
 /// copy_with_progress("source/dir1", "target/dir1", &options, handle)?;
 ///
 /// ```
-pub fn copy_with_progress<P, Q, F>(from: P,
-                                   to: Q,
-                                   options: &CopyOptions,
-                                   mut progress_handler: F)
-                                   -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>,
-          F: FnMut(TransitProcess) -> TransitProcessResult
+pub fn copy_with_progress<P, Q, F>(
+    from: P,
+    to: Q,
+    options: &CopyOptions,
+    mut progress_handler: F,
+) -> Result<u64>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+    F: FnMut(TransitProcess) -> TransitProcessResult,
 {
     let from = from.as_ref();
 
@@ -708,8 +740,10 @@ pub fn copy_with_progress<P, Q, F>(from: P,
             let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
             err!(&msg, ErrorKind::NotFound);
         }
-        err!("Path does not exist or you don't have access!",
-             ErrorKind::NotFound);
+        err!(
+            "Path does not exist or you don't have access!",
+            ErrorKind::NotFound
+        );
     }
 
     let mut to: PathBuf = to.as_ref().to_path_buf();
@@ -911,8 +945,9 @@ pub fn copy_with_progress<P, Q, F>(from: P,
 ///
 /// ```
 pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
 {
     let mut is_remove = true;
     if options.skip_exist && to.as_ref().exists() && !options.overwrite {
@@ -925,19 +960,25 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
             let msg = format!("Path \"{}\" does not exist", msg);
             err!(&msg, ErrorKind::NotFound);
         }
-        err!("Path does not exist or you don't have access!",
-             ErrorKind::NotFound);
+        err!(
+            "Path does not exist or you don't have access!",
+            ErrorKind::NotFound
+        );
     }
 
     let mut to: PathBuf = to.as_ref().to_path_buf();
     if !from.is_dir() {
         if let Some(msg) = from.to_str() {
-          let msg = format!("Path \"{}\" is not a directory or you don't have access!",
-                              msg); 
+            let msg = format!(
+                "Path \"{}\" is not a directory or you don't have access!",
+                msg
+            );
             err!(&msg, ErrorKind::InvalidFolder);
         }
-        err!("Path is not a directory or you don't have access!",
-             ErrorKind::InvalidFolder); 
+        err!(
+            "Path is not a directory or you don't have access!",
+            ErrorKind::InvalidFolder
+        );
     }
 
     if options.copy_inside {
@@ -1035,14 +1076,16 @@ pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 /// move_dir_with_progress("source/dir1", "target/dir1", &options, handle)?;
 ///
 /// ```
-pub fn move_dir_with_progress<P, Q, F>(from: P,
-                                       to: Q,
-                                       options: &CopyOptions,
-                                       mut progress_handler: F)
-                                       -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>,
-          F: FnMut(TransitProcess) -> TransitProcessResult
+pub fn move_dir_with_progress<P, Q, F>(
+    from: P,
+    to: Q,
+    options: &CopyOptions,
+    mut progress_handler: F,
+) -> Result<u64>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+    F: FnMut(TransitProcess) -> TransitProcessResult,
 {
     let mut is_remove = true;
     if options.skip_exist && to.as_ref().exists() && !options.overwrite {
@@ -1055,8 +1098,10 @@ pub fn move_dir_with_progress<P, Q, F>(from: P,
             let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
             err!(&msg, ErrorKind::NotFound);
         }
-        err!("Path does not exist or you don't have access!",
-             ErrorKind::NotFound);
+        err!(
+            "Path does not exist or you don't have access!",
+            ErrorKind::NotFound
+        );
     }
 
     let mut to: PathBuf = to.as_ref().to_path_buf();
@@ -1146,10 +1191,12 @@ pub fn move_dir_with_progress<P, Q, F>(from: P,
                     progress_handler(info_process.clone());
                 };
 
-                result_copy = super::file::move_file_with_progress(&file,
-                                                                   &path,
-                                                                   &file_options,
-                                                                   _progress_handler);
+                result_copy = super::file::move_file_with_progress(
+                    &file,
+                    &path,
+                    &file_options,
+                    _progress_handler,
+                );
             }
             match result_copy {
                 Ok(val) => {

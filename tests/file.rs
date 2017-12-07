@@ -11,8 +11,9 @@ const TEST_FOLDER: &'static str = "./tests/temp/file";
 
 
 fn files_eq<P, Q>(file1: P, file2: Q) -> Result<bool>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
 {
     let content1 = read_to_string(file1)?;
     let content2 = read_to_string(file2)?;
@@ -148,8 +149,8 @@ fn it_copy_not_file() {
         Err(err) => {
             match err.kind {
                 ErrorKind::InvalidFile => {
-                    let wrong_path = format!("Path \"{}\" is not a file!",
-                                             test_file.to_str().unwrap());
+                    let wrong_path =
+                        format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
                     assert_eq!(wrong_path, err.to_string());
                 }
                 _ => {
@@ -181,9 +182,11 @@ fn it_copy_source_not_exist() {
         Err(err) => {
             match err.kind {
                 ErrorKind::NotFound => {
-                    let wrong_path = format!("Path \"{}\" does not exist or you don't have \
+                    let wrong_path = format!(
+                        "Path \"{}\" does not exist or you don't have \
                                               access!",
-                                             test_file.to_str().unwrap());
+                        test_file.to_str().unwrap()
+                    );
                     assert_eq!(wrong_path, err.to_string());
                     ()
                 }
@@ -362,8 +365,8 @@ fn it_copy_progress_not_file() {
         Err(err) => {
             match err.kind {
                 ErrorKind::InvalidFile => {
-                    let wrong_path = format!("Path \"{}\" is not a file!",
-                                             test_file.to_str().unwrap());
+                    let wrong_path =
+                        format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
                     assert_eq!(wrong_path, err.to_string());
                 }
                 _ => {
@@ -447,9 +450,11 @@ fn it_copy_with_progress_source_not_exist() {
         Err(err) => {
             match err.kind {
                 ErrorKind::NotFound => {
-                    let wrong_path = format!("Path \"{}\" does not exist or you don't have \
+                    let wrong_path = format!(
+                        "Path \"{}\" does not exist or you don't have \
                                               access!",
-                                             test_file.to_str().unwrap());
+                        test_file.to_str().unwrap()
+                    );
 
                     assert_eq!(wrong_path, err.to_string());
                     ()
@@ -634,8 +639,8 @@ fn it_move_not_file() {
         Err(err) => {
             match err.kind {
                 ErrorKind::InvalidFile => {
-                    let wrong_path = format!("Path \"{}\" is not a file!",
-                                             test_file.to_str().unwrap());
+                    let wrong_path =
+                        format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
                     assert_eq!(wrong_path, err.to_string());
                 }
                 _ => {
@@ -669,9 +674,11 @@ fn it_move_source_not_exist() {
         Err(err) => {
             match err.kind {
                 ErrorKind::NotFound => {
-                    let wrong_path = format!("Path \"{}\" does not exist or you don't have \
+                    let wrong_path = format!(
+                        "Path \"{}\" does not exist or you don't have \
                                               access!",
-                                             test_file.to_str().unwrap());
+                        test_file.to_str().unwrap()
+                    );
 
                     assert_eq!(wrong_path, err.to_string());
                     ()
@@ -858,8 +865,8 @@ fn it_move_progress_not_file() {
         Err(err) => {
             match err.kind {
                 ErrorKind::InvalidFile => {
-                    let wrong_path = format!("Path \"{}\" is not a file!",
-                                             test_file.to_str().unwrap());
+                    let wrong_path =
+                        format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
                     assert_eq!(wrong_path, err.to_string());
                 }
                 _ => {
@@ -932,9 +939,11 @@ fn it_move_with_progress_source_not_exist() {
         Err(err) => {
             match err.kind {
                 ErrorKind::NotFound => {
-                    let wrong_path = format!("Path \"{}\" does not exist or you don't have \
+                    let wrong_path = format!(
+                        "Path \"{}\" does not exist or you don't have \
                                               access!",
-                                             test_file.to_str().unwrap());
+                        test_file.to_str().unwrap()
+                    );
 
                     assert_eq!(wrong_path, err.to_string());
                     ()
