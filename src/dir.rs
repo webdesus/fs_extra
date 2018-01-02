@@ -39,12 +39,19 @@ impl CopyOptions {
     }
 }
 
+///	Options and flags which can be used to configure how read a directory.
 #[derive(Clone)]
 pub struct DirOptions {
+    /// Sets levels reading. Set value 0 for read all directory folder. By default 0. 
     pub depth: u64,
 }
 
 impl DirOptions {
+    /// Initialize struct DirOptions with default value.
+    ///
+    /// ```rust,ignore
+    /// depth: 0
+    /// ```
     pub fn new() -> DirOptions {
         DirOptions {
             depth: 0 //  0 - all; 1 - only first level; 2 - second level; ... etc.   
@@ -634,6 +641,35 @@ where
     get_dir_content2(path, &options)
 }
 
+
+/// Return DirContent which containt information about directory:
+///
+/// * Size directory.
+/// * List all files source directory(files subdirectories  included too).
+/// * List all directory and subdirectories source path.
+///
+/// # Errors
+///
+/// This function will return an error in the following situations, but is not limited to just
+/// these cases:
+///
+/// * This `path` directory does not exist.
+/// * Invalid `path`.
+/// * The current process does not have the permission rights to access `path`.
+///
+/// # Examples
+/// ```rust,ignore
+/// extern crate fs_extra;
+/// use fs_extra::dir::get_dir_content2;
+///
+/// let options = DirOptions::new();
+/// options.depth = 3; // Get 3 levels of folder.
+/// let dir_content = get_dir_content2("dir", &options)?;
+/// for directory in dir_content.directories {
+///     println!("{}", directory); // print directory path
+/// }
+/// ```
+///
 pub fn get_dir_content2<P>(path: P, options: &DirOptions) -> Result<DirContent>
 where
     P: AsRef<Path>,
