@@ -15,6 +15,10 @@ pub struct CopyOptions {
     pub buffer_size: usize,
     /// Sets the option true for recursively copying a directory with a new name or place it inside the destination.(same behaviors like cp -r in Unix)
     pub copy_inside: bool,
+    /// Sets levels reading. Set 0 for read all directory folder. By default 0.
+    ///
+    /// Warrning: Work only for copy operations!
+    pub depth: u64
 }
 
 impl CopyOptions {
@@ -35,6 +39,7 @@ impl CopyOptions {
             skip_exist: false,
             buffer_size: 64000, //64kb
             copy_inside: false,
+            depth: 0,
         }
     }
 }
@@ -562,7 +567,12 @@ where
         }
     }
 
-    let dir_content = get_dir_content(from)?;
+    let mut read_options = DirOptions::new();
+    if options.depth > 0 {
+        read_options.depth = options.depth;
+    }
+
+    let dir_content = get_dir_content2(from, &read_options)?;
     for directory in dir_content.directories {
         let tmp_to = Path::new(&directory).strip_prefix(from)?;
         let dir = to.join(&tmp_to);
@@ -845,7 +855,12 @@ where
         }
     }
 
-    let dir_content = get_dir_content(from)?;
+    let mut read_options = DirOptions::new();
+    if options.depth > 0{
+        read_options.depth = options.depth;
+    }
+
+    let dir_content = get_dir_content2(from, &read_options)?;
     for directory in dir_content.directories {
         let tmp_to = Path::new(&directory).strip_prefix(from)?;
         let dir = to.join(&tmp_to);
