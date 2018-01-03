@@ -697,12 +697,12 @@ where
     if path.as_ref().is_dir() {
         directories.push(item);
         if depth == 0 || depth > 1 {
+            if depth > 1 {
+                depth -= 1;
+            }
             for entry in read_dir(&path)? {
                 let _path = entry?.path();
 
-                if depth > 1 {
-                    depth -= 1;
-                }
                 match _get_dir_content(_path, depth) {
                     Ok(items) => {
                         let mut _files = items.files;
