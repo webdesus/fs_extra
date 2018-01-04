@@ -125,15 +125,19 @@ impl StdError for Error {
 }
 impl From<StripPrefixError> for Error {
     fn from(err: StripPrefixError) -> Error {
-        Error::new(ErrorKind::StripPrefix(err),
-                   "StripPrefixError. Look inside for more details")
+        Error::new(
+            ErrorKind::StripPrefix(err),
+            "StripPrefixError. Look inside for more details",
+        )
     }
 }
 
 impl From<OsString> for Error {
     fn from(err: OsString) -> Error {
-        Error::new(ErrorKind::OsString(err),
-                   "OsString. Look inside for more details")
+        Error::new(
+            ErrorKind::OsString(err),
+            "OsString. Look inside for more details",
+        )
     }
 }
 

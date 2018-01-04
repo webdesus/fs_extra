@@ -64,8 +64,9 @@ pub struct TransitProcess {
 ///
 /// ```
 pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
 {
 
     let from = from.as_ref();
@@ -74,8 +75,10 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
             let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
             err!(&msg, ErrorKind::NotFound);
         }
-        err!("Path does not exist or you don't have access!",
-             ErrorKind::NotFound);
+        err!(
+            "Path does not exist or you don't have access!",
+            ErrorKind::NotFound
+        );
     }
 
     if !from.is_file() {
@@ -127,14 +130,16 @@ pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 /// copy_with_progress("dir1/foo.txt", "dir2/foo.txt", &options, handle)?;
 ///
 /// ```
-pub fn copy_with_progress<P, Q, F>(from: P,
-                                   to: Q,
-                                   options: &CopyOptions,
-                                   mut progress_handler: F)
-                                   -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>,
-          F: FnMut(TransitProcess) -> ()
+pub fn copy_with_progress<P, Q, F>(
+    from: P,
+    to: Q,
+    options: &CopyOptions,
+    mut progress_handler: F,
+) -> Result<u64>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+    F: FnMut(TransitProcess) -> (),
 {
     let from = from.as_ref();
     if !from.exists() {
@@ -142,8 +147,10 @@ pub fn copy_with_progress<P, Q, F>(from: P,
             let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
             err!(&msg, ErrorKind::NotFound);
         }
-        err!("Path does not exist or you don't have access!",
-             ErrorKind::NotFound);
+        err!(
+            "Path does not exist or you don't have access!",
+            ErrorKind::NotFound
+        );
     }
 
     if !from.is_file() {
@@ -214,8 +221,9 @@ pub fn copy_with_progress<P, Q, F>(from: P,
 ///
 /// ```
 pub fn move_file<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
 {
     let mut is_remove = true;
     if options.skip_exist && to.as_ref().exists() && !options.overwrite {
@@ -254,14 +262,16 @@ pub fn move_file<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 /// move_file("dir1/foo.txt", "dir2/foo.txt", &options, handle)?;
 ///
 /// ```
-pub fn move_file_with_progress<P, Q, F>(from: P,
-                                        to: Q,
-                                        options: &CopyOptions,
-                                        progress_handler: F)
-                                        -> Result<u64>
-    where P: AsRef<Path>,
-          Q: AsRef<Path>,
-          F: FnMut(TransitProcess) -> ()
+pub fn move_file_with_progress<P, Q, F>(
+    from: P,
+    to: Q,
+    options: &CopyOptions,
+    progress_handler: F,
+) -> Result<u64>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+    F: FnMut(TransitProcess) -> (),
 {
     let mut is_remove = true;
     if options.skip_exist && to.as_ref().exists() && !options.overwrite {
@@ -294,7 +304,8 @@ pub fn move_file_with_progress<P, Q, F>(from: P,
 ///
 /// ```
 pub fn remove<P>(path: P) -> Result<()>
-    where P: AsRef<Path>
+where
+    P: AsRef<Path>,
 {
     if path.as_ref().exists() {
         Ok(remove_file(path)?)
@@ -324,7 +335,8 @@ pub fn remove<P>(path: P) -> Result<()>
 ///
 /// ```
 pub fn read_to_string<P>(path: P) -> Result<String>
-    where P: AsRef<Path>
+where
+    P: AsRef<Path>,
 {
     let path = path.as_ref();
     if path.exists() && !path.is_file() {
@@ -362,7 +374,8 @@ pub fn read_to_string<P>(path: P) -> Result<String>
 ///
 /// ```
 pub fn write_all<P>(path: P, content: &str) -> Result<()>
-    where P: AsRef<Path>
+where
+    P: AsRef<Path>,
 {
     let path = path.as_ref();
     if path.exists() && !path.is_file() {
