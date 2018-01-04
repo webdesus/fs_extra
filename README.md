@@ -54,6 +54,7 @@ A Rust library for more work functionality with file system.
 | [fs_extra::dir::remove](https://docs.rs/fs_extra/*/fs_extra/dir/fn.remove.html)  | Removes directory  |
 | [fs_extra::dir::get_size](https://docs.rs/fs_extra/*/fs_extra/dir/fn.get_size.html)  | Returns the size of the file or directory  |
 | [fs_extra::dir::get_dir_content](https://docs.rs/fs_extra/*/fs_extra/dir/fn.get_dir_content.html)  | Return DirContent which containt information about directory  |
+| [fs_extra::dir::get_dir_content2](https://docs.rs/fs_extra/*/fs_extra/dir/fn.get_dir_content2.html)  | Return DirContent which containt information about directory using DirOptions like settings  |
 | [fs_extra::dir::get_details_entry](https://docs.rs/fs_extra/*/fs_extra/dir/fn.get_details_entry.html)  | Returned information about directory entry with information which you choose in config  |
 | [fs_extra::dir::ls](https://docs.rs/fs_extra/*/fs_extra/dir/fn.ls.html)  | Returned collection directory entries with information which you choose in config  |
 
