@@ -5,7 +5,6 @@ use std::io::Error as IoError;
 use std::path::StripPrefixError;
 use std::ffi::OsString;
 
-
 /// A list specifying general categories of fs_extra error.
 #[derive(Debug)]
 pub enum ErrorKind {
@@ -88,7 +87,6 @@ pub struct Error {
     message: String,
 }
 
-
 impl Error {
     /// Create a new fs_extra error from a kind of error error as well as an arbitrary error payload.
     ///
@@ -140,7 +138,6 @@ impl From<OsString> for Error {
         )
     }
 }
-
 
 impl From<IoError> for Error {
     fn from(err: IoError) -> Error {

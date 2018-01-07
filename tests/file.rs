@@ -9,7 +9,6 @@ use fs_extra::error::*;
 
 const TEST_FOLDER: &'static str = "./tests/temp/file";
 
-
 fn files_eq<P, Q>(file1: P, file2: Q) -> Result<bool>
 where
     P: AsRef<Path>,
@@ -18,9 +17,7 @@ where
     let content1 = read_to_string(file1)?;
     let content2 = read_to_string(file2)?;
     Ok(content1 == content2)
-
 }
-
 
 #[test]
 fn it_read_and_write_work() {
@@ -48,12 +45,10 @@ fn it_read_not_exist_file() {
     assert!(!test_file.exists());
     match read_to_string(&test_file) {
         Ok(_) => panic!("should be error"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::NotFound => {}
-                _ => panic!("wrong error"),
-            }
-        }
+        Err(err) => match err.kind {
+            ErrorKind::NotFound => {}
+            _ => panic!("wrong error"),
+        },
     }
 }
 
@@ -64,12 +59,10 @@ fn it_read_not_file() {
     fs_extra::dir::create_all(&test_file, true).unwrap();
     match read_to_string(&test_file) {
         Ok(_) => panic!("should be error"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::InvalidFile => {}
-                _ => panic!("wrong error"),
-            }
-        }
+        Err(err) => match err.kind {
+            ErrorKind::InvalidFile => {}
+            _ => panic!("wrong error"),
+        },
     }
 }
 
@@ -83,16 +76,12 @@ fn it_write_not_file() {
     test_file.pop();
     match write_all(test_file, "content") {
         Ok(_) => panic!("should be error"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::InvalidFile => {}
-                _ => panic!("wrong error"),
-            }
-        }
+        Err(err) => match err.kind {
+            ErrorKind::InvalidFile => {}
+            _ => panic!("wrong error"),
+        },
     }
 }
-
-
 
 #[test]
 fn it_remove_file() {
@@ -146,18 +135,15 @@ fn it_copy_not_file() {
     let options = CopyOptions::new();
 
     match copy(&test_file, &test_file_out, &options) {
-        Err(err) => {
-            match err.kind {
-                ErrorKind::InvalidFile => {
-                    let wrong_path =
-                        format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
-                    assert_eq!(wrong_path, err.to_string());
-                }
-                _ => {
-                    panic!("wrong error");
-                }
+        Err(err) => match err.kind {
+            ErrorKind::InvalidFile => {
+                let wrong_path = format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
+                assert_eq!(wrong_path, err.to_string());
             }
-        }
+            _ => {
+                panic!("wrong error");
+            }
+        },
         Ok(_) => {
             panic!("should be error");
         }
@@ -179,22 +165,19 @@ fn it_copy_source_not_exist() {
     let options = CopyOptions::new();
     match copy(&test_file, test_file_out, &options) {
         Ok(_) => panic!("should be error"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::NotFound => {
-                    let wrong_path = format!(
-                        "Path \"{}\" does not exist or you don't have \
-                                              access!",
-                        test_file.to_str().unwrap()
-                    );
-                    assert_eq!(wrong_path, err.to_string());
-                    ()
-                }
-                _ => panic!("wrong error"),
+        Err(err) => match err.kind {
+            ErrorKind::NotFound => {
+                let wrong_path = format!(
+                    "Path \"{}\" does not exist or you don't have \
+                     access!",
+                    test_file.to_str().unwrap()
+                );
+                assert_eq!(wrong_path, err.to_string());
+                ()
             }
-        }
+            _ => panic!("wrong error"),
+        },
     }
-
 }
 
 #[test]
@@ -223,7 +206,6 @@ fn it_copy_exist_overwrite() {
         }
         Err(err) => panic!(err.to_string()),
     }
-
 }
 
 #[test]
@@ -252,7 +234,6 @@ fn it_copy_exist_not_overwrite() {
             ()
         }
     }
-
 }
 
 #[test]
@@ -328,13 +309,14 @@ fn it_copy_with_progress_work() {
     options.buffer_size = 1;
     let (tx, rx) = mpsc::channel();
     thread::spawn(move || {
-        let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+        };
         copy_with_progress(&test_file, &test_file_out, &options, func_test).unwrap();
         assert!(test_file.exists());
         assert!(test_file_out.exists());
         assert_eq!(test_file.file_name(), test_file_out.file_name());
         assert!(files_eq(test_file, test_file_out).unwrap());
-
     });
     for i in 1..10 {
         let process_info: TransitProcess = rx.recv().unwrap();
@@ -362,24 +344,20 @@ fn it_copy_progress_not_file() {
     let func_test = |process_info: TransitProcess| println!("{}", process_info.total_bytes);
 
     match copy_with_progress(&test_file, &test_file_out, &options, func_test) {
-        Err(err) => {
-            match err.kind {
-                ErrorKind::InvalidFile => {
-                    let wrong_path =
-                        format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
-                    assert_eq!(wrong_path, err.to_string());
-                }
-                _ => {
-                    panic!("wrong error");
-                }
+        Err(err) => match err.kind {
+            ErrorKind::InvalidFile => {
+                let wrong_path = format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
+                assert_eq!(wrong_path, err.to_string());
             }
-        }
+            _ => {
+                panic!("wrong error");
+            }
+        },
         Ok(_) => {
             panic!("should be error");
         }
     }
 }
-
 
 #[test]
 fn it_copy_with_progress_work_dif_buf_size() {
@@ -399,7 +377,9 @@ fn it_copy_with_progress_work_dif_buf_size() {
     options.buffer_size = 1;
     let (tx, rx) = mpsc::channel();
     thread::spawn(move || {
-        let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+        };
         copy_with_progress(&test_file, &test_file_out, &options, func_test).unwrap();
         assert!(test_file.exists());
         assert!(test_file_out.exists());
@@ -411,7 +391,9 @@ fn it_copy_with_progress_work_dif_buf_size() {
         options.overwrite = true;
         let (tx, rx) = mpsc::channel();
         thread::spawn(move || {
-            let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+            let func_test = |process_info: TransitProcess| {
+                tx.send(process_info).unwrap();
+            };
             copy_with_progress(&test_file, &test_file_out, &options, func_test).unwrap();
         });
         for i in 1..6 {
@@ -419,7 +401,6 @@ fn it_copy_with_progress_work_dif_buf_size() {
             assert_eq!(i * 2, process_info.copied_bytes);
             assert_eq!(10, process_info.total_bytes);
         }
-
     });
     for i in 1..11 {
         let process_info: TransitProcess = rx.recv().unwrap();
@@ -427,7 +408,6 @@ fn it_copy_with_progress_work_dif_buf_size() {
         assert_eq!(10, process_info.total_bytes);
     }
 }
-
 
 #[test]
 fn it_copy_with_progress_source_not_exist() {
@@ -447,23 +427,20 @@ fn it_copy_with_progress_source_not_exist() {
     };
     match copy_with_progress(&test_file, &test_file_out, &options, func_test) {
         Ok(_) => panic!("should be error"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::NotFound => {
-                    let wrong_path = format!(
-                        "Path \"{}\" does not exist or you don't have \
-                                              access!",
-                        test_file.to_str().unwrap()
-                    );
+        Err(err) => match err.kind {
+            ErrorKind::NotFound => {
+                let wrong_path = format!(
+                    "Path \"{}\" does not exist or you don't have \
+                     access!",
+                    test_file.to_str().unwrap()
+                );
 
-                    assert_eq!(wrong_path, err.to_string());
-                    ()
-                }
-                _ => panic!("wrong error"),
+                assert_eq!(wrong_path, err.to_string());
+                ()
             }
-        }
+            _ => panic!("wrong error"),
+        },
     }
-
 }
 
 #[test]
@@ -495,7 +472,6 @@ fn it_copy_with_progress_exist_overwrite() {
         }
         Err(err) => panic!(err.to_string()),
     }
-
 }
 
 #[test]
@@ -528,7 +504,6 @@ fn it_copy_with_progress_exist_not_overwrite() {
             ()
         }
     }
-
 }
 
 #[test]
@@ -592,7 +567,6 @@ fn it_copy_with_progress_exist_overwrite_and_skip_exist() {
     }
 }
 
-
 #[test]
 fn it_move_work() {
     let mut test_file = PathBuf::from(TEST_FOLDER);
@@ -636,25 +610,20 @@ fn it_move_not_file() {
     let options = CopyOptions::new();
 
     match move_file(&test_file, &test_file_out, &options) {
-        Err(err) => {
-            match err.kind {
-                ErrorKind::InvalidFile => {
-                    let wrong_path =
-                        format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
-                    assert_eq!(wrong_path, err.to_string());
-                }
-                _ => {
-                    panic!("wrong error");
-                }
+        Err(err) => match err.kind {
+            ErrorKind::InvalidFile => {
+                let wrong_path = format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
+                assert_eq!(wrong_path, err.to_string());
             }
-        }
+            _ => {
+                panic!("wrong error");
+            }
+        },
         Ok(_) => {
             panic!("should be error");
         }
     }
 }
-
-
 
 #[test]
 fn it_move_source_not_exist() {
@@ -671,23 +640,20 @@ fn it_move_source_not_exist() {
     let options = CopyOptions::new();
     match move_file(&test_file, &test_file_out, &options) {
         Ok(_) => panic!("should be error"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::NotFound => {
-                    let wrong_path = format!(
-                        "Path \"{}\" does not exist or you don't have \
-                                              access!",
-                        test_file.to_str().unwrap()
-                    );
+        Err(err) => match err.kind {
+            ErrorKind::NotFound => {
+                let wrong_path = format!(
+                    "Path \"{}\" does not exist or you don't have \
+                     access!",
+                    test_file.to_str().unwrap()
+                );
 
-                    assert_eq!(wrong_path, err.to_string());
-                    ()
-                }
-                _ => panic!("wrong error"),
+                assert_eq!(wrong_path, err.to_string());
+                ()
             }
-        }
+            _ => panic!("wrong error"),
+        },
     }
-
 }
 
 #[test]
@@ -716,7 +682,6 @@ fn it_move_exist_overwrite() {
         }
         Err(err) => panic!(err.to_string()),
     }
-
 }
 
 #[test]
@@ -746,7 +711,6 @@ fn it_move_exist_not_overwrite() {
             ()
         }
     }
-
 }
 
 #[test]
@@ -804,10 +768,6 @@ fn it_move_exist_overwrite_and_skip_exist() {
     }
 }
 
-
-
-
-
 #[test]
 fn it_move_with_progress_work() {
     let mut test_file = PathBuf::from(TEST_FOLDER);
@@ -828,7 +788,9 @@ fn it_move_with_progress_work() {
     thread::spawn(move || {
         let old_name = test_file.file_name();
         let old_content = read_to_string(&test_file).unwrap();
-        let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+        };
         move_file_with_progress(&test_file, &test_file_out, &options, func_test).unwrap();
         assert!(!test_file.exists());
         assert!(test_file_out.exists());
@@ -862,25 +824,20 @@ fn it_move_progress_not_file() {
     let func_test = |process_info: TransitProcess| println!("{}", process_info.total_bytes);
 
     match move_file_with_progress(&test_file, &test_file_out, &options, func_test) {
-        Err(err) => {
-            match err.kind {
-                ErrorKind::InvalidFile => {
-                    let wrong_path =
-                        format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
-                    assert_eq!(wrong_path, err.to_string());
-                }
-                _ => {
-                    panic!("wrong error");
-                }
+        Err(err) => match err.kind {
+            ErrorKind::InvalidFile => {
+                let wrong_path = format!("Path \"{}\" is not a file!", test_file.to_str().unwrap());
+                assert_eq!(wrong_path, err.to_string());
             }
-        }
+            _ => {
+                panic!("wrong error");
+            }
+        },
         Ok(_) => {
             panic!("should be error");
         }
     }
 }
-
-
 
 #[test]
 fn it_move_with_progress_work_dif_buf_size() {
@@ -902,7 +859,9 @@ fn it_move_with_progress_work_dif_buf_size() {
     thread::spawn(move || {
         let old_name = test_file.file_name();
         let old_content = read_to_string(&test_file).unwrap();
-        let func_test = |process_info: TransitProcess| { tx.send(process_info).unwrap(); };
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+        };
         move_file_with_progress(&test_file, &test_file_out, &options, func_test).unwrap();
         assert!(!test_file.exists());
         assert!(test_file_out.exists());
@@ -916,7 +875,6 @@ fn it_move_with_progress_work_dif_buf_size() {
         assert_eq!(10, process_info.total_bytes);
     }
 }
-
 
 #[test]
 fn it_move_with_progress_source_not_exist() {
@@ -936,23 +894,20 @@ fn it_move_with_progress_source_not_exist() {
     };
     match move_file_with_progress(&test_file, &test_file_out, &options, func_test) {
         Ok(_) => panic!("should be error"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::NotFound => {
-                    let wrong_path = format!(
-                        "Path \"{}\" does not exist or you don't have \
-                                              access!",
-                        test_file.to_str().unwrap()
-                    );
+        Err(err) => match err.kind {
+            ErrorKind::NotFound => {
+                let wrong_path = format!(
+                    "Path \"{}\" does not exist or you don't have \
+                     access!",
+                    test_file.to_str().unwrap()
+                );
 
-                    assert_eq!(wrong_path, err.to_string());
-                    ()
-                }
-                _ => panic!("wrong error"),
+                assert_eq!(wrong_path, err.to_string());
+                ()
             }
-        }
+            _ => panic!("wrong error"),
+        },
     }
-
 }
 
 #[test]
@@ -984,7 +939,6 @@ fn it_move_with_progress_exist_overwrite() {
         }
         Err(err) => panic!(err.to_string()),
     }
-
 }
 
 #[test]
@@ -1017,7 +971,6 @@ fn it_move_with_progress_exist_not_overwrite() {
             ()
         }
     }
-
 }
 
 #[test]
@@ -1059,7 +1012,6 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
     test_file_out.push("test.txt");
     fs_extra::dir::create_all(&test_file.parent().unwrap(), true).unwrap();
     fs_extra::dir::create_all(&test_file_out.parent().unwrap(), true).unwrap();
-
 
     write_all(&test_file, "test_data").unwrap();
     let mut options = CopyOptions::new();

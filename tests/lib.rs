@@ -7,7 +7,6 @@ extern crate fs_extra;
 use fs_extra::*;
 use fs_extra::error::*;
 
-
 fn files_eq<P, Q>(file1: P, file2: Q) -> bool
 where
     P: AsRef<Path>,
@@ -16,9 +15,7 @@ where
     let content1 = fs_extra::file::read_to_string(file1).unwrap();
     let content2 = fs_extra::file::read_to_string(file2).unwrap();
     content1 == content2
-
 }
-
 
 fn compare_dir<P, Q>(path_from: P, path_to: Q) -> bool
 where
@@ -62,12 +59,10 @@ where
     true
 }
 
-
 const TEST_FOLDER: &'static str = "./tests/temp/lib";
 
 #[test]
 fn it_copy_work() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_work");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -111,8 +106,6 @@ fn it_copy_work() {
     assert!(!file4.1.exists());
     assert!(!file5.1.exists());
 
-
-
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
@@ -127,9 +120,7 @@ fn it_copy_work() {
     assert!(compare_dir(&dir2.0, &path_to));
     assert!(files_eq(&file1.0, &file1.1));
     assert!(files_eq(&file2.0, &file2.1));
-
 }
-
 
 #[test]
 fn it_copy_source_not_exist() {
@@ -152,10 +143,8 @@ fn it_copy_source_not_exist() {
     assert!(!sub.0.exists());
     assert!(!sub.1.exists());
 
-
     assert!(!file1.0.exists());
     assert!(!file1.1.exists());
-
 
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
@@ -165,19 +154,15 @@ fn it_copy_source_not_exist() {
     let options = dir::CopyOptions::new();
     match copy_items(&from_paths, &path_to, &options) {
         Ok(_) => panic!("Should be a error!"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::NotFound => {}
-                _ => {}
-            }
-        }
+        Err(err) => match err.kind {
+            ErrorKind::NotFound => {}
+            _ => {}
+        },
     };
 }
 
-
 #[test]
 fn it_copy_exist_overwrite() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_exist_overwrite");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -199,7 +184,6 @@ fn it_copy_exist_overwrite() {
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
 
-
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
     assert!(dir2.0.exists());
@@ -228,7 +212,6 @@ fn it_copy_exist_overwrite() {
     assert!(file4.1.exists());
     assert!(!file5.1.exists());
 
-
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
@@ -244,12 +227,10 @@ fn it_copy_exist_overwrite() {
     assert!(compare_dir(&dir2.0, &path_to));
     assert!(files_eq(&file1.0, &file1.1));
     assert!(files_eq(&file2.0, &file2.1));
-
 }
 
 #[test]
 fn it_copy_exist_not_overwrite() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_exist_not_overwrite");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -271,7 +252,6 @@ fn it_copy_exist_not_overwrite() {
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
 
-
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
     assert!(dir2.0.exists());
@@ -300,7 +280,6 @@ fn it_copy_exist_not_overwrite() {
     assert!(file4.1.exists());
     assert!(!file5.1.exists());
 
-
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
@@ -310,21 +289,15 @@ fn it_copy_exist_not_overwrite() {
     let options = dir::CopyOptions::new();
     match copy_items(&from_paths, &path_to, &options) {
         Ok(_) => panic!("Should be a error!"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::AlreadyExists => {}
-                _ => panic!(format!("{}", err.to_string())),
-            }
-        }
+        Err(err) => match err.kind {
+            ErrorKind::AlreadyExists => {}
+            _ => panic!(format!("{}", err.to_string())),
+        },
     };
-
-
 }
-
 
 #[test]
 fn it_copy_exist_skip() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_exist_skip");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -346,7 +319,6 @@ fn it_copy_exist_skip() {
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
 
-
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
     assert!(dir2.0.exists());
@@ -375,7 +347,6 @@ fn it_copy_exist_skip() {
     assert!(file4.1.exists());
     assert!(!file5.1.exists());
 
-
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
@@ -391,12 +362,10 @@ fn it_copy_exist_skip() {
     assert!(compare_dir(&dir2.0, &path_to));
     assert!(!files_eq(&file1.0, &file1.1));
     assert!(files_eq(&file2.0, &file2.1));
-
 }
 
 #[test]
 fn it_copy_exist_overwrite_and_skip_exist() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_exist_overwrite_and_skip_exist");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -418,7 +387,6 @@ fn it_copy_exist_overwrite_and_skip_exist() {
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
 
-
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
     assert!(dir2.0.exists());
@@ -447,7 +415,6 @@ fn it_copy_exist_overwrite_and_skip_exist() {
     assert!(file4.1.exists());
     assert!(!file5.1.exists());
 
-
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
@@ -464,12 +431,10 @@ fn it_copy_exist_overwrite_and_skip_exist() {
     assert!(compare_dir(&dir2.0, &path_to));
     assert!(files_eq(&file1.0, &file1.1));
     assert!(files_eq(&file2.0, &file2.1));
-
 }
 
 #[test]
 fn it_copy_using_first_levels() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_using_first_levels");
     let path_to = test_dir.join("out");
     let d_level_1 = (test_dir.join("d_level_1"), path_to.join("d_level_1"));
@@ -479,26 +444,56 @@ fn it_copy_using_first_levels() {
     let d_level_5 = (d_level_4.0.join("d_level_5"), d_level_4.1.join("d_level_5"));
 
     let d2_level_1 = (test_dir.join("d2_level_1"), path_to.join("d2_level_1"));
-    let d2_level_2 = (d_level_1.0.join("d2_level_2"), d_level_1.1.join("d2_level_2"));
-    let d2_level_3 = (d_level_2.0.join("d2_level_3"), d_level_2.1.join("d2_level_3"));
-    let d2_level_4 = (d_level_3.0.join("d2_level_4"), d_level_3.1.join("d2_level_4"));
-    let d2_level_5 = (d_level_4.0.join("d2_level_5"), d_level_4.1.join("d2_level_5"));
+    let d2_level_2 = (
+        d_level_1.0.join("d2_level_2"),
+        d_level_1.1.join("d2_level_2"),
+    );
+    let d2_level_3 = (
+        d_level_2.0.join("d2_level_3"),
+        d_level_2.1.join("d2_level_3"),
+    );
+    let d2_level_4 = (
+        d_level_3.0.join("d2_level_4"),
+        d_level_3.1.join("d2_level_4"),
+    );
+    let d2_level_5 = (
+        d_level_4.0.join("d2_level_5"),
+        d_level_4.1.join("d2_level_5"),
+    );
 
     let d3_level_1 = (test_dir.join("d3_level_1"), path_to.join("d3_level_1"));
 
-    let file1 = (d_level_1.0.join("file1.txt"),d_level_1.1.join("file1.txt"));
-    let file2 = (d_level_2.0.join("file2.txt"),d_level_2.1.join("file2.txt"));
-    let file3 = (d_level_3.0.join("file3.txt"),d_level_3.1.join("file3.txt"));
-    let file4 = (d_level_4.0.join("file4.txt"),d_level_4.1.join("file4.txt"));
-    let file5 = (d_level_5.0.join("file5.txt"),d_level_5.1.join("file5.txt"));
+    let file1 = (d_level_1.0.join("file1.txt"), d_level_1.1.join("file1.txt"));
+    let file2 = (d_level_2.0.join("file2.txt"), d_level_2.1.join("file2.txt"));
+    let file3 = (d_level_3.0.join("file3.txt"), d_level_3.1.join("file3.txt"));
+    let file4 = (d_level_4.0.join("file4.txt"), d_level_4.1.join("file4.txt"));
+    let file5 = (d_level_5.0.join("file5.txt"), d_level_5.1.join("file5.txt"));
 
-    let file21 = (d2_level_1.0.join("file21.txt"),d2_level_1.1.join("file21.txt"));
-    let file22 = (d2_level_2.0.join("file22.txt"),d2_level_2.1.join("file22.txt"));
-    let file23 = (d2_level_3.0.join("file23.txt"),d2_level_3.1.join("file23.txt"));
-    let file24 = (d2_level_4.0.join("file24.txt"),d2_level_4.1.join("file24.txt"));
-    let file25 = (d2_level_5.0.join("file25.txt"),d2_level_5.1.join("file25.txt"));
+    let file21 = (
+        d2_level_1.0.join("file21.txt"),
+        d2_level_1.1.join("file21.txt"),
+    );
+    let file22 = (
+        d2_level_2.0.join("file22.txt"),
+        d2_level_2.1.join("file22.txt"),
+    );
+    let file23 = (
+        d2_level_3.0.join("file23.txt"),
+        d2_level_3.1.join("file23.txt"),
+    );
+    let file24 = (
+        d2_level_4.0.join("file24.txt"),
+        d2_level_4.1.join("file24.txt"),
+    );
+    let file25 = (
+        d2_level_5.0.join("file25.txt"),
+        d2_level_5.1.join("file25.txt"),
+    );
 
-    let file31 = (d3_level_1.0.join("file31.txt"),d3_level_1.1.join("file31.txt"));
+    let file31 = (
+        d3_level_1.0.join("file31.txt"),
+        d3_level_1.1.join("file31.txt"),
+    );
 
     dir::create_all(&d_level_1.0, true).unwrap();
     dir::create_all(&d_level_2.0, true).unwrap();
@@ -585,7 +580,6 @@ fn it_copy_using_first_levels() {
     assert!(!file25.1.exists());
 
     assert!(!file31.1.exists());
-
 
     let mut from_paths = Vec::new();
     from_paths.push(d_level_1.0.as_path());
@@ -630,10 +624,8 @@ fn it_copy_using_first_levels() {
     assert!(files_eq(&file31.0, &file31.1));
 }
 
-
 #[test]
 fn it_copy_using_four_levels() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_using_four_levels");
     let path_to = test_dir.join("out");
     let d_level_1 = (test_dir.join("d_level_1"), path_to.join("d_level_1"));
@@ -643,26 +635,56 @@ fn it_copy_using_four_levels() {
     let d_level_5 = (d_level_4.0.join("d_level_5"), d_level_4.1.join("d_level_5"));
 
     let d2_level_1 = (test_dir.join("d2_level_1"), path_to.join("d2_level_1"));
-    let d2_level_2 = (d_level_1.0.join("d2_level_2"), d_level_1.1.join("d2_level_2"));
-    let d2_level_3 = (d_level_2.0.join("d2_level_3"), d_level_2.1.join("d2_level_3"));
-    let d2_level_4 = (d_level_3.0.join("d2_level_4"), d_level_3.1.join("d2_level_4"));
-    let d2_level_5 = (d_level_4.0.join("d2_level_5"), d_level_4.1.join("d2_level_5"));
+    let d2_level_2 = (
+        d_level_1.0.join("d2_level_2"),
+        d_level_1.1.join("d2_level_2"),
+    );
+    let d2_level_3 = (
+        d_level_2.0.join("d2_level_3"),
+        d_level_2.1.join("d2_level_3"),
+    );
+    let d2_level_4 = (
+        d_level_3.0.join("d2_level_4"),
+        d_level_3.1.join("d2_level_4"),
+    );
+    let d2_level_5 = (
+        d_level_4.0.join("d2_level_5"),
+        d_level_4.1.join("d2_level_5"),
+    );
 
     let d3_level_1 = (test_dir.join("d3_level_1"), path_to.join("d3_level_1"));
 
-    let file1 = (d_level_1.0.join("file1.txt"),d_level_1.1.join("file1.txt"));
-    let file2 = (d_level_2.0.join("file2.txt"),d_level_2.1.join("file2.txt"));
-    let file3 = (d_level_3.0.join("file3.txt"),d_level_3.1.join("file3.txt"));
-    let file4 = (d_level_4.0.join("file4.txt"),d_level_4.1.join("file4.txt"));
-    let file5 = (d_level_5.0.join("file5.txt"),d_level_5.1.join("file5.txt"));
+    let file1 = (d_level_1.0.join("file1.txt"), d_level_1.1.join("file1.txt"));
+    let file2 = (d_level_2.0.join("file2.txt"), d_level_2.1.join("file2.txt"));
+    let file3 = (d_level_3.0.join("file3.txt"), d_level_3.1.join("file3.txt"));
+    let file4 = (d_level_4.0.join("file4.txt"), d_level_4.1.join("file4.txt"));
+    let file5 = (d_level_5.0.join("file5.txt"), d_level_5.1.join("file5.txt"));
 
-    let file21 = (d2_level_1.0.join("file21.txt"),d2_level_1.1.join("file21.txt"));
-    let file22 = (d2_level_2.0.join("file22.txt"),d2_level_2.1.join("file22.txt"));
-    let file23 = (d2_level_3.0.join("file23.txt"),d2_level_3.1.join("file23.txt"));
-    let file24 = (d2_level_4.0.join("file24.txt"),d2_level_4.1.join("file24.txt"));
-    let file25 = (d2_level_5.0.join("file25.txt"),d2_level_5.1.join("file25.txt"));
+    let file21 = (
+        d2_level_1.0.join("file21.txt"),
+        d2_level_1.1.join("file21.txt"),
+    );
+    let file22 = (
+        d2_level_2.0.join("file22.txt"),
+        d2_level_2.1.join("file22.txt"),
+    );
+    let file23 = (
+        d2_level_3.0.join("file23.txt"),
+        d2_level_3.1.join("file23.txt"),
+    );
+    let file24 = (
+        d2_level_4.0.join("file24.txt"),
+        d2_level_4.1.join("file24.txt"),
+    );
+    let file25 = (
+        d2_level_5.0.join("file25.txt"),
+        d2_level_5.1.join("file25.txt"),
+    );
 
-    let file31 = (d3_level_1.0.join("file31.txt"),d3_level_1.1.join("file31.txt"));
+    let file31 = (
+        d3_level_1.0.join("file31.txt"),
+        d3_level_1.1.join("file31.txt"),
+    );
 
     dir::create_all(&d_level_1.0, true).unwrap();
     dir::create_all(&d_level_2.0, true).unwrap();
@@ -749,7 +771,6 @@ fn it_copy_using_four_levels() {
     assert!(!file25.1.exists());
 
     assert!(!file31.1.exists());
-
 
     let mut from_paths = Vec::new();
     from_paths.push(d_level_1.0.as_path());
@@ -794,10 +815,8 @@ fn it_copy_using_four_levels() {
     assert!(files_eq(&file31.0, &file31.1));
 }
 
-
 #[test]
 fn it_copy_progress_work() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_progress_work");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -841,7 +860,6 @@ fn it_copy_progress_work() {
     assert!(!file4.1.exists());
     assert!(!file5.1.exists());
 
-
     let options = dir::CopyOptions::new();
     let (tx, rx) = mpsc::channel();
     let result = thread::spawn(move || {
@@ -862,7 +880,6 @@ fn it_copy_progress_work() {
         assert!(compare_dir(&dir2.0, &path_to));
         assert!(files_eq(&file1.0, &file1.1));
         assert!(files_eq(&file2.0, &file2.1));
-
     }).join();
 
     loop {
@@ -887,12 +904,10 @@ fn it_copy_progress_work() {
         Ok(_) => {}
         Err(err) => panic!(err),
     }
-
 }
 
 #[test]
 fn it_copy_with_progress_work_dif_buf_size() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_with_progress_work_dif_buf_size");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -936,7 +951,6 @@ fn it_copy_with_progress_work_dif_buf_size() {
     assert!(!file4.1.exists());
     assert!(!file5.1.exists());
 
-
     let mut options = dir::CopyOptions::new();
     options.buffer_size = 1;
     let (tx, rx) = mpsc::channel();
@@ -965,13 +979,12 @@ fn it_copy_with_progress_work_dif_buf_size() {
         options.overwrite = true;
         let (tx, rx) = mpsc::channel();
         let result = thread::spawn(move || {
-
             let func_test = |process_info: TransitProcess| {
                 tx.send(process_info).unwrap();
                 dir::TransitProcessResult::ContinueOrAbort
             };
-            let result = copy_items_with_progress(&from_paths, &path_to, &options, func_test)
-                .unwrap();
+            let result =
+                copy_items_with_progress(&from_paths, &path_to, &options, func_test).unwrap();
 
             assert_eq!(40, result);
             assert!(compare_dir(&dir1.0, &path_to));
@@ -998,7 +1011,6 @@ fn it_copy_with_progress_work_dif_buf_size() {
             Ok(_) => {}
             Err(err) => panic!(err),
         }
-
     }).join();
 
     for i in 1..9 {
@@ -1020,11 +1032,7 @@ fn it_copy_with_progress_work_dif_buf_size() {
         Ok(_) => {}
         Err(err) => panic!(err),
     }
-
-
 }
-
-
 
 #[test]
 fn it_copy_with_progress_source_not_exist() {
@@ -1047,39 +1055,31 @@ fn it_copy_with_progress_source_not_exist() {
     assert!(!sub.0.exists());
     assert!(!sub.1.exists());
 
-
     assert!(!file1.0.exists());
     assert!(!file1.1.exists());
-
 
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
     from_paths.push(file1.0.as_path());
 
-
     let func_test = |process_info: TransitProcess| {
         println!("{}", process_info.total_bytes);
         dir::TransitProcessResult::ContinueOrAbort
     };
 
-
     let options = dir::CopyOptions::new();
     match copy_items_with_progress(&from_paths, &path_to, &options, func_test) {
         Ok(_) => panic!("Should be a error!"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::NotFound => {}
-                _ => {}
-            }
-        }
+        Err(err) => match err.kind {
+            ErrorKind::NotFound => {}
+            _ => {}
+        },
     };
 }
 
-
 #[test]
 fn it_copy_with_progress_exist_overwrite() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_with_progress_exist_overwrite");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -1100,7 +1100,6 @@ fn it_copy_with_progress_exist_overwrite() {
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
@@ -1152,7 +1151,6 @@ fn it_copy_with_progress_exist_overwrite() {
         assert!(compare_dir(&dir2.0, &path_to));
         assert!(files_eq(&file1.0, &file1.1));
         assert!(files_eq(&file2.0, &file2.1));
-
     }).join();
 
     match result {
@@ -1163,14 +1161,11 @@ fn it_copy_with_progress_exist_overwrite() {
     match rx.recv() {
         Err(_) => panic!("Errors should not be!"),
         _ => {}
-
     }
-
 }
 
 #[test]
 fn it_copy_with_progress_exist_not_overwrite() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_with_progress_exist_not_overwrite");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -1192,7 +1187,6 @@ fn it_copy_with_progress_exist_not_overwrite() {
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
 
-
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
     assert!(dir2.0.exists());
@@ -1221,7 +1215,6 @@ fn it_copy_with_progress_exist_not_overwrite() {
     assert!(file4.1.exists());
     assert!(!file5.1.exists());
 
-
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
@@ -1234,24 +1227,17 @@ fn it_copy_with_progress_exist_not_overwrite() {
         dir::TransitProcessResult::ContinueOrAbort
     };
 
-
     match copy_items_with_progress(&from_paths, &path_to, &options, func_test) {
         Ok(_) => panic!("Should be a error!"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::AlreadyExists => {}
-                _ => panic!(format!("{}", err.to_string())),
-            }
-        }
+        Err(err) => match err.kind {
+            ErrorKind::AlreadyExists => {}
+            _ => panic!(format!("{}", err.to_string())),
+        },
     };
-
-
 }
-
 
 #[test]
 fn it_copy_with_progress_exist_skip_exist() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_with_progress_exist_skip_exist");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -1273,7 +1259,6 @@ fn it_copy_with_progress_exist_skip_exist() {
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
 
-
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
     assert!(dir2.0.exists());
@@ -1301,8 +1286,6 @@ fn it_copy_with_progress_exist_skip_exist() {
     assert!(file3.1.exists());
     assert!(file4.1.exists());
     assert!(!file5.1.exists());
-
-
 
     let mut options = dir::CopyOptions::new();
     options.skip_exist = true;
@@ -1326,7 +1309,6 @@ fn it_copy_with_progress_exist_skip_exist() {
         assert!(compare_dir(&dir2.0, &path_to));
         assert!(!files_eq(&file1.0, &file1.1));
         assert!(files_eq(&file2.0, &file2.1));
-
     }).join();
 
     match result {
@@ -1337,10 +1319,7 @@ fn it_copy_with_progress_exist_skip_exist() {
     match rx.recv() {
         Err(_) => panic!("Errors should not be!"),
         _ => {}
-
     }
-
-
 }
 
 #[test]
@@ -1367,7 +1346,6 @@ fn it_copy_with_progress_exist_overwrite_and_skip_exist() {
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
 
-
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
     assert!(dir2.0.exists());
@@ -1419,7 +1397,6 @@ fn it_copy_with_progress_exist_overwrite_and_skip_exist() {
         assert!(compare_dir(&dir2.0, &path_to));
         assert!(files_eq(&file1.0, &file1.1));
         assert!(files_eq(&file2.0, &file2.1));
-
     }).join();
 
     match result {
@@ -1430,14 +1407,11 @@ fn it_copy_with_progress_exist_overwrite_and_skip_exist() {
     match rx.recv() {
         Err(_) => panic!("Errors should not be!"),
         _ => {}
-
     }
 }
 
-
 #[test]
 fn it_copy_with_progress_using_first_levels() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_with_progress_using_first_levels");
     let path_to = test_dir.join("out");
     let d_level_1 = (test_dir.join("d_level_1"), path_to.join("d_level_1"));
@@ -1447,26 +1421,56 @@ fn it_copy_with_progress_using_first_levels() {
     let d_level_5 = (d_level_4.0.join("d_level_5"), d_level_4.1.join("d_level_5"));
 
     let d2_level_1 = (test_dir.join("d2_level_1"), path_to.join("d2_level_1"));
-    let d2_level_2 = (d_level_1.0.join("d2_level_2"), d_level_1.1.join("d2_level_2"));
-    let d2_level_3 = (d_level_2.0.join("d2_level_3"), d_level_2.1.join("d2_level_3"));
-    let d2_level_4 = (d_level_3.0.join("d2_level_4"), d_level_3.1.join("d2_level_4"));
-    let d2_level_5 = (d_level_4.0.join("d2_level_5"), d_level_4.1.join("d2_level_5"));
+    let d2_level_2 = (
+        d_level_1.0.join("d2_level_2"),
+        d_level_1.1.join("d2_level_2"),
+    );
+    let d2_level_3 = (
+        d_level_2.0.join("d2_level_3"),
+        d_level_2.1.join("d2_level_3"),
+    );
+    let d2_level_4 = (
+        d_level_3.0.join("d2_level_4"),
+        d_level_3.1.join("d2_level_4"),
+    );
+    let d2_level_5 = (
+        d_level_4.0.join("d2_level_5"),
+        d_level_4.1.join("d2_level_5"),
+    );
 
     let d3_level_1 = (test_dir.join("d3_level_1"), path_to.join("d3_level_1"));
 
-    let file1 = (d_level_1.0.join("file1.txt"),d_level_1.1.join("file1.txt"));
-    let file2 = (d_level_2.0.join("file2.txt"),d_level_2.1.join("file2.txt"));
-    let file3 = (d_level_3.0.join("file3.txt"),d_level_3.1.join("file3.txt"));
-    let file4 = (d_level_4.0.join("file4.txt"),d_level_4.1.join("file4.txt"));
-    let file5 = (d_level_5.0.join("file5.txt"),d_level_5.1.join("file5.txt"));
+    let file1 = (d_level_1.0.join("file1.txt"), d_level_1.1.join("file1.txt"));
+    let file2 = (d_level_2.0.join("file2.txt"), d_level_2.1.join("file2.txt"));
+    let file3 = (d_level_3.0.join("file3.txt"), d_level_3.1.join("file3.txt"));
+    let file4 = (d_level_4.0.join("file4.txt"), d_level_4.1.join("file4.txt"));
+    let file5 = (d_level_5.0.join("file5.txt"), d_level_5.1.join("file5.txt"));
 
-    let file21 = (d2_level_1.0.join("file21.txt"),d2_level_1.1.join("file21.txt"));
-    let file22 = (d2_level_2.0.join("file22.txt"),d2_level_2.1.join("file22.txt"));
-    let file23 = (d2_level_3.0.join("file23.txt"),d2_level_3.1.join("file23.txt"));
-    let file24 = (d2_level_4.0.join("file24.txt"),d2_level_4.1.join("file24.txt"));
-    let file25 = (d2_level_5.0.join("file25.txt"),d2_level_5.1.join("file25.txt"));
+    let file21 = (
+        d2_level_1.0.join("file21.txt"),
+        d2_level_1.1.join("file21.txt"),
+    );
+    let file22 = (
+        d2_level_2.0.join("file22.txt"),
+        d2_level_2.1.join("file22.txt"),
+    );
+    let file23 = (
+        d2_level_3.0.join("file23.txt"),
+        d2_level_3.1.join("file23.txt"),
+    );
+    let file24 = (
+        d2_level_4.0.join("file24.txt"),
+        d2_level_4.1.join("file24.txt"),
+    );
+    let file25 = (
+        d2_level_5.0.join("file25.txt"),
+        d2_level_5.1.join("file25.txt"),
+    );
 
-    let file31 = (d3_level_1.0.join("file31.txt"),d3_level_1.1.join("file31.txt"));
+    let file31 = (
+        d3_level_1.0.join("file31.txt"),
+        d3_level_1.1.join("file31.txt"),
+    );
 
     dir::create_all(&d_level_1.0, true).unwrap();
     dir::create_all(&d_level_2.0, true).unwrap();
@@ -1553,7 +1557,6 @@ fn it_copy_with_progress_using_first_levels() {
     assert!(!file25.1.exists());
 
     assert!(!file31.1.exists());
-
 
     let mut options = dir::CopyOptions::new();
     options.depth = 1;
@@ -1603,7 +1606,6 @@ fn it_copy_with_progress_using_first_levels() {
         assert!(files_eq(&file1.0, &file1.1));
         assert!(files_eq(&file21.0, &file21.1));
         assert!(files_eq(&file31.0, &file31.1));
-
     }).join();
 
     match result {
@@ -1614,14 +1616,11 @@ fn it_copy_with_progress_using_first_levels() {
     match rx.recv() {
         Err(_) => panic!("Errors should not be!"),
         _ => {}
-
     }
 }
 
-
 #[test]
 fn it_copy_with_progress_using_four_levels() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_copy_with_progress_using_four_levels");
     let path_to = test_dir.join("out");
     let d_level_1 = (test_dir.join("d_level_1"), path_to.join("d_level_1"));
@@ -1631,26 +1630,56 @@ fn it_copy_with_progress_using_four_levels() {
     let d_level_5 = (d_level_4.0.join("d_level_5"), d_level_4.1.join("d_level_5"));
 
     let d2_level_1 = (test_dir.join("d2_level_1"), path_to.join("d2_level_1"));
-    let d2_level_2 = (d_level_1.0.join("d2_level_2"), d_level_1.1.join("d2_level_2"));
-    let d2_level_3 = (d_level_2.0.join("d2_level_3"), d_level_2.1.join("d2_level_3"));
-    let d2_level_4 = (d_level_3.0.join("d2_level_4"), d_level_3.1.join("d2_level_4"));
-    let d2_level_5 = (d_level_4.0.join("d2_level_5"), d_level_4.1.join("d2_level_5"));
+    let d2_level_2 = (
+        d_level_1.0.join("d2_level_2"),
+        d_level_1.1.join("d2_level_2"),
+    );
+    let d2_level_3 = (
+        d_level_2.0.join("d2_level_3"),
+        d_level_2.1.join("d2_level_3"),
+    );
+    let d2_level_4 = (
+        d_level_3.0.join("d2_level_4"),
+        d_level_3.1.join("d2_level_4"),
+    );
+    let d2_level_5 = (
+        d_level_4.0.join("d2_level_5"),
+        d_level_4.1.join("d2_level_5"),
+    );
 
     let d3_level_1 = (test_dir.join("d3_level_1"), path_to.join("d3_level_1"));
 
-    let file1 = (d_level_1.0.join("file1.txt"),d_level_1.1.join("file1.txt"));
-    let file2 = (d_level_2.0.join("file2.txt"),d_level_2.1.join("file2.txt"));
-    let file3 = (d_level_3.0.join("file3.txt"),d_level_3.1.join("file3.txt"));
-    let file4 = (d_level_4.0.join("file4.txt"),d_level_4.1.join("file4.txt"));
-    let file5 = (d_level_5.0.join("file5.txt"),d_level_5.1.join("file5.txt"));
+    let file1 = (d_level_1.0.join("file1.txt"), d_level_1.1.join("file1.txt"));
+    let file2 = (d_level_2.0.join("file2.txt"), d_level_2.1.join("file2.txt"));
+    let file3 = (d_level_3.0.join("file3.txt"), d_level_3.1.join("file3.txt"));
+    let file4 = (d_level_4.0.join("file4.txt"), d_level_4.1.join("file4.txt"));
+    let file5 = (d_level_5.0.join("file5.txt"), d_level_5.1.join("file5.txt"));
 
-    let file21 = (d2_level_1.0.join("file21.txt"),d2_level_1.1.join("file21.txt"));
-    let file22 = (d2_level_2.0.join("file22.txt"),d2_level_2.1.join("file22.txt"));
-    let file23 = (d2_level_3.0.join("file23.txt"),d2_level_3.1.join("file23.txt"));
-    let file24 = (d2_level_4.0.join("file24.txt"),d2_level_4.1.join("file24.txt"));
-    let file25 = (d2_level_5.0.join("file25.txt"),d2_level_5.1.join("file25.txt"));
+    let file21 = (
+        d2_level_1.0.join("file21.txt"),
+        d2_level_1.1.join("file21.txt"),
+    );
+    let file22 = (
+        d2_level_2.0.join("file22.txt"),
+        d2_level_2.1.join("file22.txt"),
+    );
+    let file23 = (
+        d2_level_3.0.join("file23.txt"),
+        d2_level_3.1.join("file23.txt"),
+    );
+    let file24 = (
+        d2_level_4.0.join("file24.txt"),
+        d2_level_4.1.join("file24.txt"),
+    );
+    let file25 = (
+        d2_level_5.0.join("file25.txt"),
+        d2_level_5.1.join("file25.txt"),
+    );
 
-    let file31 = (d3_level_1.0.join("file31.txt"),d3_level_1.1.join("file31.txt"));
+    let file31 = (
+        d3_level_1.0.join("file31.txt"),
+        d3_level_1.1.join("file31.txt"),
+    );
 
     dir::create_all(&d_level_1.0, true).unwrap();
     dir::create_all(&d_level_2.0, true).unwrap();
@@ -1738,7 +1767,6 @@ fn it_copy_with_progress_using_four_levels() {
 
     assert!(!file31.1.exists());
 
-
     let mut options = dir::CopyOptions::new();
     options.depth = 4;
     let (tx, rx) = mpsc::channel();
@@ -1787,7 +1815,6 @@ fn it_copy_with_progress_using_four_levels() {
         assert!(files_eq(&file1.0, &file1.1));
         assert!(files_eq(&file21.0, &file21.1));
         assert!(files_eq(&file31.0, &file31.1));
-
     }).join();
 
     match result {
@@ -1798,15 +1825,11 @@ fn it_copy_with_progress_using_four_levels() {
     match rx.recv() {
         Err(_) => panic!("Errors should not be!"),
         _ => {}
-
     }
 }
 
-
-
 #[test]
 fn it_move_work() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_move_work");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -1850,8 +1873,6 @@ fn it_move_work() {
     assert!(!file4.1.exists());
     assert!(!file5.1.exists());
 
-
-
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
@@ -1872,9 +1893,7 @@ fn it_move_work() {
     assert!(file3.1.exists());
     assert!(file4.1.exists());
     assert!(file5.1.exists());
-
 }
-
 
 #[test]
 fn it_move_source_not_exist() {
@@ -1897,10 +1916,8 @@ fn it_move_source_not_exist() {
     assert!(!sub.0.exists());
     assert!(!sub.1.exists());
 
-
     assert!(!file1.0.exists());
     assert!(!file1.1.exists());
-
 
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
@@ -1910,19 +1927,15 @@ fn it_move_source_not_exist() {
     let options = dir::CopyOptions::new();
     match move_items(&from_paths, &path_to, &options) {
         Ok(_) => panic!("Should be a error!"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::NotFound => {}
-                _ => {}
-            }
-        }
+        Err(err) => match err.kind {
+            ErrorKind::NotFound => {}
+            _ => {}
+        },
     };
 }
 
-
 #[test]
 fn it_move_exist_overwrite() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_move_exist_overwrite");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -1944,7 +1957,6 @@ fn it_move_exist_overwrite() {
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
 
-
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
     assert!(dir2.0.exists());
@@ -1973,7 +1985,6 @@ fn it_move_exist_overwrite() {
     assert!(file4.1.exists());
     assert!(!file5.1.exists());
 
-
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
@@ -1995,12 +2006,10 @@ fn it_move_exist_overwrite() {
     assert!(file3.1.exists());
     assert!(file4.1.exists());
     assert!(file5.1.exists());
-
 }
 
 #[test]
 fn it_move_exist_not_overwrite() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_move_exist_not_overwrite");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -2022,7 +2031,6 @@ fn it_move_exist_not_overwrite() {
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
 
-
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
     assert!(dir2.0.exists());
@@ -2051,7 +2059,6 @@ fn it_move_exist_not_overwrite() {
     assert!(file4.1.exists());
     assert!(!file5.1.exists());
 
-
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
@@ -2061,21 +2068,15 @@ fn it_move_exist_not_overwrite() {
     let options = dir::CopyOptions::new();
     match move_items(&from_paths, &path_to, &options) {
         Ok(_) => panic!("Should be a error!"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::AlreadyExists => {}
-                _ => panic!(format!("{}", err.to_string())),
-            }
-        }
+        Err(err) => match err.kind {
+            ErrorKind::AlreadyExists => {}
+            _ => panic!(format!("{}", err.to_string())),
+        },
     };
-
-
 }
-
 
 #[test]
 fn it_move_exist_skip() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_move_exist_skip");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -2097,7 +2098,6 @@ fn it_move_exist_skip() {
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
 
-
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
     assert!(dir2.0.exists());
@@ -2125,7 +2125,6 @@ fn it_move_exist_skip() {
     assert!(file3.1.exists());
     assert!(file4.1.exists());
     assert!(!file5.1.exists());
-
 
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
@@ -2147,7 +2146,6 @@ fn it_move_exist_skip() {
 
 #[test]
 fn it_move_exist_overwrite_and_skip_exist() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_move_exist_overwrite_and_skip_exist");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -2168,7 +2166,6 @@ fn it_move_exist_overwrite_and_skip_exist() {
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
@@ -2197,7 +2194,6 @@ fn it_move_exist_overwrite_and_skip_exist() {
     assert!(file3.1.exists());
     assert!(file4.1.exists());
     assert!(!file5.1.exists());
-
 
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
@@ -2223,10 +2219,8 @@ fn it_move_exist_overwrite_and_skip_exist() {
     assert!(file5.1.exists());
 }
 
-
 #[test]
 fn it_move_progress_work() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_move_progress_work");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -2269,7 +2263,6 @@ fn it_move_progress_work() {
     assert!(!file3.1.exists());
     assert!(!file4.1.exists());
     assert!(!file5.1.exists());
-
 
     let options = dir::CopyOptions::new();
     let (tx, rx) = mpsc::channel();
@@ -2321,10 +2314,7 @@ fn it_move_progress_work() {
         Ok(_) => {}
         Err(err) => panic!(err),
     }
-
 }
-
-
 
 #[test]
 fn it_move_with_progress_source_not_exist() {
@@ -2347,16 +2337,13 @@ fn it_move_with_progress_source_not_exist() {
     assert!(!sub.0.exists());
     assert!(!sub.1.exists());
 
-
     assert!(!file1.0.exists());
     assert!(!file1.1.exists());
-
 
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
     from_paths.push(file1.0.as_path());
-
 
     let func_test = |process_info: TransitProcess| {
         println!("{}", process_info.total_bytes);
@@ -2365,19 +2352,15 @@ fn it_move_with_progress_source_not_exist() {
     let options = dir::CopyOptions::new();
     match move_items_with_progress(&from_paths, &path_to, &options, func_test) {
         Ok(_) => panic!("Should be a error!"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::NotFound => {}
-                _ => {}
-            }
-        }
+        Err(err) => match err.kind {
+            ErrorKind::NotFound => {}
+            _ => {}
+        },
     };
 }
 
-
 #[test]
 fn it_move_with_progress_exist_overwrite() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_move_with_progress_exist_overwrite");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -2398,7 +2381,6 @@ fn it_move_with_progress_exist_overwrite() {
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
@@ -2465,14 +2447,11 @@ fn it_move_with_progress_exist_overwrite() {
     match rx.recv() {
         Err(_) => panic!("Errors should not be!"),
         _ => {}
-
     }
-
 }
 
 #[test]
 fn it_move_with_progress_exist_not_overwrite() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_move_with_progress_exist_not_overwrite");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -2493,7 +2472,6 @@ fn it_move_with_progress_exist_not_overwrite() {
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
@@ -2523,7 +2501,6 @@ fn it_move_with_progress_exist_not_overwrite() {
     assert!(file4.1.exists());
     assert!(!file5.1.exists());
 
-
     let mut from_paths = Vec::new();
     from_paths.push(dir1.0.as_path());
     from_paths.push(dir2.0.as_path());
@@ -2537,21 +2514,15 @@ fn it_move_with_progress_exist_not_overwrite() {
     };
     match move_items_with_progress(&from_paths, &path_to, &options, func_test) {
         Ok(_) => panic!("Should be a error!"),
-        Err(err) => {
-            match err.kind {
-                ErrorKind::AlreadyExists => {}
-                _ => panic!(format!("{}", err.to_string())),
-            }
-        }
+        Err(err) => match err.kind {
+            ErrorKind::AlreadyExists => {}
+            _ => panic!(format!("{}", err.to_string())),
+        },
     };
-
-
 }
-
 
 #[test]
 fn it_move_with_progress_exist_skip_exist() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_move_with_progress_exist_skip_exist");
     let path_to = test_dir.join("out");
     let dir1 = (test_dir.join("dir1"), path_to.join("dir1"));
@@ -2573,7 +2544,6 @@ fn it_move_with_progress_exist_skip_exist() {
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
     dir::create_all(&dir2.1, true).unwrap();
-
 
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
@@ -2603,8 +2573,6 @@ fn it_move_with_progress_exist_skip_exist() {
     assert!(file3.1.exists());
     assert!(file4.1.exists());
     assert!(file5.1.exists());
-
-
 
     let mut options = dir::CopyOptions::new();
     options.skip_exist = true;
@@ -2645,10 +2613,7 @@ fn it_move_with_progress_exist_skip_exist() {
     match rx.recv() {
         Err(_) => panic!("Errors should not be!"),
         _ => {}
-
     }
-
-
 }
 
 #[test]
@@ -2674,7 +2639,6 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(dir1.0.exists());
     assert!(dir1.1.exists());
@@ -2732,7 +2696,6 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
         assert!(file3.1.exists());
         assert!(file4.1.exists());
         assert!(file5.1.exists());
-
     }).join();
 
     match result {
@@ -2743,15 +2706,11 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
     match rx.recv() {
         Err(_) => panic!("Errors should not be!"),
         _ => {}
-
     }
 }
 
-
-
 #[test]
 fn it_remove_work() {
-
     let test_dir = Path::new(TEST_FOLDER).join("it_remove_work");
     let dir1 = test_dir.join("dir1");
     let dir2 = test_dir.join("dir2");
@@ -2794,10 +2753,7 @@ fn it_remove_work() {
     assert!(!file3.exists());
     assert!(!file4.exists());
     assert!(!file5.exists());
-
-
 }
-
 
 #[test]
 fn it_copy_with_progress_exist_user_decide_overwrite() {
@@ -2812,14 +2768,12 @@ fn it_copy_with_progress_exist_user_decide_overwrite() {
     let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
     let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
 
-
     dir::create_all(&dir1.0, true).unwrap();
     dir::create_all(&dir1.1, true).unwrap();
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&dir2.1, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(&dir1.0.exists());
     assert!(&dir1.1.exists());
@@ -2894,9 +2848,7 @@ fn it_copy_with_progress_exist_user_decide_overwrite() {
         assert!(compare_dir(&dir2.0, &path_to));
         assert!(files_eq(&file1.0, &file1.1));
         assert!(files_eq(&file2.0, &file2.1));
-
     }).join();
-
 
     match result {
         Ok(_) => {}
@@ -2904,7 +2856,6 @@ fn it_copy_with_progress_exist_user_decide_overwrite() {
     }
     rx.try_recv().unwrap();
 }
-
 
 #[test]
 fn it_copy_with_progress_exist_user_decide_overwrite_all() {
@@ -2920,14 +2871,12 @@ fn it_copy_with_progress_exist_user_decide_overwrite_all() {
     let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
     let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
 
-
     dir::create_all(&dir1.0, true).unwrap();
     dir::create_all(&dir1.1, true).unwrap();
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&dir2.1, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(&dir1.0.exists());
     assert!(&dir1.1.exists());
@@ -3002,9 +2951,7 @@ fn it_copy_with_progress_exist_user_decide_overwrite_all() {
         assert!(compare_dir(&dir2.0, &path_to));
         assert!(files_eq(&file1.0, &file1.1));
         assert!(files_eq(&file2.0, &file2.1));
-
     }).join();
-
 
     match result {
         Ok(_) => {}
@@ -3026,14 +2973,12 @@ fn it_copy_with_progress_exist_user_decide_skip() {
     let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
     let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
 
-
     dir::create_all(&dir1.0, true).unwrap();
     dir::create_all(&dir1.1, true).unwrap();
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&dir2.1, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(&dir1.0.exists());
     assert!(&dir1.1.exists());
@@ -3108,9 +3053,7 @@ fn it_copy_with_progress_exist_user_decide_skip() {
         assert!(!compare_dir(&dir2.0, &path_to));
         assert!(!files_eq(&file1.0, &file1.1));
         assert!(!files_eq(&file2.0, &file2.1));
-
     }).join();
-
 
     match result {
         Ok(_) => {}
@@ -3132,14 +3075,12 @@ fn it_copy_with_progress_exist_user_decide_skip_all() {
     let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
     let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
 
-
     dir::create_all(&dir1.0, true).unwrap();
     dir::create_all(&dir1.1, true).unwrap();
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&dir2.1, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(&dir1.0.exists());
     assert!(&dir1.1.exists());
@@ -3214,9 +3155,7 @@ fn it_copy_with_progress_exist_user_decide_skip_all() {
         assert!(!compare_dir(&dir2.0, &path_to));
         assert!(!files_eq(&file1.0, &file1.1));
         assert!(!files_eq(&file2.0, &file2.1));
-
     }).join();
-
 
     match result {
         Ok(_) => {}
@@ -3238,14 +3177,12 @@ fn it_copy_with_progress_exist_user_decide_retry() {
     let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
     let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
 
-
     dir::create_all(&dir1.0, true).unwrap();
     dir::create_all(&dir1.1, true).unwrap();
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&dir2.1, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(&dir1.0.exists());
     assert!(&dir1.1.exists());
@@ -3325,9 +3262,7 @@ fn it_copy_with_progress_exist_user_decide_retry() {
         assert!(!compare_dir(&dir2.0, &path_to));
         assert!(!files_eq(&file1.0, &file1.1));
         assert!(!files_eq(&file2.0, &file2.1));
-
     }).join();
-
 
     match result {
         Ok(_) => {}
@@ -3335,10 +3270,6 @@ fn it_copy_with_progress_exist_user_decide_retry() {
     }
     rx.try_recv().unwrap();
 }
-
-
-
-
 
 #[test]
 fn it_move_with_progress_exist_user_decide_overwrite() {
@@ -3353,14 +3284,12 @@ fn it_move_with_progress_exist_user_decide_overwrite() {
     let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
     let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
 
-
     dir::create_all(&dir1.0, true).unwrap();
     dir::create_all(&dir1.1, true).unwrap();
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&dir2.1, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(&dir1.0.exists());
     assert!(&dir1.1.exists());
@@ -3431,9 +3360,7 @@ fn it_move_with_progress_exist_user_decide_overwrite() {
         assert!(!dir2.0.exists());
         assert!(dir1.1.exists());
         assert!(dir2.1.exists());
-
     }).join();
-
 
     match result {
         Ok(_) => {}
@@ -3441,7 +3368,6 @@ fn it_move_with_progress_exist_user_decide_overwrite() {
     }
     rx.try_recv().unwrap();
 }
-
 
 #[test]
 fn it_move_with_progress_exist_user_decide_overwrite_all() {
@@ -3457,14 +3383,12 @@ fn it_move_with_progress_exist_user_decide_overwrite_all() {
     let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
     let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
 
-
     dir::create_all(&dir1.0, true).unwrap();
     dir::create_all(&dir1.1, true).unwrap();
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&dir2.1, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(&dir1.0.exists());
     assert!(&dir1.1.exists());
@@ -3535,9 +3459,7 @@ fn it_move_with_progress_exist_user_decide_overwrite_all() {
         assert!(!dir2.0.exists());
         assert!(dir1.1.exists());
         assert!(dir2.1.exists());
-
     }).join();
-
 
     match result {
         Ok(_) => {}
@@ -3559,14 +3481,12 @@ fn it_move_with_progress_exist_user_decide_skip() {
     let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
     let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
 
-
     dir::create_all(&dir1.0, true).unwrap();
     dir::create_all(&dir1.1, true).unwrap();
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&dir2.1, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(&dir1.0.exists());
     assert!(&dir1.1.exists());
@@ -3637,9 +3557,7 @@ fn it_move_with_progress_exist_user_decide_skip() {
         assert!(dir2.0.exists());
         assert!(dir1.1.exists());
         assert!(dir2.1.exists());
-
     }).join();
-
 
     match result {
         Ok(_) => {}
@@ -3661,14 +3579,12 @@ fn it_move_with_progress_exist_user_decide_skip_all() {
     let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
     let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
 
-
     dir::create_all(&dir1.0, true).unwrap();
     dir::create_all(&dir1.1, true).unwrap();
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&dir2.1, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(&dir1.0.exists());
     assert!(&dir1.1.exists());
@@ -3741,9 +3657,7 @@ fn it_move_with_progress_exist_user_decide_skip_all() {
         assert!(dir2.1.exists());
         assert!(file1.0.exists());
         assert!(file2.0.exists());
-
     }).join();
-
 
     match result {
         Ok(_) => {}
@@ -3765,14 +3679,12 @@ fn it_move_with_progress_exist_user_decide_retry() {
     let file4 = (sub.0.join("file4.txt"), sub.1.join("file4.txt"));
     let file5 = (dir2.0.join("file5.txt"), dir2.1.join("file5.txt"));
 
-
     dir::create_all(&dir1.0, true).unwrap();
     dir::create_all(&dir1.1, true).unwrap();
     dir::create_all(&dir2.0, true).unwrap();
     dir::create_all(&dir2.1, true).unwrap();
     dir::create_all(&sub.0, true).unwrap();
     dir::create_all(&sub.1, true).unwrap();
-
 
     assert!(&dir1.0.exists());
     assert!(&dir1.1.exists());
@@ -3848,9 +3760,7 @@ fn it_move_with_progress_exist_user_decide_retry() {
         assert!(dir2.0.exists());
         assert!(dir1.1.exists());
         assert!(dir2.1.exists());
-
     }).join();
-
 
     match result {
         Ok(_) => {}

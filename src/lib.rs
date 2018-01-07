@@ -1,5 +1,4 @@
 
-
 macro_rules! err {
     ($text:expr, $kind:expr) => {
         return Err(Error::new($kind, $text));
@@ -151,10 +150,8 @@ pub mod file;
 ///
 pub mod dir;
 
-
 use error::*;
 use std::path::Path;
-
 
 /// Copies list directories and files to another place using recursive method. This function will
 /// also copy the permission bits of the original files to destionation files (not for
@@ -208,7 +205,6 @@ where
             } else {
                 err!("Invalid file name", ErrorKind::InvalidFileName);
             }
-
         }
     }
 
@@ -246,7 +242,6 @@ impl Clone for TransitProcess {
         }
     }
 }
-
 
 /// Copies list directories and files to another place using recursive method, with recept
 /// information about process. This function will also copy the permission bits of the
@@ -293,7 +288,6 @@ where
     Q: AsRef<Path>,
     F: FnMut(TransitProcess) -> dir::TransitProcessResult,
 {
-
     let mut total_size = 0;
     let mut list_paths = Vec::new();
     for item in from {
@@ -352,7 +346,6 @@ where
                 } else {
                     err!("Invalid file name", ErrorKind::InvalidFileName);
                 }
-
             } else {
                 err!("Invalid file name", ErrorKind::InvalidFileName);
             }
@@ -380,80 +373,71 @@ where
                         result += val;
                         work = false;
                     }
-                    Err(err) => {
-                        match err.kind {
-                            ErrorKind::AlreadyExists => {
-                                let mut info_process = info_process.clone();
-                                info_process.state = dir::TransitState::Exists;
-                                let user_decide = progress_handler(info_process);
-                                match user_decide {
-                                    dir::TransitProcessResult::Overwrite => {
-                                        file_options.overwrite = true;
-                                    }
-                                    dir::TransitProcessResult::OverwriteAll => {
-                                        file_options.overwrite = true;
-                                        options.overwrite = true;
-                                    }
-                                    dir::TransitProcessResult::Skip => {
-                                        file_options.skip_exist = true;
-                                    }
-                                    dir::TransitProcessResult::SkipAll => {
-                                        file_options.skip_exist = true;
-                                        options.skip_exist = true;
-                                    }
-                                    dir::TransitProcessResult::Retry => {}
-                                    dir::TransitProcessResult::ContinueOrAbort => {
-                                        let err_msg = err.to_string();
-                                        err!(err_msg.as_str(), err.kind)
-                                    }
-                                    dir::TransitProcessResult::Abort => {
-                                        let err_msg = err.to_string();
-                                        err!(err_msg.as_str(), err.kind)
-                                    }
+                    Err(err) => match err.kind {
+                        ErrorKind::AlreadyExists => {
+                            let mut info_process = info_process.clone();
+                            info_process.state = dir::TransitState::Exists;
+                            let user_decide = progress_handler(info_process);
+                            match user_decide {
+                                dir::TransitProcessResult::Overwrite => {
+                                    file_options.overwrite = true;
+                                }
+                                dir::TransitProcessResult::OverwriteAll => {
+                                    file_options.overwrite = true;
+                                    options.overwrite = true;
+                                }
+                                dir::TransitProcessResult::Skip => {
+                                    file_options.skip_exist = true;
+                                }
+                                dir::TransitProcessResult::SkipAll => {
+                                    file_options.skip_exist = true;
+                                    options.skip_exist = true;
+                                }
+                                dir::TransitProcessResult::Retry => {}
+                                dir::TransitProcessResult::ContinueOrAbort => {
+                                    let err_msg = err.to_string();
+                                    err!(err_msg.as_str(), err.kind)
+                                }
+                                dir::TransitProcessResult::Abort => {
+                                    let err_msg = err.to_string();
+                                    err!(err_msg.as_str(), err.kind)
                                 }
                             }
-                            ErrorKind::PermissionDenied => {
-                                let mut info_process = info_process.clone();
-                                info_process.state = dir::TransitState::Exists;
-                                let user_decide = progress_handler(info_process);
-                                match user_decide {
-                                    dir::TransitProcessResult::Overwrite => {
-                                        err!(
-                                            "Overwrite denied for this situation!",
-                                            ErrorKind::Other
-                                        );
-                                    }
-                                    dir::TransitProcessResult::OverwriteAll => {
-                                        err!(
-                                            "Overwrite denied for this situation!",
-                                            ErrorKind::Other
-                                        );
-                                    }
-                                    dir::TransitProcessResult::Skip => {
-                                        file_options.skip_exist = true;
-                                    }
-                                    dir::TransitProcessResult::SkipAll => {
-                                        file_options.skip_exist = true;
-                                        options.skip_exist = true;
-                                    }
-                                    dir::TransitProcessResult::Retry => {}
-                                    dir::TransitProcessResult::ContinueOrAbort => {
-                                        let err_msg = err.to_string();
-                                        err!(err_msg.as_str(), err.kind)
-                                    }
-                                    dir::TransitProcessResult::Abort => {
-                                        let err_msg = err.to_string();
-                                        err!(err_msg.as_str(), err.kind)
-                                    }
-                                }
-                            }
-                            _ => {
-                                let err_msg = err.to_string();
-                                err!(err_msg.as_str(), err.kind)
-                            }
-
                         }
-                    }
+                        ErrorKind::PermissionDenied => {
+                            let mut info_process = info_process.clone();
+                            info_process.state = dir::TransitState::Exists;
+                            let user_decide = progress_handler(info_process);
+                            match user_decide {
+                                dir::TransitProcessResult::Overwrite => {
+                                    err!("Overwrite denied for this situation!", ErrorKind::Other);
+                                }
+                                dir::TransitProcessResult::OverwriteAll => {
+                                    err!("Overwrite denied for this situation!", ErrorKind::Other);
+                                }
+                                dir::TransitProcessResult::Skip => {
+                                    file_options.skip_exist = true;
+                                }
+                                dir::TransitProcessResult::SkipAll => {
+                                    file_options.skip_exist = true;
+                                    options.skip_exist = true;
+                                }
+                                dir::TransitProcessResult::Retry => {}
+                                dir::TransitProcessResult::ContinueOrAbort => {
+                                    let err_msg = err.to_string();
+                                    err!(err_msg.as_str(), err.kind)
+                                }
+                                dir::TransitProcessResult::Abort => {
+                                    let err_msg = err.to_string();
+                                    err!(err_msg.as_str(), err.kind)
+                                }
+                            }
+                        }
+                        _ => {
+                            let err_msg = err.to_string();
+                            err!(err_msg.as_str(), err.kind)
+                        }
+                    },
                 }
             }
         }
@@ -542,7 +526,6 @@ where
                 } else {
                     err!("Invalid file name", ErrorKind::InvalidFileName);
                 }
-
             } else {
                 err!("Invalid file name", ErrorKind::InvalidFileName);
             }
@@ -556,9 +539,7 @@ where
     }
 
     Ok(result)
-
 }
-
 
 /// Moves list directories and files to another place using recursive method, with recept
 /// information about process. This function will also copy the permission bits of the
@@ -651,7 +632,6 @@ where
                 result
             };
             result += dir::move_dir_with_progress(item, &to, &dir_options, handler)?;
-
         } else {
             let mut file_options = file::CopyOptions::new();
             file_options.overwrite = options.overwrite;
@@ -664,7 +644,6 @@ where
                 } else {
                     err!("Invalid file name", ErrorKind::InvalidFileName);
                 }
-
             } else {
                 err!("Invalid file name", ErrorKind::InvalidFileName);
             }
@@ -692,87 +671,76 @@ where
                         result += val;
                         work = false;
                     }
-                    Err(err) => {
-                        match err.kind {
-                            ErrorKind::AlreadyExists => {
-                                let mut info_process = info_process.clone();
-                                info_process.state = dir::TransitState::Exists;
-                                let user_decide = progress_handler(info_process);
-                                match user_decide {
-                                    dir::TransitProcessResult::Overwrite => {
-                                        file_options.overwrite = true;
-                                    }
-                                    dir::TransitProcessResult::OverwriteAll => {
-                                        file_options.overwrite = true;
-                                        options.overwrite = true;
-                                    }
-                                    dir::TransitProcessResult::Skip => {
-                                        file_options.skip_exist = true;
-                                    }
-                                    dir::TransitProcessResult::SkipAll => {
-                                        file_options.skip_exist = true;
-                                        options.skip_exist = true;
-                                    }
-                                    dir::TransitProcessResult::Retry => {}
-                                    dir::TransitProcessResult::ContinueOrAbort => {
-                                        let err_msg = err.to_string();
-                                        err!(err_msg.as_str(), err.kind)
-                                    }
-                                    dir::TransitProcessResult::Abort => {
-                                        let err_msg = err.to_string();
-                                        err!(err_msg.as_str(), err.kind)
-                                    }
+                    Err(err) => match err.kind {
+                        ErrorKind::AlreadyExists => {
+                            let mut info_process = info_process.clone();
+                            info_process.state = dir::TransitState::Exists;
+                            let user_decide = progress_handler(info_process);
+                            match user_decide {
+                                dir::TransitProcessResult::Overwrite => {
+                                    file_options.overwrite = true;
+                                }
+                                dir::TransitProcessResult::OverwriteAll => {
+                                    file_options.overwrite = true;
+                                    options.overwrite = true;
+                                }
+                                dir::TransitProcessResult::Skip => {
+                                    file_options.skip_exist = true;
+                                }
+                                dir::TransitProcessResult::SkipAll => {
+                                    file_options.skip_exist = true;
+                                    options.skip_exist = true;
+                                }
+                                dir::TransitProcessResult::Retry => {}
+                                dir::TransitProcessResult::ContinueOrAbort => {
+                                    let err_msg = err.to_string();
+                                    err!(err_msg.as_str(), err.kind)
+                                }
+                                dir::TransitProcessResult::Abort => {
+                                    let err_msg = err.to_string();
+                                    err!(err_msg.as_str(), err.kind)
                                 }
                             }
-                            ErrorKind::PermissionDenied => {
-                                let mut info_process = info_process.clone();
-                                info_process.state = dir::TransitState::Exists;
-                                let user_decide = progress_handler(info_process);
-                                match user_decide {
-                                    dir::TransitProcessResult::Overwrite => {
-                                        err!(
-                                            "Overwrite denied for this situation!",
-                                            ErrorKind::Other
-                                        );
-                                    }
-                                    dir::TransitProcessResult::OverwriteAll => {
-                                        err!(
-                                            "Overwrite denied for this situation!",
-                                            ErrorKind::Other
-                                        );
-                                    }
-                                    dir::TransitProcessResult::Skip => {
-                                        file_options.skip_exist = true;
-                                    }
-                                    dir::TransitProcessResult::SkipAll => {
-                                        file_options.skip_exist = true;
-                                        options.skip_exist = true;
-                                    }
-                                    dir::TransitProcessResult::Retry => {}
-                                    dir::TransitProcessResult::ContinueOrAbort => {
-                                        let err_msg = err.to_string();
-                                        err!(err_msg.as_str(), err.kind)
-                                    }
-                                    dir::TransitProcessResult::Abort => {
-                                        let err_msg = err.to_string();
-                                        err!(err_msg.as_str(), err.kind)
-                                    }
-                                }
-                            }
-                            _ => {
-                                let err_msg = err.to_string();
-                                err!(err_msg.as_str(), err.kind)
-                            }
-
                         }
-                    }
+                        ErrorKind::PermissionDenied => {
+                            let mut info_process = info_process.clone();
+                            info_process.state = dir::TransitState::Exists;
+                            let user_decide = progress_handler(info_process);
+                            match user_decide {
+                                dir::TransitProcessResult::Overwrite => {
+                                    err!("Overwrite denied for this situation!", ErrorKind::Other);
+                                }
+                                dir::TransitProcessResult::OverwriteAll => {
+                                    err!("Overwrite denied for this situation!", ErrorKind::Other);
+                                }
+                                dir::TransitProcessResult::Skip => {
+                                    file_options.skip_exist = true;
+                                }
+                                dir::TransitProcessResult::SkipAll => {
+                                    file_options.skip_exist = true;
+                                    options.skip_exist = true;
+                                }
+                                dir::TransitProcessResult::Retry => {}
+                                dir::TransitProcessResult::ContinueOrAbort => {
+                                    let err_msg = err.to_string();
+                                    err!(err_msg.as_str(), err.kind)
+                                }
+                                dir::TransitProcessResult::Abort => {
+                                    let err_msg = err.to_string();
+                                    err!(err_msg.as_str(), err.kind)
+                                }
+                            }
+                        }
+                        _ => {
+                            let err_msg = err.to_string();
+                            err!(err_msg.as_str(), err.kind)
+                        }
+                    },
                 }
             }
         }
-
     }
     Ok(result)
-
 }
 
 /// Removes list files or directories.
