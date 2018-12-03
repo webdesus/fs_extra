@@ -1,11 +1,11 @@
-use std::path::Path;
-use std::thread;
-use std::sync::mpsc::{self, TryRecvError};
 use std::fs::read_dir;
+use std::path::Path;
+use std::sync::mpsc::{self, TryRecvError};
+use std::thread;
 
 extern crate fs_extra;
-use fs_extra::*;
 use fs_extra::error::*;
+use fs_extra::*;
 
 fn files_eq<P, Q>(file1: P, file2: Q) -> bool
 where
@@ -813,6 +813,30 @@ fn it_copy_using_four_levels() {
     assert!(files_eq(&file1.0, &file1.1));
     assert!(files_eq(&file21.0, &file21.1));
     assert!(files_eq(&file31.0, &file31.1));
+}
+#[test]
+
+fn it_copy_content_only_opton() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_copy_content_only_opton");
+    let path_to = test_dir.join("out");
+
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+
+    let mut options = dir::CopyOptions::new();
+    options.content_only = true;
+    match copy_items(&vec![&file1.0], &file1.1, &options) {
+        Err(err) => match err.kind {
+            ErrorKind::Other => {
+                assert_eq!(1, 1);
+            }
+            _ => {
+                panic!(format!("wrong error {}", err.to_string()));
+            }
+        },
+        Ok(_) => {
+            panic!("should be error");
+        }
+    }
 }
 
 #[test]
@@ -1829,6 +1853,28 @@ fn it_copy_with_progress_using_four_levels() {
 }
 
 #[test]
+fn it_copy_with_progress_content_only_opton() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_copy_with_progress_content_only_opton");
+    let path_to = test_dir.join("out");
+
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+
+    let mut options = dir::CopyOptions::new();
+    options.content_only = true;
+    let func_test = |process_info: TransitProcess| {
+        println!("{}", process_info.total_bytes);
+        dir::TransitProcessResult::ContinueOrAbort
+    };
+    match copy_items_with_progress(&vec![&file1.0], &file1.1, &options, func_test) {
+        Ok(_) => panic!("Should be a error!"),
+        Err(err) => match err.kind {
+            ErrorKind::Other => {}
+            _ => panic!(format!("wrong error {}", err.to_string())),
+        },
+    };
+}
+
+#[test]
 fn it_move_work() {
     let test_dir = Path::new(TEST_FOLDER).join("it_move_work");
     let path_to = test_dir.join("out");
@@ -2217,6 +2263,29 @@ fn it_move_exist_overwrite_and_skip_exist() {
     assert!(file3.1.exists());
     assert!(file4.1.exists());
     assert!(file5.1.exists());
+}
+#[test]
+fn it_move_content_only_option() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_move_content_only_option");
+    let path_to = test_dir.join("out");
+
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+
+    let mut options = dir::CopyOptions::new();
+    options.content_only = true;
+    match move_items(&vec![&file1.0], &file1.1, &options) {
+        Err(err) => match err.kind {
+            ErrorKind::Other => {
+                assert_eq!(1, 1);
+            }
+            _ => {
+                panic!(format!("wrong error {}", err.to_string()));
+            }
+        },
+        Ok(_) => {
+            panic!("should be error");
+        }
+    }
 }
 
 #[test]
@@ -2707,6 +2776,28 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
         Err(_) => panic!("Errors should not be!"),
         _ => {}
     }
+}
+
+#[test]
+fn it_move_with_progress_content_only_option() {
+    let test_dir = Path::new(TEST_FOLDER).join("it_move_with_progress_content_only_option");
+    let path_to = test_dir.join("out");
+
+    let file1 = (test_dir.join("file1.txt"), path_to.join("file1.txt"));
+
+    let mut options = dir::CopyOptions::new();
+    options.content_only = true;
+    let func_test = |process_info: TransitProcess| {
+        println!("{}", process_info.total_bytes);
+        dir::TransitProcessResult::ContinueOrAbort
+    };
+    match move_items_with_progress(&vec![&file1.0], &file1.1, &options, func_test) {
+        Ok(_) => panic!("Should be a error!"),
+        Err(err) => match err.kind {
+            ErrorKind::Other => {}
+            _ => panic!(format!("wrong error {}", err.to_string())),
+        },
+    };
 }
 
 #[test]

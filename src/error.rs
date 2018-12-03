@@ -1,9 +1,9 @@
-use std::fmt;
 use std::error::Error as StdError;
-use std::io::ErrorKind as IoErrorKind;
-use std::io::Error as IoError;
-use std::path::StripPrefixError;
 use std::ffi::OsString;
+use std::fmt;
+use std::io::Error as IoError;
+use std::io::ErrorKind as IoErrorKind;
+use std::path::StripPrefixError;
 
 /// A list specifying general categories of fs_extra error.
 #[derive(Debug)]
