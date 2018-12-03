@@ -1,8 +1,8 @@
-use std;
-use std::path::Path;
-use std::io::{Read, Write};
 use error::{Error, ErrorKind, Result};
+use std;
 use std::fs::{remove_file, File};
+use std::io::{Read, Write};
+use std::path::Path;
 
 ///	Options and flags which can be used to configure how a file will be  copied  or moved.
 pub struct CopyOptions {

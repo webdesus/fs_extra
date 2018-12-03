@@ -1,8 +1,8 @@
-use std::path::{Path, PathBuf};
 use error::*;
-use std::fs::{create_dir, create_dir_all, read_dir, remove_dir_all, Metadata};
-use std::time::SystemTime;
 use std::collections::{HashMap, HashSet};
+use std::fs::{create_dir, create_dir_all, read_dir, remove_dir_all, Metadata};
+use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 
 ///	Options and flags which can be used to configure how a file will be  copied  or moved.
 #[derive(Clone)]
@@ -15,6 +15,8 @@ pub struct CopyOptions {
     pub buffer_size: usize,
     /// Sets the option true for recursively copying a directory with a new name or place it inside the destination.(same behaviors like cp -r in Unix)
     pub copy_inside: bool,
+    /// Sets the option true, for copy only content without a created folder in the destination folder    
+    pub content_only: bool,
     /// Sets levels reading. Set 0 for read all directory folder. By default 0.
     ///
     /// Warrning: Work only for copy operations!
@@ -39,6 +41,7 @@ impl CopyOptions {
             skip_exist: false,
             buffer_size: 64000, //64kb
             copy_inside: false,
+            content_only: false,
             depth: 0,
         }
     }
@@ -546,21 +549,15 @@ where
         }
         err!("Path is not a directory!", ErrorKind::InvalidFolder);
     }
-    let mut to: PathBuf = to.as_ref().to_path_buf();
-    if options.copy_inside {
-        if to.exists() {
-            if let Some(dir_name) = from.components().last() {
-                to.push(dir_name.as_os_str());
-            } else {
-                err!("Invalid folder from", ErrorKind::InvalidFolder);
-            }
-        }
+    let dir_name;
+    if let Some(val) = from.components().last() {
+        dir_name = val.as_os_str();
     } else {
-        if let Some(dir_name) = from.components().last() {
-            to.push(dir_name.as_os_str());
-        } else {
-            err!("Invalid folder from", ErrorKind::InvalidFolder);
-        }
+        err!("Invalid folder from", ErrorKind::InvalidFolder);
+    }
+    let mut to: PathBuf = to.as_ref().to_path_buf();
+    if !options.content_only && ((options.copy_inside && to.exists()) || !options.copy_inside) {
+        to.push(dir_name);
     }
 
     let mut read_options = DirOptions::new();
@@ -830,20 +827,14 @@ where
         err!("Path is not a directory!", ErrorKind::InvalidFolder);
     }
 
-    if options.copy_inside {
-        if to.exists() {
-            if let Some(dir_name) = from.components().last() {
-                to.push(dir_name.as_os_str());
-            } else {
-                err!("Invalid folder from", ErrorKind::InvalidFolder);
-            }
-        }
+    let dir_name;
+    if let Some(val) = from.components().last() {
+        dir_name = val.as_os_str();
     } else {
-        if let Some(dir_name) = from.components().last() {
-            to.push(dir_name.as_os_str());
-        } else {
-            err!("Invalid folder from", ErrorKind::InvalidFolder);
-        }
+        err!("Invalid folder from", ErrorKind::InvalidFolder);
+    }
+    if !options.content_only && ((options.copy_inside && to.exists()) || !options.copy_inside) {
+        to.push(dir_name);
     }
 
     let mut read_options = DirOptions::new();
@@ -1054,23 +1045,16 @@ where
             ErrorKind::InvalidFolder
         );
     }
-
-    if options.copy_inside {
-        if to.exists() {
-            if let Some(dir_name) = from.components().last() {
-                to.push(dir_name.as_os_str());
-            } else {
-                err!("Invalid folder from", ErrorKind::InvalidFolder);
-            }
-        }
+    let dir_name;
+    if let Some(val) = from.components().last() {
+        dir_name = val.as_os_str();
     } else {
-        if let Some(dir_name) = from.components().last() {
-            to.push(dir_name.as_os_str());
-        } else {
-            err!("Invalid folder from", ErrorKind::InvalidFolder);
-        }
+        err!("Invalid folder from", ErrorKind::InvalidFolder);
     }
 
+    if !options.content_only && ((options.copy_inside && to.exists()) || !options.copy_inside) {
+        to.push(dir_name);
+    }
     let dir_content = get_dir_content(from)?;
     for directory in dir_content.directories {
         let tmp_to = Path::new(&directory).strip_prefix(from)?;
@@ -1185,21 +1169,14 @@ where
         }
         err!("Path is not a directory!", ErrorKind::InvalidFolder);
     }
-
-    if options.copy_inside {
-        if to.exists() {
-            if let Some(dir_name) = from.components().last() {
-                to.push(dir_name.as_os_str());
-            } else {
-                err!("Invalid folder from", ErrorKind::InvalidFolder);
-            }
-        }
+    let dir_name;
+    if let Some(val) = from.components().last() {
+        dir_name = val.as_os_str();
     } else {
-        if let Some(dir_name) = from.components().last() {
-            to.push(dir_name.as_os_str());
-        } else {
-            err!("Invalid folder from", ErrorKind::InvalidFolder);
-        }
+        err!("Invalid folder from", ErrorKind::InvalidFolder);
+    }
+    if !options.content_only && ((options.copy_inside && to.exists()) || !options.copy_inside) {
+        to.push(dir_name);
     }
 
     let dir_content = get_dir_content(from)?;

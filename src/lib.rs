@@ -1,4 +1,3 @@
-
 macro_rules! err {
     ($text:expr, $kind:expr) => {
         return Err(Error::new($kind, $text));
@@ -190,6 +189,12 @@ where
     Q: AsRef<Path>,
 {
     let mut result: u64 = 0;
+    if options.content_only {
+        err!(
+            "Options 'content_only' not acccess for copy_items function",
+            ErrorKind::Other
+        );
+    }
     for item in from {
         let item = item.as_ref();
         if item.is_dir() {
@@ -288,6 +293,12 @@ where
     Q: AsRef<Path>,
     F: FnMut(TransitProcess) -> dir::TransitProcessResult,
 {
+    if options.content_only {
+        err!(
+            "Options 'content_only' not acccess for copy_items_with_progress function",
+            ErrorKind::Other
+        );
+    }
     let mut total_size = 0;
     let mut list_paths = Vec::new();
     for item in from {
@@ -482,6 +493,12 @@ where
     P: AsRef<Path>,
     Q: AsRef<Path>,
 {
+    if options.content_only {
+        err!(
+            "Options 'content_only' not acccess for move_items function",
+            ErrorKind::Other
+        );
+    }
     let mut total_size = 0;
     let mut list_paths = Vec::new();
     for item in from_items {
@@ -586,6 +603,12 @@ where
     Q: AsRef<Path>,
     F: FnMut(TransitProcess) -> dir::TransitProcessResult,
 {
+    if options.content_only {
+        err!(
+            "Options 'content_only' not acccess for move_items_with_progress function",
+            ErrorKind::Other
+        );
+    }
     let mut total_size = 0;
     let mut list_paths = Vec::new();
     for item in from_items {
