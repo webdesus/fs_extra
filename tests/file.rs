@@ -1,11 +1,11 @@
 // use std::io::{ErrorKind, Result};
 use std::path::{Path, PathBuf};
-use std::thread;
 use std::sync::mpsc;
+use std::thread;
 
 extern crate fs_extra;
-use fs_extra::file::*;
 use fs_extra::error::*;
+use fs_extra::file::*;
 
 const TEST_FOLDER: &'static str = "./tests/temp/file";
 
@@ -292,6 +292,39 @@ fn it_copy_exist_overwrite_and_skip_exist() {
 }
 
 #[test]
+fn it_copy_link_file() {
+    let mut test_file = std::fs::canonicalize(PathBuf::from(TEST_FOLDER)).unwrap();
+    test_file.push("it_copy_link_file");
+    let mut test_link = test_file.clone();
+    let mut test_file_out = test_file.clone();
+    test_file.push("test.txt");
+    test_link.push("link.txt");
+
+    test_file_out.push("out");
+    test_file_out.push("link.txt");
+    fs_extra::dir::create_all(&test_file.parent().unwrap(), true).unwrap();
+
+    #[cfg(target_family = "unix")]
+    std::os::unix::fs::symlink(&test_file, &test_link).unwrap();
+
+    #[cfg(target_family = "windows")]
+    std::os::windows::fs::symlink(&test_file, &test_link).unwrap();
+
+    fs_extra::dir::create_all(&test_file_out.parent().unwrap(), true).unwrap();
+
+    write_all(&test_file, "test_data").unwrap();
+    assert!(test_file.exists());
+    assert!(!test_file_out.exists());
+    let options = CopyOptions::new();
+    copy(&test_link, &test_file_out, &options).unwrap();
+    assert!(test_link.exists());
+    assert!(test_file.exists());
+    assert!(test_file_out.exists());
+    assert_eq!(test_link.file_name(), test_file_out.file_name());
+    assert!(files_eq(test_file, test_file_out).unwrap());
+}
+
+#[test]
 fn it_copy_with_progress_work() {
     let mut test_file = PathBuf::from(TEST_FOLDER);
     test_file.push("it_copy_with_progress_work");
@@ -568,6 +601,47 @@ fn it_copy_with_progress_exist_overwrite_and_skip_exist() {
 }
 
 #[test]
+fn it_copy_with_progress_link_file() {
+    let mut test_file = std::fs::canonicalize(PathBuf::from(TEST_FOLDER)).unwrap();
+    test_file.push("it_copy_with_progress_link_file");
+    let mut test_link = test_file.clone();
+    let mut test_file_out = test_file.clone();
+    test_file.push("test.txt");
+    test_link.push("link.txt");
+
+    test_file_out.push("out");
+    test_file_out.push("link.txt");
+    fs_extra::dir::create_all(&test_file.parent().unwrap(), true).unwrap();
+
+    #[cfg(target_family = "unix")]
+    std::os::unix::fs::symlink(&test_file, &test_link).unwrap();
+
+    #[cfg(target_family = "windows")]
+    std::os::windows::fs::symlink(&test_file, &test_link).unwrap();
+
+    fs_extra::dir::create_all(&test_file_out.parent().unwrap(), true).unwrap();
+
+    write_all(&test_file, "test_data").unwrap();
+    assert!(test_file.exists());
+    assert!(!test_file_out.exists());
+    let func_test = |process_info: TransitProcess| {
+        println!("{}", process_info.total_bytes);
+    };
+    let options = CopyOptions::new();
+
+    match copy_with_progress(&test_file, &test_file_out, &options, func_test) {
+        Ok(_) => {
+            assert!(test_file.exists());
+            assert!(test_file_out.exists());
+            assert_eq!(test_link.file_name(), test_file_out.file_name());
+            assert!(files_eq(test_file, test_file_out).unwrap());
+            ()
+        }
+        Err(err) => panic!(err.to_string()),
+    }
+}
+
+#[test]
 fn it_move_work() {
     let mut test_file = PathBuf::from(TEST_FOLDER);
     test_file.push("it_move_work");
@@ -766,6 +840,38 @@ fn it_move_exist_overwrite_and_skip_exist() {
         }
         Err(err) => panic!(err.to_string()),
     }
+}
+
+#[test]
+fn it_move_link_file() {
+    let mut test_file = std::fs::canonicalize(PathBuf::from(TEST_FOLDER)).unwrap();
+    test_file.push("it_move_link_file");
+    let mut test_link = test_file.clone();
+    let mut test_file_out = test_file.clone();
+    test_file.push("test.txt");
+    test_link.push("link.txt");
+
+    test_file_out.push("out");
+    test_file_out.push("link.txt");
+    fs_extra::dir::create_all(&test_file.parent().unwrap(), true).unwrap();
+
+    #[cfg(target_family = "unix")]
+    std::os::unix::fs::symlink(&test_file, &test_link).unwrap();
+
+    #[cfg(target_family = "windows")]
+    std::os::windows::fs::symlink(&test_file, &test_link).unwrap();
+
+    fs_extra::dir::create_all(&test_file_out.parent().unwrap(), true).unwrap();
+
+    write_all(&test_file, "test_data").unwrap();
+    assert!(test_file.exists());
+    assert!(!test_file_out.exists());
+    let options = CopyOptions::new();
+    move_file(&test_link, &test_file_out, &options).unwrap();
+    assert!(!test_link.exists());
+    assert!(test_file.exists());
+    assert!(test_file_out.exists());
+    assert!(files_eq(test_file, test_file_out).unwrap());
 }
 
 #[test]
@@ -1029,6 +1135,46 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
             assert!(!test_file.exists());
             assert!(test_file_out.exists());
             assert_eq!(read_to_string(test_file_out).unwrap(), "test_data2");
+            ()
+        }
+        Err(err) => panic!(err.to_string()),
+    }
+}
+
+#[test]
+fn it_move_with_progress_link_file() {
+    let mut test_file = std::fs::canonicalize(PathBuf::from(TEST_FOLDER)).unwrap();
+    test_file.push("it_move_with_progress_link_file");
+    let mut test_link = test_file.clone();
+    let mut test_file_out = test_file.clone();
+    test_file.push("test.txt");
+    test_link.push("link.txt");
+
+    test_file_out.push("out");
+    test_file_out.push("link.txt");
+    fs_extra::dir::create_all(&test_file.parent().unwrap(), true).unwrap();
+
+    #[cfg(target_family = "unix")]
+    std::os::unix::fs::symlink(&test_file, &test_link).unwrap();
+
+    #[cfg(target_family = "windows")]
+    std::os::windows::fs::symlink(&test_file, &test_link).unwrap();
+
+    fs_extra::dir::create_all(&test_file_out.parent().unwrap(), true).unwrap();
+
+    write_all(&test_file, "test_data").unwrap();
+    assert!(test_file.exists());
+    assert!(!test_file_out.exists());
+    let options = CopyOptions::new();
+    let func_test = |process_info: TransitProcess| {
+        println!("{}", process_info.total_bytes);
+    };
+    match move_file_with_progress(&test_link, &test_file_out, &options, func_test) {
+        Ok(_) => {
+            assert!(!test_link.exists());
+            assert!(test_file.exists());
+            assert!(test_file_out.exists());
+            assert!(files_eq(test_file, test_file_out).unwrap());
             ()
         }
         Err(err) => panic!(err.to_string()),
