@@ -1,7 +1,8 @@
 use error::{Error, ErrorKind, Result};
 use std;
+use std::cmp;
 use std::fs::{remove_file, File};
-use std::io::{Read, Write};
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
 
 ///	Options and flags which can be used to configure how a file will be  copied  or moved.
@@ -382,4 +383,60 @@ where
     let mut f = File::create(path)?;
 
     Ok(f.write_all(content.as_bytes())?)
+}
+
+/// Information block which should be changed
+pub struct Block {
+    pub begin: u64,
+    pub len: u64,
+}
+pub trait ExtraFile {
+    fn change_block(&mut self, block: &Block, data: &[u8], buffer_size: u64);
+}
+
+impl ExtraFile for File {
+    fn change_block(&mut self, block: &Block, data: &[u8], buffer_size: u64) {
+        let file_len = self.metadata().unwrap().len();
+        if file_len < (block.begin + block.len) {
+            //TODO make as error
+            panic!("The selected block is out of bounds file size!");
+        }
+
+        let mut bytes_to_move = file_len - (block.begin + block.len);
+        let mut move_cursor = file_len;
+        let data_len = data.len() as u64;
+        let is_move_left = block.len > data_len;
+        if is_move_left {
+            move_cursor = block.begin;
+        }
+        if block.len == data_len {
+            bytes_to_move = 0;
+        }
+        while bytes_to_move != 0 {
+            let bytes_this_time: u64 = cmp::min(buffer_size, bytes_to_move);
+            let mut r_buffer = vec![0; bytes_this_time as usize];
+            let rd_off: u64;
+            let wr_off: u64;
+            if is_move_left {
+                rd_off = move_cursor + block.len;
+                wr_off = rd_off - block.len + data_len;
+                move_cursor += bytes_this_time;
+            } else {
+                rd_off = move_cursor - bytes_this_time;
+                wr_off = rd_off - block.len + data_len;
+                move_cursor -= bytes_this_time;
+            }
+            self.seek(SeekFrom::Start(rd_off)).unwrap();
+            self.read(&mut r_buffer[..]).unwrap();
+            self.seek(SeekFrom::Start(wr_off)).unwrap();
+            self.write_all(&r_buffer).unwrap();
+            bytes_to_move -= bytes_this_time;
+        }
+        self.seek(SeekFrom::Start(block.begin)).unwrap();
+        self.write_all(&data).unwrap();
+        self.flush().unwrap();
+        if is_move_left {
+            self.set_len(file_len - (block.len - data_len)).unwrap();
+        }
+    }
 }
