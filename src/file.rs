@@ -389,13 +389,15 @@ where
 pub struct Block {
     pub begin: u64,
     pub len: u64,
+    pub data: Vec<u8>,
 }
 pub trait ExtraFile {
-    fn change_block(&mut self, block: &Block, data: &[u8], buffer_size: u64);
+    fn change_block(&mut self, block: &Block, buffer_size: u64);
+    fn change_blocks(&mut self, block: Vec<Block>, buffer_size: u64);
 }
 
 impl ExtraFile for File {
-    fn change_block(&mut self, block: &Block, data: &[u8], buffer_size: u64) {
+    fn change_block(&mut self, block: &Block, buffer_size: u64) {
         let file_len = self.metadata().unwrap().len();
         if file_len < (block.begin + block.len) {
             //TODO make as error
@@ -404,7 +406,7 @@ impl ExtraFile for File {
 
         let mut bytes_to_move = file_len - (block.begin + block.len);
         let mut move_cursor = file_len;
-        let data_len = data.len() as u64;
+        let data_len = block.data.len() as u64;
         let is_move_left = block.len > data_len;
         if is_move_left {
             move_cursor = block.begin;
@@ -433,10 +435,17 @@ impl ExtraFile for File {
             bytes_to_move -= bytes_this_time;
         }
         self.seek(SeekFrom::Start(block.begin)).unwrap();
-        self.write_all(&data).unwrap();
+        self.write_all(&block.data).unwrap();
         self.flush().unwrap();
         if is_move_left {
             self.set_len(file_len - (block.len - data_len)).unwrap();
+        }
+    }
+    fn change_blocks(&mut self, blocks: Vec<Block>, buffer_size: u64) {
+        let mut blocks = blocks;
+        blocks.sort_by(|a, b| b.begin.cmp(&a.begin));
+        for b in blocks {
+            self.change_block(&b, buffer_size.clone());
         }
     }
 }

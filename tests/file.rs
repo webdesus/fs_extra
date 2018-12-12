@@ -1038,41 +1038,149 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
 }
 struct Case {
     src: Vec<u8>,
-    block: Block,
-    data: Vec<u8>,
+    blocks: Vec<Block>,
     out: Vec<u8>,
 }
 fn get_cases() -> Vec<Case> {
     vec![
         Case {
             src: vec![1, 2, 3, 4, 5],
-            block: Block { begin: 2, len: 2 },
-            data: vec![7, 7, 7, 7, 7],
+            blocks: vec![Block {
+                begin: 2,
+                len: 2,
+                data: vec![7, 7, 7, 7, 7],
+            }],
             out: vec![1, 2, 7, 7, 7, 7, 7, 5],
         },
         Case {
             src: vec![1, 2, 3, 4, 5],
-            block: Block { begin: 2, len: 0 },
-            data: vec![7, 7, 7, 7, 7],
+            blocks: vec![Block {
+                begin: 2,
+                len: 0,
+                data: vec![7, 7, 7, 7, 7],
+            }],
             out: vec![1, 2, 7, 7, 7, 7, 7, 3, 4, 5],
         },
         Case {
             src: vec![1, 2, 3, 4, 5],
-            block: Block { begin: 1, len: 3 },
-            data: vec![7, 7],
+            blocks: vec![Block {
+                begin: 1,
+                len: 3,
+                data: vec![7, 7],
+            }],
             out: vec![1, 7, 7, 5],
         },
         Case {
             src: vec![1, 2, 3, 4, 5],
-            block: Block { begin: 1, len: 2 },
-            data: vec![7],
+            blocks: vec![Block {
+                begin: 1,
+                len: 2,
+                data: vec![7],
+            }],
             out: vec![1, 7, 4, 5],
         },
         Case {
             src: vec![1, 2, 3, 4, 5],
-            block: Block { begin: 1, len: 2 },
-            data: vec![7, 3],
+            blocks: vec![Block {
+                begin: 1,
+                len: 2,
+                data: vec![7, 3],
+            }],
             out: vec![1, 7, 3, 4, 5],
+        },
+    ]
+}
+fn get_multi_cases() -> Vec<Case> {
+    vec![
+        Case {
+            src: vec![1, 2, 3, 4, 5],
+            blocks: vec![
+                Block {
+                    begin: 2,
+                    len: 2,
+                    data: vec![7, 7, 7, 7, 7],
+                },
+                Block {
+                    begin: 4,
+                    len: 1,
+                    data: vec![8, 8, 8, 8, 8],
+                },
+            ],
+            out: vec![1, 2, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8],
+        },
+        Case {
+            src: vec![1, 2, 3, 4, 5],
+            blocks: vec![
+                Block {
+                    begin: 2,
+                    len: 0,
+                    data: vec![7, 7, 7, 7, 7],
+                },
+                Block {
+                    begin: 4,
+                    len: 0,
+                    data: vec![8, 8, 8, 8, 8],
+                },
+            ],
+            out: vec![1, 2, 7, 7, 7, 7, 7, 3, 4, 8, 8, 8, 8, 8, 5],
+        },
+        Case {
+            src: vec![1, 2, 3, 4, 5, 6],
+            blocks: vec![
+                Block {
+                    begin: 1,
+                    len: 3,
+                    data: vec![7, 7],
+                },
+                Block {
+                    begin: 4,
+                    len: 2,
+                    data: vec![8],
+                },
+            ],
+            out: vec![1, 7, 7, 8],
+        },
+        Case {
+            src: vec![1, 2, 3, 4, 5],
+            blocks: vec![
+                Block {
+                    begin: 1,
+                    len: 2,
+                    data: vec![7],
+                },
+                Block {
+                    begin: 3,
+                    len: 2,
+                    data: vec![8],
+                },
+            ],
+            out: vec![1, 7, 8],
+        },
+        Case {
+            src: vec![1, 2, 3, 4, 5, 6, 7, 8],
+            blocks: vec![
+                Block {
+                    begin: 0,
+                    len: 3,
+                    data: vec![0],
+                },
+                Block {
+                    begin: 3,
+                    len: 2,
+                    data: vec![9, 9, 9, 9],
+                },
+                Block {
+                    begin: 5,
+                    len: 2,
+                    data: vec![8],
+                },
+                Block {
+                    begin: 7,
+                    len: 1,
+                    data: vec![1],
+                },
+            ],
+            out: vec![0, 9, 9, 9, 9, 8, 1],
         },
     ]
 }
@@ -1094,7 +1202,7 @@ fn it_change_block_buffer_size_1_byte() {
             .unwrap();
         file.seek(SeekFrom::Start(0)).unwrap();
         file.write_all(&case.src).unwrap();
-        file.change_block(&case.block, &case.data, 1);
+        file.change_block(&case.blocks[0], 1);
         let mut buffer = vec![0; case.out.len()];
         file.seek(SeekFrom::Start(0)).unwrap();
         file.read(&mut buffer[..]).unwrap();
@@ -1119,7 +1227,7 @@ fn it_change_block_test_buffer_size_1_mb() {
             .unwrap();
         file.seek(SeekFrom::Start(0)).unwrap();
         file.write_all(&case.src).unwrap();
-        file.change_block(&case.block, &case.data, 1024 * 1024);
+        file.change_block(&case.blocks[0], 1024 * 1024);
         let mut buffer = vec![0; case.out.len()];
         file.seek(SeekFrom::Start(0)).unwrap();
         file.read(&mut buffer[..]).unwrap();
@@ -1137,8 +1245,11 @@ fn it_change_block_test_out_bounds() {
     fs_extra::dir::create_all(&test_file.parent().unwrap(), true).unwrap();
     let case = Case {
         src: vec![1, 2, 3, 4, 5],
-        block: Block { begin: 4, len: 6 },
-        data: vec![7, 7, 7, 7, 7],
+        blocks: vec![Block {
+            begin: 4,
+            len: 6,
+            data: vec![7, 7, 7, 7, 7],
+        }],
         out: vec![1, 2, 7, 7, 7, 7, 7, 5],
     };
 
@@ -1151,5 +1262,85 @@ fn it_change_block_test_out_bounds() {
         .unwrap();
     file.seek(SeekFrom::Start(0)).unwrap();
     file.write_all(&case.src).unwrap();
-    file.change_block(&case.block, &case.data, 1024 * 1024);
+    file.change_block(&case.blocks[0], 1024 * 1024);
+}
+
+#[test]
+fn it_change_blocks_buffer_size_1_byte() {
+    let cases = get_multi_cases();
+    let mut test_file = std::fs::canonicalize(PathBuf::from(TEST_FOLDER)).unwrap();
+    test_file.push("t_change_blocks_buffer_size_1_byte");
+    test_file.push("file.db");
+    fs_extra::dir::create_all(&test_file.parent().unwrap(), true).unwrap();
+    for case in cases {
+        let mut file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .truncate(true)
+            .create(true)
+            .open(&test_file)
+            .unwrap();
+        file.seek(SeekFrom::Start(0)).unwrap();
+        file.write_all(&case.src).unwrap();
+        file.change_blocks(case.blocks, 1);
+        let mut buffer = vec![0; case.out.len()];
+        file.seek(SeekFrom::Start(0)).unwrap();
+        file.read(&mut buffer[..]).unwrap();
+        assert_eq!(case.out, buffer);
+        assert_eq!(file.metadata().unwrap().len(), case.out.len() as u64);
+    }
+}
+#[test]
+fn it_change_blocks_test_buffer_size_1_mb() {
+    let cases = get_cases();
+    let mut test_file = std::fs::canonicalize(PathBuf::from(TEST_FOLDER)).unwrap();
+    test_file.push("it_change_blocks_test_buffer_size_1_mb");
+    test_file.push("file_1mb.db");
+    fs_extra::dir::create_all(&test_file.parent().unwrap(), true).unwrap();
+    for case in cases {
+        let mut file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .truncate(true)
+            .create(true)
+            .open(&test_file)
+            .unwrap();
+        file.seek(SeekFrom::Start(0)).unwrap();
+        file.write_all(&case.src).unwrap();
+        file.change_blocks(case.blocks, 1024 * 1024);
+        let mut buffer = vec![0; case.out.len()];
+        file.seek(SeekFrom::Start(0)).unwrap();
+        file.read(&mut buffer[..]).unwrap();
+        assert_eq!(case.out, buffer);
+        assert_eq!(file.metadata().unwrap().len(), case.out.len() as u64);
+    }
+}
+
+#[test]
+#[should_panic(expected = "The selected block is out of bounds file size!")]
+fn it_change_blocks_test_out_bounds() {
+    let mut test_file = std::fs::canonicalize(PathBuf::from(TEST_FOLDER)).unwrap();
+    test_file.push("it_change_blocks_test_out_bounds");
+    test_file.push("file_panic.db");
+    fs_extra::dir::create_all(&test_file.parent().unwrap(), true).unwrap();
+    let case = Case {
+        src: vec![1, 2, 3, 4, 5],
+        blocks: vec![Block {
+            begin: 4,
+            len: 6,
+            data: vec![7, 7, 7, 7, 7],
+        }],
+        out: vec![1, 2, 7, 7, 7, 7, 7, 5],
+    };
+
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .truncate(true)
+        .create(true)
+        .open(test_file)
+        .unwrap();
+    file.seek(SeekFrom::Start(0)).unwrap();
+    file.write_all(&case.src).unwrap();
+    file.change_blocks(case.blocks, 1024 * 1024);
 }
