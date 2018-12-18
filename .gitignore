@@ -11,4 +11,5 @@ Cargo.lock
 /tests/temp/lib/*/*
 
 .vscode/
+.idea/
 
