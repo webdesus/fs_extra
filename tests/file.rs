@@ -1157,7 +1157,7 @@ fn get_multi_cases() -> Vec<Case> {
             out: vec![1, 7, 8],
         },
         Case {
-            src: vec![1, 2, 3, 4, 5, 6, 7, 8],
+            src: vec![1, 2, 3, 4, 5, 6, 7, 8, 9],
             blocks: vec![
                 Block {
                     begin: 0,
@@ -1165,22 +1165,85 @@ fn get_multi_cases() -> Vec<Case> {
                     data: vec![0],
                 },
                 Block {
-                    begin: 3,
+                    begin: 4,
                     len: 2,
                     data: vec![9, 9, 9, 9],
                 },
                 Block {
-                    begin: 5,
+                    begin: 6,
                     len: 2,
                     data: vec![8],
                 },
                 Block {
-                    begin: 7,
+                    begin: 8,
                     len: 1,
                     data: vec![1],
                 },
             ],
-            out: vec![0, 9, 9, 9, 9, 8, 1],
+            out: vec![0, 4, 9, 9, 9, 9, 8, 1],
+        },
+        Case {
+            src: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 1, 1, 1, 1],
+            blocks: vec![
+                Block {
+                    begin: 0,
+                    len: 2,
+                    data: vec![0],
+                },
+                Block {
+                    begin: 4,
+                    len: 2,
+                    data: vec![9, 9, 9, 9, 9, 9],
+                },
+                Block {
+                    begin: 6,
+                    len: 2,
+                    data: vec![1],
+                },
+                Block {
+                    begin: 8,
+                    len: 6,
+                    data: vec![2],
+                },
+            ],
+            out: vec![0, 3, 4, 9, 9, 9, 9, 9, 9, 1, 2],
+        },
+        Case {
+            src: vec![1, 2, 3, 4, 5, 6, 7, 8, 9],
+            blocks: vec![
+                Block {
+                    begin: 0,
+                    len: 2,
+                    data: vec![0, 0, 0],
+                },
+                Block {
+                    begin: 4,
+                    len: 4,
+                    data: vec![9, 9],
+                },
+            ],
+            out: vec![0, 0, 0, 3, 4, 9, 9, 9],
+        },
+        Case {
+            src: vec![1, 2, 3, 4, 5, 6, 7, 8, 9],
+            blocks: vec![
+                Block {
+                    begin: 0,
+                    len: 3,
+                    data: vec![0],
+                },
+                Block {
+                    begin: 4,
+                    len: 2,
+                    data: vec![9, 9, 9, 9],
+                },
+                Block {
+                    begin: 6,
+                    len: 3,
+                    data: vec![8, 8, 8, 8],
+                },
+            ],
+            out: vec![0, 4, 9, 9, 9, 9, 8, 8, 8, 8],
         },
     ]
 }
@@ -1287,7 +1350,7 @@ fn it_change_blocks_buffer_size_1_byte() {
         file.seek(SeekFrom::Start(0)).unwrap();
         file.read(&mut buffer[..]).unwrap();
         assert_eq!(case.out, buffer);
-        assert_eq!(file.metadata().unwrap().len(), case.out.len() as u64);
+        assert_eq!(case.out.len() as u64, file.metadata().unwrap().len());
     }
 }
 #[test]
