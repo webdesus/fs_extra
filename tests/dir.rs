@@ -771,6 +771,86 @@ fn it_copy_content_only_option() {
 }
 
 #[test]
+fn it_copy_link_folder() {
+    let test_dir = std::fs::canonicalize(Path::new(TEST_FOLDER))
+        .unwrap()
+        .join("it_copy_link_folder");
+    let mut link_path = test_dir.clone();
+    let path_to = test_dir.join("out");
+    let d_level_1 = (
+        test_dir.join("d_level_1"),
+        link_path.join("out").join("link_folder"),
+    );
+    let d_level_2 = (d_level_1.0.join("d_level_2"), d_level_1.1.join("d_level_2"));
+    let d_level_3 = (d_level_2.0.join("d_level_3"), d_level_2.1.join("d_level_3"));
+    link_path = link_path.join("link_folder");
+
+    let file1 = (d_level_1.0.join("file1.txt"), d_level_1.1.join("file1.txt"));
+    let file2 = (d_level_2.0.join("file2.txt"), d_level_2.1.join("file2.txt"));
+    let file3 = (d_level_3.0.join("file3.txt"), d_level_3.1.join("file3.txt"));
+
+    create_all(&d_level_1.0, true).unwrap();
+    create_all(&d_level_2.0, true).unwrap();
+    create_all(&d_level_3.0, true).unwrap();
+    create_all(&path_to, true).unwrap();
+
+    assert!(path_to.exists());
+    assert!(d_level_1.0.exists());
+    assert!(d_level_2.0.exists());
+    assert!(d_level_3.0.exists());
+
+    assert!(!d_level_1.1.exists());
+    assert!(!d_level_2.1.exists());
+    assert!(!d_level_3.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+
+    assert!(!file1.1.exists());
+    assert!(!file2.1.exists());
+    assert!(!file3.1.exists());
+
+    if link_path.exists() {
+        fs_extra::file::remove(&link_path).unwrap();
+    }
+    #[cfg(target_family = "unix")]
+    std::os::unix::fs::symlink(&d_level_1.0, &link_path).unwrap();
+
+    #[cfg(target_family = "windows")]
+    std::os::windows::fs::symlink(&d_level_1.0, &link_path).unwrap();
+
+    let options = CopyOptions::new();
+    let result = copy(&link_path, path_to, &options).unwrap();
+
+    assert_eq!(24, result);
+
+    assert!(d_level_1.0.exists());
+    assert!(d_level_2.0.exists());
+    assert!(d_level_3.0.exists());
+
+    assert!(d_level_1.1.exists());
+    assert!(d_level_2.1.exists());
+    assert!(d_level_3.1.exists());
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+
+    assert!(files_eq(&file1.0, &file1.1));
+    assert!(files_eq(&file2.0, &file2.1));
+    assert!(files_eq(&file3.0, &file3.1));
+}
+
+#[test]
 fn it_copy_progress_work() {
     let mut path_from = PathBuf::from(TEST_FOLDER);
     let test_name = "sub";
@@ -1553,6 +1633,104 @@ fn it_copy_with_progress_content_only_option() {
 }
 
 #[test]
+fn it_copy_with_progress_link_folder() {
+    let test_dir = std::fs::canonicalize(Path::new(TEST_FOLDER))
+        .unwrap()
+        .join("it_copy_with_progress_link_folder");
+    let mut link_path = test_dir.clone();
+    let path_to = test_dir.join("out");
+    let d_level_1 = (
+        test_dir.join("d_level_1"),
+        link_path.join("out").join("link_folder"),
+    );
+    let d_level_2 = (d_level_1.0.join("d_level_2"), d_level_1.1.join("d_level_2"));
+    let d_level_3 = (d_level_2.0.join("d_level_3"), d_level_2.1.join("d_level_3"));
+    link_path = link_path.join("link_folder");
+
+    let file1 = (d_level_1.0.join("file1.txt"), d_level_1.1.join("file1.txt"));
+    let file2 = (d_level_2.0.join("file2.txt"), d_level_2.1.join("file2.txt"));
+    let file3 = (d_level_3.0.join("file3.txt"), d_level_3.1.join("file3.txt"));
+
+    create_all(&d_level_1.0, true).unwrap();
+    create_all(&d_level_2.0, true).unwrap();
+    create_all(&d_level_3.0, true).unwrap();
+    create_all(&path_to, true).unwrap();
+
+    assert!(path_to.exists());
+    assert!(d_level_1.0.exists());
+    assert!(d_level_2.0.exists());
+    assert!(d_level_3.0.exists());
+
+    assert!(!d_level_1.1.exists());
+    assert!(!d_level_2.1.exists());
+    assert!(!d_level_3.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+
+    assert!(!file1.1.exists());
+    assert!(!file2.1.exists());
+    assert!(!file3.1.exists());
+
+    if link_path.exists() {
+        fs_extra::file::remove(&link_path).unwrap();
+    }
+    #[cfg(target_family = "unix")]
+    std::os::unix::fs::symlink(&d_level_1.0, &link_path).unwrap();
+
+    #[cfg(target_family = "windows")]
+    std::os::windows::fs::symlink(&d_level_1.0, &link_path).unwrap();
+
+    let options = CopyOptions::new();
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+            TransitProcessResult::ContinueOrAbort
+        };
+
+        let result = copy_with_progress(&link_path, &path_to, &options, func_test).unwrap();
+
+        assert_eq!(24, result);
+
+        assert!(d_level_1.0.exists());
+        assert!(d_level_2.0.exists());
+        assert!(d_level_3.0.exists());
+
+        assert!(d_level_1.1.exists());
+        assert!(d_level_2.1.exists());
+        assert!(d_level_3.1.exists());
+
+        assert!(file1.0.exists());
+        assert!(file2.0.exists());
+        assert!(file3.0.exists());
+
+        assert!(file1.1.exists());
+        assert!(file2.1.exists());
+        assert!(file3.1.exists());
+
+        assert!(files_eq(&file1.0, &file1.1));
+        assert!(files_eq(&file2.0, &file2.1));
+        assert!(files_eq(&file3.0, &file3.1));
+    }).join();
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+
+    match rx.recv() {
+        Err(_) => panic!("Errors should not be!"),
+        _ => {}
+    }
+}
+
+#[test]
 fn it_copy_inside_work_target_dir_not_exist() {
     let path_root = Path::new(TEST_FOLDER);
     let root = path_root.join("it_copy_inside_work_target_dir_not_exist");
@@ -2264,6 +2442,89 @@ fn it_move_content_only_option() {
     assert!(file2.1.exists());
     assert!(file3.1.exists());
 }
+
+#[test]
+fn it_move_link_folder() {
+    let test_dir = std::fs::canonicalize(Path::new(TEST_FOLDER))
+        .unwrap()
+        .join("it_move_link_folder");
+    let mut link_path = test_dir.clone();
+    let path_to = test_dir.join("out");
+    let d_level_1 = (
+        test_dir.join("d_level_1"),
+        link_path.join("out").join("link_folder"),
+    );
+    let d_level_2 = (d_level_1.0.join("d_level_2"), d_level_1.1.join("d_level_2"));
+    let d_level_3 = (d_level_2.0.join("d_level_3"), d_level_2.1.join("d_level_3"));
+    link_path = link_path.join("link_folder");
+
+    let file1 = (d_level_1.0.join("file1.txt"), d_level_1.1.join("file1.txt"));
+    let file2 = (d_level_2.0.join("file2.txt"), d_level_2.1.join("file2.txt"));
+    let file3 = (d_level_3.0.join("file3.txt"), d_level_3.1.join("file3.txt"));
+
+    create_all(&d_level_1.0, true).unwrap();
+    create_all(&d_level_2.0, true).unwrap();
+    create_all(&d_level_3.0, true).unwrap();
+    create_all(&path_to, true).unwrap();
+
+    assert!(path_to.exists());
+    assert!(d_level_1.0.exists());
+    assert!(d_level_2.0.exists());
+    assert!(d_level_3.0.exists());
+
+    assert!(!d_level_1.1.exists());
+    assert!(!d_level_2.1.exists());
+    assert!(!d_level_3.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+
+    assert!(!file1.1.exists());
+    assert!(!file2.1.exists());
+    assert!(!file3.1.exists());
+
+    if link_path.exists() {
+        fs_extra::file::remove(&link_path).unwrap();
+    }
+    #[cfg(target_family = "unix")]
+    std::os::unix::fs::symlink(&d_level_1.0, &link_path).unwrap();
+
+    #[cfg(target_family = "windows")]
+    std::os::windows::fs::symlink(&d_level_1.0, &link_path).unwrap();
+    assert!(link_path.exists());
+
+    let options = CopyOptions::new();
+    let result = move_dir(&link_path, path_to, &options).unwrap();
+
+    assert_eq!(24, result);
+
+    assert!(!link_path.exists());
+    assert!(d_level_1.0.exists());
+    assert!(d_level_2.0.exists());
+    assert!(d_level_3.0.exists());
+
+    assert!(d_level_1.1.exists());
+    assert!(d_level_2.1.exists());
+    assert!(d_level_3.1.exists());
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+
+    assert!(file1.1.exists());
+    assert!(file2.1.exists());
+    assert!(file3.1.exists());
+
+    assert!(files_eq(&file1.0, &file1.1));
+    assert!(files_eq(&file2.0, &file2.1));
+    assert!(files_eq(&file3.0, &file3.1));
+}
+
 #[test]
 fn it_move_progress_work() {
     let mut path_from = PathBuf::from(TEST_FOLDER);
@@ -4739,6 +5000,106 @@ fn it_move_with_progress_content_only_option() {
         assert!(file1.1.exists());
         assert!(file2.1.exists());
         assert!(file3.1.exists());
+    }).join();
+
+    match result {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+
+    match rx.recv() {
+        Err(_) => panic!("Errors should not be!"),
+        _ => {}
+    }
+}
+
+#[test]
+fn it_move_with_progress_link_folder() {
+    let test_dir = std::fs::canonicalize(Path::new(TEST_FOLDER))
+        .unwrap()
+        .join("it_move_with_progress_link_folder");
+    let mut link_path = test_dir.clone();
+    let path_to = test_dir.join("out");
+    let d_level_1 = (
+        test_dir.join("d_level_1"),
+        link_path.join("out").join("link_folder"),
+    );
+    let d_level_2 = (d_level_1.0.join("d_level_2"), d_level_1.1.join("d_level_2"));
+    let d_level_3 = (d_level_2.0.join("d_level_3"), d_level_2.1.join("d_level_3"));
+    link_path = link_path.join("link_folder");
+
+    let file1 = (d_level_1.0.join("file1.txt"), d_level_1.1.join("file1.txt"));
+    let file2 = (d_level_2.0.join("file2.txt"), d_level_2.1.join("file2.txt"));
+    let file3 = (d_level_3.0.join("file3.txt"), d_level_3.1.join("file3.txt"));
+
+    create_all(&d_level_1.0, true).unwrap();
+    create_all(&d_level_2.0, true).unwrap();
+    create_all(&d_level_3.0, true).unwrap();
+    create_all(&path_to, true).unwrap();
+
+    assert!(path_to.exists());
+    assert!(d_level_1.0.exists());
+    assert!(d_level_2.0.exists());
+    assert!(d_level_3.0.exists());
+
+    assert!(!d_level_1.1.exists());
+    assert!(!d_level_2.1.exists());
+    assert!(!d_level_3.1.exists());
+
+    fs_extra::file::write_all(&file1.0, "content1").unwrap();
+    fs_extra::file::write_all(&file2.0, "content2").unwrap();
+    fs_extra::file::write_all(&file3.0, "content3").unwrap();
+
+    assert!(file1.0.exists());
+    assert!(file2.0.exists());
+    assert!(file3.0.exists());
+
+    assert!(!file1.1.exists());
+    assert!(!file2.1.exists());
+    assert!(!file3.1.exists());
+
+    if link_path.exists() {
+        fs_extra::file::remove(&link_path).unwrap();
+    }
+    #[cfg(target_family = "unix")]
+    std::os::unix::fs::symlink(&d_level_1.0, &link_path).unwrap();
+
+    #[cfg(target_family = "windows")]
+    std::os::windows::fs::symlink(&d_level_1.0, &link_path).unwrap();
+    assert!(link_path.exists());
+
+    let options = CopyOptions::new();
+    let (tx, rx) = mpsc::channel();
+    let result = thread::spawn(move || {
+        let func_test = |process_info: TransitProcess| {
+            tx.send(process_info).unwrap();
+            TransitProcessResult::ContinueOrAbort
+        };
+
+        let result = move_dir_with_progress(&link_path, &path_to, &options, func_test).unwrap();
+
+        assert_eq!(24, result);
+
+        assert!(!link_path.exists());
+        assert!(d_level_1.0.exists());
+        assert!(d_level_2.0.exists());
+        assert!(d_level_3.0.exists());
+
+        assert!(d_level_1.1.exists());
+        assert!(d_level_2.1.exists());
+        assert!(d_level_3.1.exists());
+
+        assert!(file1.0.exists());
+        assert!(file2.0.exists());
+        assert!(file3.0.exists());
+
+        assert!(file1.1.exists());
+        assert!(file2.1.exists());
+        assert!(file3.1.exists());
+
+        assert!(files_eq(&file1.0, &file1.1));
+        assert!(files_eq(&file2.0, &file2.1));
+        assert!(files_eq(&file3.0, &file3.1));
     }).join();
 
     match result {

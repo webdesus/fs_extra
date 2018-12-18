@@ -588,20 +588,14 @@ where
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
         };
-        let mut result_copy: Result<u64>;
-        let mut work = true;
 
-        while work {
-            result_copy = super::file::copy(&file, &path, &file_options);
-            match result_copy {
-                Ok(val) => {
-                    result += val;
-                    work = false;
-                }
-                Err(err) => {
-                    let err_msg = err.to_string();
-                    err!(err_msg.as_str(), err.kind)
-                }
+        match super::file::copy(&file, &path, &file_options) {
+            Ok(val) => {
+                result += val;
+            }
+            Err(err) => {
+                let err_msg = err.to_string();
+                err!(err_msg.as_str(), err.kind)
             }
         }
     }
@@ -1068,6 +1062,7 @@ where
         }
     }
     let mut result: u64 = 0;
+    let is_symlink_folder = std::fs::symlink_metadata(&from)?.file_type().is_symlink();
     for file in dir_content.files {
         let to = to.to_path_buf();
         let tp = Path::new(&file).strip_prefix(from)?;
@@ -1079,20 +1074,24 @@ where
             buffer_size: options.buffer_size,
         };
 
-        let mut result_copy: Result<u64>;
-        let mut work = true;
-        while work {
-            {
-                result_copy = super::file::move_file(&file, &path, &file_options);
-                match result_copy {
-                    Ok(val) => {
-                        result += val;
-                        work = false;
-                    }
-                    Err(err) => {
-                        let err_msg = err.to_string();
-                        err!(err_msg.as_str(), err.kind)
-                    }
+        if is_symlink_folder {
+            match super::file::copy(&file, &path, &file_options) {
+                Ok(val) => {
+                    result += val;
+                }
+                Err(err) => {
+                    let err_msg = err.to_string();
+                    err!(err_msg.as_str(), err.kind)
+                }
+            }
+        } else {
+            match super::file::move_file(&file, &path, &file_options) {
+                Ok(val) => {
+                    result += val;
+                }
+                Err(err) => {
+                    let err_msg = err.to_string();
+                    err!(err_msg.as_str(), err.kind)
                 }
             }
         }
@@ -1233,6 +1232,7 @@ where
         let mut result_copy: Result<u64>;
         let mut work = true;
         let copied_bytes = result;
+        let is_symlink_folder = std::fs::symlink_metadata(&from)?.file_type().is_symlink();
         while work {
             {
                 let _progress_handler = |info: super::file::TransitProcess| {
@@ -1241,12 +1241,21 @@ where
                     progress_handler(info_process.clone());
                 };
 
-                result_copy = super::file::move_file_with_progress(
-                    &file,
-                    &path,
-                    &file_options,
-                    _progress_handler,
-                );
+                if is_symlink_folder {
+                    result_copy = super::file::copy_with_progress(
+                        &file,
+                        &path,
+                        &file_options,
+                        _progress_handler,
+                    );
+                } else {
+                    result_copy = super::file::move_file_with_progress(
+                        &file,
+                        &path,
+                        &file_options,
+                        _progress_handler,
+                    );
+                }
             }
             match result_copy {
                 Ok(val) => {
