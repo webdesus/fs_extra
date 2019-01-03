@@ -65,10 +65,6 @@ Add this to your `Cargo.toml`:
 [dependencies]
 fs_extra = "1.1.0"
 ```
-and this to your crate root:
-```rust
-extern crate fs_extra;
-```
 ## Examples
 
 The following example shows how to copy a directory recursively and to follow the process.
