@@ -33,6 +33,13 @@ impl CopyOptions {
         }
     }
 }
+
+impl Default for CopyOptions {
+    fn default() -> Self {
+        CopyOptions::new()
+    }
+}
+
 /// A structure  which include information about the current status of the copy or move file.
 pub struct TransitProcess {
     /// Copied bytes on this time.
