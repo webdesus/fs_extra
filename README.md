@@ -1,6 +1,6 @@
 # fs_extra
 
-A Rust library for more work functionality with file system.
+A Rust library that provides additional functionality not present in [`std::fs`](https://doc.rust-lang.org/std/fs/index.html).
 
 [![Build Status](https://travis-ci.org/webdesus/fs_extra.svg)](https://travis-ci.org/webdesus/fs_extra)
 [![Crates.io Status](https://img.shields.io/crates/v/fs_extra.svg)](https://crates.io/crates/fs_extra)
@@ -21,42 +21,42 @@ A Rust library for more work functionality with file system.
 
 * Move directories recursively (optionally with information about the progress).
 
-* One method for create and write `String` content in file.
+* A single method for create and write `String` content in file.
 
-* One method for open and read `String` content from file.
+* A single method for open and read `String` content from file.
 
-* Get size folder
+* Get folder size
 
-* Get collection directory entries 
+* Get collection of directory entries 
 
 ## Functions:
 
 | Function | Description |
 | ------------- | ------------- |
-| [fs_extra::copy_items](https://docs.rs/fs_extra/*/fs_extra/fn.copy_items.html)  | Copies list directories and files to another place using recursive method |
-| [fs_extra::copy_items_with_progress](https://docs.rs/fs_extra/*/fs_extra/fn.copy_items_with_progress.html)  | Copies list directories and files to another place using recursive method, with recept information about process |
-| [fs_extra::move_items](https://docs.rs/fs_extra/*/fs_extra/fn.move_items.html)  | Moves list directories and files to another place using recursive method |
-| [fs_extra::move_items_with_progress](https://docs.rs/fs_extra/*/fs_extra/fn.move_items_with_progress.html)  | Moves list directories and files to another place using recursive method, with recept information about process |
-| [fs_extra::remove_items](https://docs.rs/fs_extra/*/fs_extra/fn.remove_items.html)  | Removes list files or directories |
+| [fs_extra::copy_items](https://docs.rs/fs_extra/*/fs_extra/fn.copy_items.html)  | Recursively copies files and directories from one location to another |
+| [fs_extra::copy_items_with_progress](https://docs.rs/fs_extra/*/fs_extra/fn.copy_items_with_progress.html)  | Recursively copies files and directories from one location to another with information about progress |
+| [fs_extra::move_items](https://docs.rs/fs_extra/*/fs_extra/fn.move_items.html)  | Recursively moves files and directories from one location to another |
+| [fs_extra::move_items_with_progress](https://docs.rs/fs_extra/*/fs_extra/fn.move_items_with_progress.html)  | Recursively moves files and directories from one location to another with information about progress |
+| [fs_extra::remove_items](https://docs.rs/fs_extra/*/fs_extra/fn.remove_items.html)  | Removes files or directories |
 | [fs_extra::file::copy](https://docs.rs/fs_extra/*/fs_extra/file/fn.copy.html)  | Copies the contents of one file to another |
-| [fs_extra::file::copy_with_progress](https://docs.rs/fs_extra/*/fs_extra/file/fn.copy_with_progress.html)  | Copies the contents of one file to another with recept information about process  |
-| [fs_extra::file::move_file](https://docs.rs/fs_extra/*/fs_extra/file/fn.move_file.html)  | Moves file from one place to another  |
-| [fs_extra::file::move_file_with_progress](https://docs.rs/fs_extra/*/fs_extra/file/fn.move_file_with_progress.html)  | Moves file from one place to another with recept information about process  |
-| [fs_extra::file::remove](https://docs.rs/fs_extra/*/fs_extra/file/fn.remove.html)  | Removes a file from the filesystem  |
-| [fs_extra::file::read_to_string](https://docs.rs/fs_extra/*/fs_extra/file/fn.read_to_string.html)  | Read file content, placing him into `String`  |
-| [fs_extra::file::write_all](https://docs.rs/fs_extra/*/fs_extra/file/fn.write_all.html)  | Write `String` content into inside target file  |
-| [fs_extra::dir::create](https://docs.rs/fs_extra/*/fs_extra/dir/fn.create.html)  | Creates a new, empty directory at the provided path  |
-| [fs_extra::dir::create_all](https://docs.rs/fs_extra/*/fs_extra/dir/fn.create_all.html)  | Recursively create a directory and all of its parent components if they are missing  |
-| [fs_extra::dir::copy](https://docs.rs/fs_extra/*/fs_extra/dir/fn.copy.html)  | Copies the directory contents from one place to another using recursive method  |
-| [fs_extra::dir::copy_with_progress](https://docs.rs/fs_extra/*/fs_extra/dir/fn.copy_with_progress.html)  | Copies the directory contents from one place to another using recursive method, with recept information about process]()  |
-| [fs_extra::dir::move_dir](https://docs.rs/fs_extra/*/fs_extra/dir/fn.move_dir.html)  | Moves the directory contents from one place to another  |
-| [fs_extra::dir::move_dir_with_progress](https://docs.rs/fs_extra/*/fs_extra/dir/fn.move_dir_with_progress.html)  | Moves the directory contents from one place to another with recept information about process  |
+| [fs_extra::file::copy_with_progress](https://docs.rs/fs_extra/*/fs_extra/file/fn.copy_with_progress.html)  | Copies the contents of one file to another with information about progress  |
+| [fs_extra::file::move_file](https://docs.rs/fs_extra/*/fs_extra/file/fn.move_file.html)  | Moves a file from one location to another  |
+| [fs_extra::file::move_file_with_progress](https://docs.rs/fs_extra/*/fs_extra/file/fn.move_file_with_progress.html)  | Moves a file from one location to another with information about progress  |
+| [fs_extra::file::remove](https://docs.rs/fs_extra/*/fs_extra/file/fn.remove.html)  | Removes a file |
+| [fs_extra::file::read_to_string](https://docs.rs/fs_extra/*/fs_extra/file/fn.read_to_string.html)  | Reads file content into a `String` |
+| [fs_extra::file::write_all](https://docs.rs/fs_extra/*/fs_extra/file/fn.write_all.html)  | Writes `String` content to a file  |
+| [fs_extra::dir::create](https://docs.rs/fs_extra/*/fs_extra/dir/fn.create.html)  | Creates a new, empty directory at the given path  |
+| [fs_extra::dir::create_all](https://docs.rs/fs_extra/*/fs_extra/dir/fn.create_all.html)  | Recursively creates a directory and all of its parent components if they are missing  |
+| [fs_extra::dir::copy](https://docs.rs/fs_extra/*/fs_extra/dir/fn.copy.html)  | Recursively copies the directory contents from one location to another |
+| [fs_extra::dir::copy_with_progress](https://docs.rs/fs_extra/*/fs_extra/dir/fn.copy_with_progress.html)  | Recursively copies the directory contents from one location to another with information about progress |
+| [fs_extra::dir::move_dir](https://docs.rs/fs_extra/*/fs_extra/dir/fn.move_dir.html)  | Moves directory contents from one location to another |
+| [fs_extra::dir::move_dir_with_progress](https://docs.rs/fs_extra/*/fs_extra/dir/fn.move_dir_with_progress.html)  | Moves directory contents from one location to another with information about progress  |
 | [fs_extra::dir::remove](https://docs.rs/fs_extra/*/fs_extra/dir/fn.remove.html)  | Removes directory  |
 | [fs_extra::dir::get_size](https://docs.rs/fs_extra/*/fs_extra/dir/fn.get_size.html)  | Returns the size of the file or directory  |
-| [fs_extra::dir::get_dir_content](https://docs.rs/fs_extra/*/fs_extra/dir/fn.get_dir_content.html)  | Return DirContent which containt information about directory  |
-| [fs_extra::dir::get_dir_content2](https://docs.rs/fs_extra/*/fs_extra/dir/fn.get_dir_content2.html)  | Return DirContent which containt information about directory using DirOptions like settings  |
-| [fs_extra::dir::get_details_entry](https://docs.rs/fs_extra/*/fs_extra/dir/fn.get_details_entry.html)  | Returned information about directory entry with information which you choose in config  |
-| [fs_extra::dir::ls](https://docs.rs/fs_extra/*/fs_extra/dir/fn.ls.html)  | Returned collection directory entries with information which you choose in config  |
+| [fs_extra::dir::get_dir_content](https://docs.rs/fs_extra/*/fs_extra/dir/fn.get_dir_content.html)  | Gets details such as the size and child items of a directory |
+| [fs_extra::dir::get_dir_content2](https://docs.rs/fs_extra/*/fs_extra/dir/fn.get_dir_content2.html)  | Gets details such as the size and child items of a directory using specified settings |
+| [fs_extra::dir::get_details_entry](https://docs.rs/fs_extra/*/fs_extra/dir/fn.get_details_entry.html)  | Gets attributes of a directory entry |
+| [fs_extra::dir::ls](https://docs.rs/fs_extra/*/fs_extra/dir/fn.ls.html)  | Gets attributes of directory entries in a directory |
 
 ## Usage
 
@@ -65,15 +65,9 @@ Add this to your `Cargo.toml`:
 [dependencies]
 fs_extra = "1.1.0"
 ```
-and this to your crate root:
-```rust
-extern crate fs_extra;
-```
 ## Examples
 
-The following example shows how to copy a directory recursively and to follow the process.
-This example created a directory `dir` contains `test1.txt` file and sub directory `sub`. Folder `sub` inside contains `test2.txt` file.
-Then copy `./temp/dir` and all containts to `./out/dir`
+The following example shows how to copy a directory recursively and display progress. First a source directory `./temp/dir` containing file `test1.txt` and a subdirectory `sub` is createad with `sub` itself having a file `test2.txt`. `./temp/dir` and all contents are then copied out to `./out/dir`.
 
 ```rust
 use std::path::Path;
