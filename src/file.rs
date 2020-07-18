@@ -14,6 +14,12 @@ pub struct CopyOptions {
     pub buffer_size: usize,
 }
 
+impl Default for CopyOptions {
+    fn default() -> Self {
+        CopyOptions::new()
+    }
+}
+
 impl CopyOptions {
     /// Initialize struct CopyOptions with default value.
     ///

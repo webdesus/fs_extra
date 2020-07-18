@@ -19,8 +19,14 @@ pub struct CopyOptions {
     pub content_only: bool,
     /// Sets levels reading. Set 0 for read all directory folder. By default 0.
     ///
-    /// Warrning: Work only for copy operations!
+    /// Warning: Work only for copy operations!
     pub depth: u64,
+}
+
+impl Default for CopyOptions {
+    fn default() -> Self {
+        CopyOptions::new()
+    }
 }
 
 impl CopyOptions {
@@ -52,6 +58,12 @@ impl CopyOptions {
 pub struct DirOptions {
     /// Sets levels reading. Set value 0 for read all directory folder. By default 0.
     pub depth: u64,
+}
+
+impl Default for DirOptions {
+    fn default() -> Self {
+        DirOptions::new()
+    }
 }
 
 impl DirOptions {
