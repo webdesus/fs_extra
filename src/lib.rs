@@ -183,7 +183,7 @@ use std::path::Path;
 ///  copy_items(&from_paths, "target", &options)?;
 /// ```
 ///
-pub fn copy_items<P, Q>(from: &Vec<P>, to: Q, options: &dir::CopyOptions) -> Result<u64>
+pub fn copy_items<P, Q>(from: &[P], to: Q, options: &dir::CopyOptions) -> Result<u64>
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
@@ -283,7 +283,7 @@ impl Clone for TransitProcess {
 /// ```
 ///
 pub fn copy_items_with_progress<P, Q, F>(
-    from: &Vec<P>,
+    from: &[P],
     to: Q,
     options: &dir::CopyOptions,
     mut progress_handler: F,
@@ -488,7 +488,7 @@ where
 ///  move_items(&from_paths, "target", &options)?;
 /// ```
 ///
-pub fn move_items<P, Q>(from_items: &Vec<P>, to: Q, options: &dir::CopyOptions) -> Result<u64>
+pub fn move_items<P, Q>(from_items: &[P], to: Q, options: &dir::CopyOptions) -> Result<u64>
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
@@ -593,7 +593,7 @@ where
 /// ```
 ///
 pub fn move_items_with_progress<P, Q, F>(
-    from_items: &Vec<P>,
+    from_items: &[P],
     to: Q,
     options: &dir::CopyOptions,
     mut progress_handler: F,
@@ -778,7 +778,7 @@ where
 ///  remove_items(&from_paths).unwrap();
 /// ```
 ///
-pub fn remove_items<P>(from_items: &Vec<P>) -> Result<()>
+pub fn remove_items<P>(from_items: &[P]) -> Result<()>
 where
     P: AsRef<Path>,
 {
