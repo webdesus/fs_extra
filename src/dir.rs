@@ -47,8 +47,14 @@ impl CopyOptions {
     }
 }
 
+impl Default for CopyOptions {
+    fn default() -> Self {
+        CopyOptions::new()
+    }
+}
+
 ///	Options and flags which can be used to configure how read a directory.
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct DirOptions {
     /// Sets levels reading. Set value 0 for read all directory folder. By default 0.
     pub depth: u64,
@@ -56,14 +62,8 @@ pub struct DirOptions {
 
 impl DirOptions {
     /// Initialize struct DirOptions with default value.
-    ///
-    /// ```rust,ignore
-    /// depth: 0
-    /// ```
     pub fn new() -> DirOptions {
-        DirOptions {
-            depth: 0, //  0 - all; 1 - only first level; 2 - second level; ... etc.
-        }
+        Default::default()
     }
 }
 
