@@ -153,6 +153,6 @@ impl From<IoError> for Error {
                 return Error::new(err_kind, "Io error. Look inside err_kind for more details.");
             }
         }
-        Error::new(err_kind, err.description())
+        Error::new(err_kind, &err.to_string())
     }
 }

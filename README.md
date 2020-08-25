@@ -63,7 +63,7 @@ A Rust library that provides additional functionality not present in [`std::fs`]
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-fs_extra = "1.1.0"
+fs_extra = "1.2.0"
 ```
 ## Examples
 
