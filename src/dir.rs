@@ -9,17 +9,17 @@ use std::time::SystemTime;
 pub struct CopyOptions {
     /// Sets the option true for overwrite existing files.
     pub overwrite: bool,
-    /// Sets the option true for skipe existing files.
+    /// Sets the option true for skip existing files.
     pub skip_exist: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
     /// Sets the option true for recursively copying a directory with a new name or place it inside the destination.(same behaviors like cp -r in Unix)
     pub copy_inside: bool,
-    /// Sets the option true, for copy only content without a created folder in the destination folder    
+    /// Sets the option true, for copy only content without a created folder in the destination folder
     pub content_only: bool,
     /// Sets levels reading. Set 0 for read all directory folder. By default 0.
     ///
-    /// Warrning: Work only for copy operations!
+    /// Warning: Work only for copy operations!
     pub depth: u64,
 }
 
@@ -67,7 +67,7 @@ impl DirOptions {
     }
 }
 
-/// A structure which imclude information about directory
+/// A structure which include information about directory
 pub struct DirContent {
     /// Directory size.
     pub dir_size: u64,
@@ -96,11 +96,11 @@ pub struct TransitProcess {
 ///
 #[derive(Hash, Eq, PartialEq, Clone)]
 pub enum TransitState {
-    /// Standart state.
+    /// Standard state.
     Normal,
     /// Pause state when destination path is exist.
     Exists,
-    /// Pause state when current process does not have the permission rights to acess from or to
+    /// Pause state when current process does not have the permission rights to access from or to
     /// path.
     NoAccess,
 }
@@ -143,7 +143,7 @@ pub enum DirEntryAttr {
     Name,
     /// File extension.
     Ext,
-    /// Folder name or file name with extention.
+    /// Folder name or file name with extension.
     FullName,
     /// Path to file or directory.
     Path,
@@ -500,7 +500,7 @@ where
 
 /// Copies the directory contents from one place to another using recursive method.
 /// This function will also copy the permission bits of the original files to
-/// destionation files (not for directories).
+/// destination files (not for directories).
 ///
 /// # Errors
 ///
@@ -608,7 +608,7 @@ where
     Ok(result)
 }
 
-/// Return DirContent which containt information about directory:
+/// Return DirContent which contains information about directory:
 ///
 /// * Size directory.
 /// * List all files source directory(files subdirectories  included too).
@@ -642,7 +642,7 @@ where
     get_dir_content2(path, &options)
 }
 
-/// Return DirContent which containt information about directory:
+/// Return DirContent which contains information about directory:
 ///
 /// * Size directory.
 /// * List all files source directory(files subdirectories  included too).
@@ -705,11 +705,11 @@ where
 
                 match _get_dir_content(_path, depth) {
                     Ok(items) => {
-                        let mut _files = items.files;
-                        let mut _dirrectories = items.directories;
+                        let mut files = items.files;
+                        let mut directories = items.directories;
                         dir_size += items.dir_size;
-                        files.append(&mut _files);
-                        directories.append(&mut _dirrectories);
+                        files.append(&mut files);
+                        directories.append(&mut directories);
                     }
                     Err(err) => return Err(err),
                 }
@@ -743,7 +743,7 @@ where
 /// use fs_extra::dir::get_size;
 ///
 /// let folder_size = get_size("dir")?;
-/// println!("{}", folder_size); // print directory sile in bytes
+/// println!("{}", folder_size); // print directory size in bytes
 /// ```
 pub fn get_size<P>(path: P) -> Result<u64>
 where
@@ -768,7 +768,7 @@ where
 
 /// Copies the directory contents from one place to another using recursive method,
 /// with recept information about process. This function will also copy the
-/// permission bits of the original files to destionation files (not for directories).
+/// permission bits of the original files to destination files (not for directories).
 ///
 /// # Errors
 ///
@@ -986,7 +986,7 @@ where
 
 /// Moves the directory contents from one place to another.
 /// This function will also copy the permission bits of the original files to
-/// destionation files (not for directories).
+/// destination files (not for directories).
 ///
 /// # Errors
 ///
@@ -1106,7 +1106,7 @@ where
 
 /// Moves the directory contents from one place to another with recept information about process.
 /// This function will also copy the permission bits of the original files to
-/// destionation files (not for directories).
+/// destination files (not for directories).
 ///
 /// # Errors
 ///
