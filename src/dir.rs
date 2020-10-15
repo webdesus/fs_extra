@@ -705,11 +705,11 @@ where
 
                 match _get_dir_content(_path, depth) {
                     Ok(items) => {
-                        let mut files = items.files;
-                        let mut directories = items.directories;
+                        let mut _files = items.files;
+                        let mut _directories = items.directories;
                         dir_size += items.dir_size;
-                        files.append(&mut files);
-                        directories.append(&mut directories);
+                        files.append(&mut _files);
+                        directories.append(&mut _directories);
                     }
                     Err(err) => return Err(err),
                 }
