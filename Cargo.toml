@@ -16,4 +16,9 @@ include = [
     "CHANGELOG.md",
 ]
 
+[features]
+default = ["copy_on_write"]
+copy_on_write = ["reflink"]
+
 [dependencies]
+reflink = { version = "^0.1.0", optional = true }

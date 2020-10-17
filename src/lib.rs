@@ -1,3 +1,6 @@
+#[cfg(feature = "copy_on_write")]
+extern crate reflink;
+
 macro_rules! err {
     ($text:expr, $kind:expr) => {
         return Err(Error::new($kind, $text));
@@ -155,6 +158,20 @@ pub mod dir;
 
 use error::*;
 use std::path::Path;
+
+/// Possible values for the reflink field in CopyOptions.  These
+/// correspond to the `--reflink` option of the Unix `cp` command.
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum RefLinkUsage {
+    /// Do not use reflinks.
+    Never,
+    /// Use reflinks if possible.
+    #[cfg(feature = "copy_on_write")]
+    Auto,
+    /// Force use of reflinks, error out if not possible.
+    #[cfg(feature = "copy_on_write")]
+    Always,
+}
 
 /// Copies list directories and files to another place using recursive method. This function will
 /// also copy the permission bits of the original files to destionation files (not for
