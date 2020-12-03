@@ -4,20 +4,20 @@ use std::fs::{create_dir, create_dir_all, read_dir, remove_dir_all, Metadata};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-///	Options and flags which can be used to configure how a file will be  copied  or moved.
+///	Options and flags which can be used to configure how a file will be copied or moved.
 #[derive(Clone)]
 pub struct CopyOptions {
-    /// Sets the option true for overwrite existing files.
+    /// Overwrite existing files if true (default: false).
     pub overwrite: bool,
-    /// Sets the option true for skip existing files.
+    /// Skip existing files if true (default: false).
     pub skip_exist: bool,
-    /// Sets buffer size in bytes for copy/move work only with receipt information about process work.
+    /// Buffer size that specifies the amount of bytes to be moved or copied before the progress handler is called. This only affects functions with progress handlers. (default: 64000)
     pub buffer_size: usize,
-    /// Sets the option true for recursively copying a directory with a new name or place it inside the destination.(same behaviors like cp -r in Unix)
+    /// Recursively copy a directory with a new name or place it inside the destination (default: false, same behaviors as cp -r on Unix)
     pub copy_inside: bool,
-    /// Sets the option true, for copy only content without a created folder in the destination folder
+    /// Copy only contents without a creating a new folder in the destination folder (default: false).
     pub content_only: bool,
-    /// Sets levels reading. Set 0 for read all directory folder. By default 0.
+    /// Sets levels reading. Set 0 for read all directory folder (default: 0).
     ///
     /// Warning: Work only for copy operations!
     pub depth: u64,
@@ -31,7 +31,7 @@ impl CopyOptions {
     ///
     /// skip_exist: false
     ///
-    /// buffer_size: 64000 //64kb
+    /// buffer_size: 64000 // 64kb
     ///
     /// copy_inside: false
     /// ```
@@ -39,7 +39,7 @@ impl CopyOptions {
         CopyOptions {
             overwrite: false,
             skip_exist: false,
-            buffer_size: 64000, //64kb
+            buffer_size: 64000, // 64kb
             copy_inside: false,
             content_only: false,
             depth: 0,
@@ -53,7 +53,7 @@ impl Default for CopyOptions {
     }
 }
 
-///	Options and flags which can be used to configure how read a directory.
+///	Options and flags which can be used to configure how to read a directory.
 #[derive(Clone, Default)]
 pub struct DirOptions {
     /// Sets levels reading. Set value 0 for read all directory folder. By default 0.
@@ -100,7 +100,7 @@ pub enum TransitState {
     Normal,
     /// Pause state when destination path is exist.
     Exists,
-    /// Pause state when current process does not have the permission rights to access from or to
+    /// Pause state when current process does not have the permission to access from or to
     /// path.
     NoAccess,
 }
@@ -206,7 +206,7 @@ pub struct LsResult {
 ///
 /// * This `path` does not exist.
 /// * Invalid `path`.
-/// * The current process does not have the permission rights to access `path`.
+/// * The current process does not have the permission to access `path`.
 ///
 /// #Examples
 ///
@@ -370,13 +370,13 @@ where
     Ok(item)
 }
 
-/// Returned collection directory entries with information which you choose in config.
+/// Returns a collection of directory entries with attributes specifying the information that should be returned.
 ///
 /// This function takes to arguments:
 ///
 /// * `path` - Path to directory.
 ///
-/// * `config` - Set attributes which you want see inside return data.
+/// * `config` - Set attributes which you want see in return data.
 ///
 /// # Errors
 ///
@@ -385,7 +385,7 @@ where
 ///
 /// * This `path` directory does not exist.
 /// * Invalid `path`.
-/// * The current process does not have the permission rights to access `path`.
+/// * The current process does not have the permission to access `path`.
 ///
 /// #Examples
 ///
@@ -510,7 +510,7 @@ where
 /// * This `from` path is not a directory.
 /// * This `from` directory does not exist.
 /// * Invalid folder name for `from` or `to`.
-/// * The current process does not have the permission rights to access `from` or write `to`.
+/// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
 /// ```rust,ignore
@@ -621,7 +621,7 @@ where
 ///
 /// * This `path` directory does not exist.
 /// * Invalid `path`.
-/// * The current process does not have the permission rights to access `path`.
+/// * The current process does not have the permission to access `path`.
 ///
 /// # Examples
 /// ```rust,ignore
@@ -655,7 +655,7 @@ where
 ///
 /// * This `path` directory does not exist.
 /// * Invalid `path`.
-/// * The current process does not have the permission rights to access `path`.
+/// * The current process does not have the permission to access `path`.
 ///
 /// # Examples
 /// ```rust,ignore
@@ -739,7 +739,7 @@ where
 ///
 /// * This `path` directory does not exist.
 /// * Invalid `path`.
-/// * The current process does not have the permission rights to access `path`.
+/// * The current process does not have the permission to access `path`.
 ///
 /// # Examples
 /// ```rust,ignore
@@ -770,7 +770,7 @@ where
 }
 
 /// Copies the directory contents from one place to another using recursive method,
-/// with recept information about process. This function will also copy the
+/// with information about progress. This function will also copy the
 /// permission bits of the original files to destination files (not for directories).
 ///
 /// # Errors
@@ -781,7 +781,7 @@ where
 /// * This `from` path is not a directory.
 /// * This `from` directory does not exist.
 /// * Invalid folder name for `from` or `to`.
-/// * The current process does not have the permission rights to access `from` or write `to`.
+/// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
 /// ```rust,ignore
@@ -999,7 +999,7 @@ where
 /// * This `from` path is not a directory.
 /// * This `from` directory does not exist.
 /// * Invalid folder name for `from` or `to`.
-/// * The current process does not have the permission rights to access `from` or write `to`.
+/// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
 /// ```rust,ignore
@@ -1107,7 +1107,7 @@ where
     Ok(result)
 }
 
-/// Moves the directory contents from one place to another with recept information about process.
+/// Moves the directory contents from one place to another with information about progress.
 /// This function will also copy the permission bits of the original files to
 /// destination files (not for directories).
 ///
@@ -1119,7 +1119,7 @@ where
 /// * This `from` path is not a directory.
 /// * This `from` directory does not exist.
 /// * Invalid folder name for `from` or `to`.
-/// * The current process does not have the permission rights to access `from` or write `to`.
+/// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
 /// ```rust,ignore

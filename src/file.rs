@@ -8,7 +8,7 @@ use std::path::Path;
 pub struct CopyOptions {
     /// Sets the option true for overwrite existing files.
     pub overwrite: bool,
-    /// Sets the option true for skipe existing files.
+    /// Sets the option true for skip existing files.
     pub skip_exist: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
@@ -40,7 +40,7 @@ impl Default for CopyOptions {
     }
 }
 
-/// A structure  which include information about the current status of the copy or move file.
+/// A structure which stores information about the current status of a file that's copied or moved. .
 pub struct TransitProcess {
     /// Copied bytes on this time.
     pub copied_bytes: u64,
@@ -58,7 +58,7 @@ pub struct TransitProcess {
 ///
 /// * This `from` path is not a file.
 /// * This `from` file does not exist.
-/// * The current process does not have the permission rights to access `from` or write `to`.
+/// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
 ///
@@ -109,7 +109,7 @@ where
     Ok(std::fs::copy(from, to)?)
 }
 
-/// Copies the contents of one file to another with recept information about process.
+/// Copies the contents of one file to another file with information about progress.
 /// This function will also copy the permission bits of the original file to the
 /// destination file.
 ///
@@ -120,7 +120,7 @@ where
 ///
 /// * This `from` path is not a file.
 /// * This `from` file does not exist.
-/// * The current process does not have the permission rights to access `from` or write `to`.
+/// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
 /// ```rust,ignore
@@ -200,7 +200,7 @@ where
     Ok(file_size)
 }
 
-/// Moves file from one place to another. This function will also copy the permission
+/// Moves a file from one place to another. This function will also copy the permission
 /// bits of the original file to the destination file.
 ///
 /// # Errors
@@ -210,7 +210,7 @@ where
 ///
 /// * This `from` path is not a file.
 /// * This `from` file does not exist.
-/// * The current process does not have the permission rights to access `from` or write `to`.
+/// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
 /// ```rust,ignore
@@ -238,7 +238,7 @@ where
     Ok(result)
 }
 
-/// Moves file from one place to another with recept information about process.
+/// Moves a file from one place to another with information about progress.
 /// This function will also copy the permission bits of the original file to the
 /// destination file.
 ///
@@ -249,7 +249,7 @@ where
 ///
 /// * This `from` path is not a file.
 /// * This `from` file does not exist.
-/// * The current process does not have the permission rights to access `from` or write `to`.
+/// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
 /// ```rust,ignore
@@ -293,7 +293,7 @@ where
 /// This function will return an error in the following situations, but is not limited to just
 /// these cases:
 ///
-/// * The current process does not have the permission rights to access `path`.
+/// * The current process does not have the permission to access `path`.
 ///
 /// # Example
 /// ```rust,ignore
@@ -314,7 +314,7 @@ where
     }
 }
 
-/// Read file content, placing him into `String`.
+/// Read file contents, placing them into `String`.
 ///
 /// # Errors
 ///
@@ -323,14 +323,14 @@ where
 ///
 /// * This `path` is not a file.
 /// * This `path` file does not exist.
-/// * The current process does not have the permission rights to access `path`.
+/// * The current process does not have the permission to access `path`.
 ///
 /// # Example
 /// ```rust,ignore
 /// extern crate fs_extra;
 /// use fs_extra::file::read_to_string;
 ///
-/// let file_content = read_to_string("foo.txt" )?; // Get file conent from foo.txt
+/// let file_content = read_to_string("foo.txt" )?; // Get file content from foo.txt
 /// println!("{}", file_content);
 ///
 /// ```
@@ -354,7 +354,7 @@ where
     Ok(result)
 }
 
-/// Write `String` content into inside target file.
+/// Write `String` content into file.
 ///
 /// # Errors
 ///
@@ -363,14 +363,14 @@ where
 ///
 /// * This `path` is not a file.
 /// * This `path` file does not exist.
-/// * The current process does not have the permission rights to access `path`.
+/// * The current process does not have the permission to access `path`.
 ///
 /// # Example
 /// ```rust,ignore
 /// extern crate fs_extra;
 /// use fs_extra::file::read_to_string;
 ///
-/// write_all("foo.txt", "conents" )?; // Create file foo.txt and send content inside
+/// write_all("foo.txt", "contents" )?; // Create file foo.txt and send content inside
 ///
 /// ```
 pub fn write_all<P>(path: P, content: &str) -> Result<()>

@@ -8,9 +8,9 @@ macro_rules! err {
     };
 }
 
-/// The error type for fs_extra operations with files and folder.
+/// The error type for fs_extra operations on files and directories.
 pub mod error;
-/// This module include extra methods for works with files.
+/// This module includes additional methods for working with files.
 ///
 /// One of the distinguishing features is receipt information
 /// about process work with files.
@@ -80,10 +80,10 @@ pub mod error;
 /// ```
 pub mod file;
 
-/// This module include extra methods for works with directories.
+/// This module includes additional methods for working with directories.
 ///
-/// One of the distinguishing features is receipt information
-/// about process work with directories and recursion operations.
+/// One of the additional features is information
+/// about process and recursion operations.
 ///
 /// # Example
 /// ```rust,ignore
@@ -156,8 +156,8 @@ pub mod dir;
 use error::*;
 use std::path::Path;
 
-/// Copies list directories and files to another place using recursive method. This function will
-/// also copy the permission bits of the original files to destionation files (not for
+/// Copies a list of directories and files to another place recursively. This function will
+/// also copy the permission bits of the original files to destination files (not for
 /// directories).
 ///
 /// # Errors
@@ -169,7 +169,7 @@ use std::path::Path;
 ///
 /// * List `from` contains  file or directory with invalid name.
 ///
-/// * The current process does not have the permission rights to access to file from `lists from` or
+/// * The current process does not have the permission to access to file from `lists from` or
 /// `to`.
 ///
 /// # Example
@@ -222,19 +222,19 @@ where
     Ok(result)
 }
 
-/// A structure which include information about the current status of the copy or move directory.
+/// A structure which includes information about the current status of copying or moving a directory.
 pub struct TransitProcess {
-    /// Copied bytes on this time for folder
+    /// Already copied bytes
     pub copied_bytes: u64,
-    /// All the bytes which should to copy or move (dir size).
+    /// All the bytes which should be copied or moved (dir size).
     pub total_bytes: u64,
     /// Copied bytes on this time for file.
     pub file_bytes_copied: u64,
-    /// Size current copied file.
+    /// Size of currently copied file.
     pub file_total_bytes: u64,
-    /// Name current copied file.
+    /// Name of currently copied file.
     pub file_name: String,
-    /// Name current copied folder.
+    /// Name of currently copied folder.
     pub dir_name: String,
     /// Transit state
     pub state: dir::TransitState,
@@ -254,9 +254,9 @@ impl Clone for TransitProcess {
     }
 }
 
-/// Copies list directories and files to another place using recursive method, with recept
-/// information about process. This function will also copy the permission bits of the
-/// original files to destionation files (not for directories).
+/// Copies a list of directories and files to another place recursively, with
+/// information about progress. This function will also copy the permission bits of the
+/// original files to destination files (not for directories).
 ///
 /// # Errors
 ///
@@ -267,7 +267,7 @@ impl Clone for TransitProcess {
 ///
 /// * List `from` contains  file or directory with invalid name.
 ///
-/// * The current process does not have the permission rights to access to file from `lists from` or
+/// * The current process does not have the permission to access to file from `lists from` or
 /// `to`.
 ///
 /// # Example
@@ -301,7 +301,7 @@ where
 {
     if options.content_only {
         err!(
-            "Options 'content_only' not acccess for copy_items_with_progress function",
+            "Options 'content_only' not access for copy_items_with_progress function",
             ErrorKind::Other
         );
     }
@@ -465,8 +465,8 @@ where
     Ok(result)
 }
 
-/// Moves list directories and files to another place using recursive method. This function will
-/// also copy the permission bits of the original files to destionation files (not for
+/// Moves a list of directories and files to another place recursively. This function will
+/// also copy the permission bits of the original files to destination files (not for
 /// directories).
 ///
 /// # Errors
@@ -478,7 +478,7 @@ where
 ///
 /// * List `from` contains  file or directory with invalid name.
 ///
-/// * The current process does not have the permission rights to access to file from `lists from` or
+/// * The current process does not have the permission to access to file from `lists from` or
 /// `to`.
 ///
 /// # Example
@@ -503,7 +503,7 @@ where
 {
     if options.content_only {
         err!(
-            "Options 'content_only' not acccess for move_items function",
+            "Options 'content_only' not access for move_items function",
             ErrorKind::Other
         );
     }
@@ -568,9 +568,9 @@ where
     Ok(result)
 }
 
-/// Moves list directories and files to another place using recursive method, with recept
-/// information about process. This function will also copy the permission bits of the
-/// original files to destionation files (not for directories).
+/// Moves a list of directories and files to another place recursively, with
+/// information about progress. This function will also copy the permission bits of the
+/// original files to destination files (not for directories).
 ///
 /// # Errors
 ///
@@ -581,7 +581,7 @@ where
 ///
 /// * List `from` contains  file or directory with invalid name.
 ///
-/// * The current process does not have the permission rights to access to file from `lists from` or
+/// * The current process does not have the permission to access to file from `lists from` or
 /// `to`.
 ///
 /// # Example
@@ -615,7 +615,7 @@ where
 {
     if options.content_only {
         err!(
-            "Options 'content_only' not acccess for move_items_with_progress function",
+            "Options 'content_only' not access for move_items_with_progress function",
             ErrorKind::Other
         );
     }
@@ -778,7 +778,7 @@ where
     Ok(result)
 }
 
-/// Removes list files or directories.
+/// Removes a list of files or directories.
 ///
 /// # Example
 ///
