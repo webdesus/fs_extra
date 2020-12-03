@@ -726,7 +726,10 @@ where
     })
 }
 
-/// Returns the size of the file or directory
+/// Returns the size of the file or directory in bytes
+///
+/// If used on a directory, this function will recursively iterate over every file and every
+/// directory inside the directory. This can be very time consuming if used on large directories.
 ///
 /// # Errors
 ///
@@ -754,9 +757,8 @@ where
     if path.as_ref().is_dir() {
         for entry in read_dir(&path)? {
             let _path = entry?.path();
-            if _path.is_file() {
-                result += _path.metadata()?.len();
-            } else {
+            result += _path.metadata()?.len();
+            if _path.is_dir() {
                 result += get_size(_path)?;
             }
         }

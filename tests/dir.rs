@@ -60,6 +60,14 @@ where
     true
 }
 
+// Returns the size of a directory. On Linux with ext4 this can be about 4kB.
+// Since the directory size can vary, we need to calculate is dynamically.
+fn get_dir_size() -> u64 {
+    std::fs::create_dir_all("./tests/temp").expect("Couldn't create test folder");
+
+    std::fs::metadata("./tests/temp").expect("Couldn't receive metadata of tests/temp folder").len()
+}
+
 const TEST_FOLDER: &'static str = "./tests/temp/dir";
 
 #[test]
@@ -2806,7 +2814,9 @@ fn it_get_folder_size() {
 
     let result = get_size(&path).unwrap();
 
-    assert_eq!(16, result);
+    let test_size: u64 = 16 + get_dir_size();
+
+    assert_eq!(test_size, result);
 }
 
 #[test]
