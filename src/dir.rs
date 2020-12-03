@@ -687,7 +687,7 @@ where
 {
     let mut directories = Vec::new();
     let mut files = Vec::new();
-    let mut dir_size = 0;
+    let mut dir_size;
     let item = path.as_ref().to_str();
     if !item.is_some() {
         err!("Invalid path", ErrorKind::InvalidPath);
@@ -695,6 +695,7 @@ where
     let item = item.unwrap().to_string();
 
     if path.as_ref().is_dir() {
+        dir_size = path.as_ref().metadata()?.len();
         directories.push(item);
         if depth == 0 || depth > 1 {
             if depth > 1 {

@@ -828,10 +828,10 @@ fn it_copy_progress_work() {
             Ok(process_info) => {
                 if process_info.file_name == "test2.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(15, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 15, process_info.total_bytes);
                 } else if process_info.file_name == "test1.txt" {
                     assert_eq!(7, process_info.file_total_bytes);
-                    assert_eq!(15, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 15, process_info.total_bytes);
                 } else {
                     panic!("Unknow file name!");
                 }
@@ -957,14 +957,14 @@ fn it_copy_with_progress_work_dif_buf_size() {
             assert_eq!(i * 2, process_info.file_bytes_copied);
             assert_eq!(i * 2, process_info.copied_bytes);
             assert_eq!(8, process_info.file_total_bytes);
-            assert_eq!(16, process_info.total_bytes);
+            assert_eq!(get_dir_size() * 2 + 16, process_info.total_bytes);
         }
         for i in 1..5 {
             let process_info: TransitProcess = rx.recv().unwrap();
             assert_eq!(i * 2 + 8, process_info.copied_bytes);
             assert_eq!(i * 2, process_info.file_bytes_copied);
             assert_eq!(8, process_info.file_total_bytes);
-            assert_eq!(16, process_info.total_bytes);
+            assert_eq!(get_dir_size() * 2 + 16, process_info.total_bytes);
         }
 
         match result {
@@ -978,14 +978,14 @@ fn it_copy_with_progress_work_dif_buf_size() {
         assert_eq!(i, process_info.file_bytes_copied);
         assert_eq!(i, process_info.copied_bytes);
         assert_eq!(8, process_info.file_total_bytes);
-        assert_eq!(16, process_info.total_bytes);
+        assert_eq!(get_dir_size() * 2 + 16, process_info.total_bytes);
     }
     for i in 1..9 {
         let process_info: TransitProcess = rx.recv().unwrap();
         assert_eq!(i + 8, process_info.copied_bytes);
         assert_eq!(i, process_info.file_bytes_copied);
         assert_eq!(8, process_info.file_total_bytes);
-        assert_eq!(16, process_info.total_bytes);
+        assert_eq!(get_dir_size() * 2 + 16, process_info.total_bytes);
     }
 
     match result {
@@ -2322,10 +2322,10 @@ fn it_move_progress_work() {
             Ok(process_info) => {
                 if process_info.file_name == "test2.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(15, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 15, process_info.total_bytes);
                 } else if process_info.file_name == "test1.txt" {
                     assert_eq!(7, process_info.file_total_bytes);
-                    assert_eq!(15, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 15, process_info.total_bytes);
                 } else {
                     panic!("Unknow file name!");
                 }
@@ -2468,14 +2468,14 @@ fn it_move_with_progress_work_dif_buf_size() {
             assert_eq!(i * 2, process_info.file_bytes_copied);
             assert_eq!(i * 2, process_info.copied_bytes);
             assert_eq!(8, process_info.file_total_bytes);
-            assert_eq!(16, process_info.total_bytes);
+            assert_eq!(get_dir_size() * 2 + 16, process_info.total_bytes);
         }
         for i in 1..5 {
             let process_info: TransitProcess = rx.recv().unwrap();
             assert_eq!(i * 2 + 8, process_info.copied_bytes);
             assert_eq!(i * 2, process_info.file_bytes_copied);
             assert_eq!(8, process_info.file_total_bytes);
-            assert_eq!(16, process_info.total_bytes);
+            assert_eq!(get_dir_size() * 2 + 16, process_info.total_bytes);
         }
 
         match result {
@@ -2489,14 +2489,14 @@ fn it_move_with_progress_work_dif_buf_size() {
         assert_eq!(i, process_info.file_bytes_copied);
         assert_eq!(i, process_info.copied_bytes);
         assert_eq!(8, process_info.file_total_bytes);
-        assert_eq!(16, process_info.total_bytes);
+        assert_eq!(get_dir_size() * 2 + 16, process_info.total_bytes);
     }
     for i in 1..9 {
         let process_info: TransitProcess = rx.recv().unwrap();
         assert_eq!(i + 8, process_info.copied_bytes);
         assert_eq!(i, process_info.file_bytes_copied);
         assert_eq!(8, process_info.file_total_bytes);
-        assert_eq!(16, process_info.total_bytes);
+        assert_eq!(get_dir_size() * 2 + 16, process_info.total_bytes);
     }
 
     match result {
@@ -2877,7 +2877,7 @@ fn it_get_dir_content() {
 
     let result = get_dir_content(&path).unwrap();
 
-    assert_eq!(16, result.dir_size);
+    assert_eq!(get_dir_size() * 2 + 16, result.dir_size);
     assert_eq!(2, result.files.len());
     assert_eq!(2, result.directories.len());
 
@@ -2939,7 +2939,7 @@ fn it_get_dir_content_many_levels() {
     let mut options = DirOptions::new();
     let result = get_dir_content2(&d_level_1, &options).unwrap();
 
-    assert_eq!(40, result.dir_size);
+    assert_eq!(get_dir_size() * 5 + 40, result.dir_size);
     assert_eq!(5, result.files.len());
     assert_eq!(5, result.directories.len());
 
@@ -2977,7 +2977,7 @@ fn it_get_dir_content_many_levels() {
     options.depth = 1;
     let result = get_dir_content2(&d_level_1, &options).unwrap();
 
-    assert_eq!(8, result.dir_size);
+    assert_eq!(get_dir_size() * 2 + 8, result.dir_size);
     assert_eq!(1, result.files.len());
     assert_eq!(2, result.directories.len());
     files_correct = true;
@@ -3011,7 +3011,7 @@ fn it_get_dir_content_many_levels() {
     options.depth = 4;
     let result = get_dir_content2(&d_level_1, &options).unwrap();
 
-    assert_eq!(32, result.dir_size);
+    assert_eq!(get_dir_size() * 5 + 32, result.dir_size);
     assert_eq!(4, result.files.len());
     assert_eq!(5, result.directories.len());
     files_correct = true;
@@ -3749,10 +3749,10 @@ fn it_copy_with_progress_inside_work_target_dir_not_exist() {
             Ok(process_info) => {
                 if process_info.file_name == "file2.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(15, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 15, process_info.total_bytes);
                 } else if process_info.file_name == "file1.txt" {
                     assert_eq!(7, process_info.file_total_bytes);
-                    assert_eq!(15, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 15, process_info.total_bytes);
                 } else {
                     panic!("Unknow file name!");
                 }
@@ -3829,10 +3829,10 @@ fn it_copy_with_progress_inside_work_target_dir_exist_with_no_source_dir_named_s
             Ok(process_info) => {
                 if process_info.file_name == "file2.txt" {
                     assert_eq!(9, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else if process_info.file_name == "file1.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else {
                     panic!("Unknow file name!");
                 }
@@ -3917,10 +3917,10 @@ fn it_copy_with_progress_inside_no_overwrite_work_target_dir_exist_with_source_d
             Ok(process_info) => {
                 if process_info.file_name == "file2.txt" {
                     assert_eq!(9, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else if process_info.file_name == "file1.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else {
                     panic!("Unknow file name!");
                 }
@@ -4004,10 +4004,10 @@ fn it_copy_with_progress_inside_overwrite_work_target_dir_exist_with_source_dir_
             Ok(process_info) => {
                 if process_info.file_name == "file2.txt" {
                     assert_eq!(9, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else if process_info.file_name == "file1.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else {
                     panic!("Unknow file name!");
                 }
@@ -4386,10 +4386,10 @@ fn it_move_dir_with_progress_inside_work_target_dir_not_exist() {
             Ok(process_info) => {
                 if process_info.file_name == "file2.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(15, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 15, process_info.total_bytes);
                 } else if process_info.file_name == "file1.txt" {
                     assert_eq!(7, process_info.file_total_bytes);
-                    assert_eq!(15, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 15, process_info.total_bytes);
                 } else {
                     panic!("Unknow file name!");
                 }
@@ -4472,10 +4472,10 @@ fn it_move_dir_with_progress_inside_work_target_dir_exist_with_no_source_dir_nam
             Ok(process_info) => {
                 if process_info.file_name == "file2.txt" {
                     assert_eq!(9, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else if process_info.file_name == "file1.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else {
                     panic!("Unknow file name!");
                 }
@@ -4570,10 +4570,10 @@ fn it_move_dir_with_progress_inside_no_overwrite_work_target_dir_exist_with_sour
             Ok(process_info) => {
                 if process_info.file_name == "file2.txt" {
                     assert_eq!(9, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else if process_info.file_name == "file1.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else {
                     panic!("Unknow file name!");
                 }
@@ -4664,10 +4664,10 @@ fn it_move_dir_with_progress_inside_overwrite_work_target_dir_exist_with_source_
             Ok(process_info) => {
                 if process_info.file_name == "file2.txt" {
                     assert_eq!(9, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else if process_info.file_name == "file1.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(17, process_info.total_bytes);
+                    assert_eq!(get_dir_size() * 2 + 17, process_info.total_bytes);
                 } else {
                     panic!("Unknow file name!");
                 }
