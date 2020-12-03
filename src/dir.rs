@@ -11,7 +11,7 @@ pub struct CopyOptions {
     pub overwrite: bool,
     /// Sets the option true for skip existing files.
     pub skip_exist: bool,
-    /// Sets buffer size for copy/move work only with receipt information about process work.
+    /// Sets buffer size in bytes for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
     /// Sets the option true for recursively copying a directory with a new name or place it inside the destination.(same behaviors like cp -r in Unix)
     pub copy_inside: bool,
@@ -69,7 +69,7 @@ impl DirOptions {
 
 /// A structure which include information about directory
 pub struct DirContent {
-    /// Directory size.
+    /// Directory size in bytes.
     pub dir_size: u64,
     /// List all files directory and sub directories.
     pub files: Vec<String>,
@@ -610,9 +610,9 @@ where
 
 /// Return DirContent which contains information about directory:
 ///
-/// * Size directory.
-/// * List all files source directory(files subdirectories  included too).
-/// * List all directory and subdirectories source path.
+/// * Size of the directory in bytes.
+/// * List of source paths of files in the directory (files inside subdirectories included too).
+/// * List of source paths of all directories and subdirectories.
 ///
 /// # Errors
 ///
