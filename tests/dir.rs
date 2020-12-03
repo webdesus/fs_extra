@@ -65,7 +65,9 @@ where
 fn get_dir_size() -> u64 {
     std::fs::create_dir_all("./tests/temp").expect("Couldn't create test folder");
 
-    std::fs::metadata("./tests/temp").expect("Couldn't receive metadata of tests/temp folder").len()
+    std::fs::metadata("./tests/temp")
+        .expect("Couldn't receive metadata of tests/temp folder")
+        .len()
 }
 
 const TEST_FOLDER: &'static str = "./tests/temp/dir";
@@ -821,7 +823,8 @@ fn it_copy_progress_work() {
         assert_eq!(15, result);
         assert!(path_to.exists());
         assert!(compare_dir(&path_from, &path_to));
-    }).join();
+    })
+    .join();
 
     loop {
         match rx.try_recv() {
@@ -951,7 +954,8 @@ fn it_copy_with_progress_work_dif_buf_size() {
             assert_eq!(16, result);
             assert!(path_to.exists());
             assert!(compare_dir(&path_from, &path_to));
-        }).join();
+        })
+        .join();
         for i in 1..5 {
             let process_info: TransitProcess = rx.recv().unwrap();
             assert_eq!(i * 2, process_info.file_bytes_copied);
@@ -971,7 +975,8 @@ fn it_copy_with_progress_work_dif_buf_size() {
             Ok(_) => {}
             Err(err) => panic!(err),
         }
-    }).join();
+    })
+    .join();
 
     for i in 1..9 {
         let process_info: TransitProcess = rx.recv().unwrap();
@@ -1031,7 +1036,8 @@ fn it_copy_with_progress_source_not_exist() {
                 panic!("should be error");
             }
         }
-    }).join();
+    })
+    .join();
     match result {
         Ok(_) => {}
         Err(err) => panic!(err),
@@ -1090,7 +1096,8 @@ fn it_copy_with_progress_exist_overwrite() {
         assert_eq!(23, result);
         assert!(path_to.exists());
         assert!(compare_dir(&path_from, &path_to));
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -1199,7 +1206,8 @@ fn it_copy_with_progress_exist_skip_exist() {
         assert_eq!(0, result);
         assert!(path_to.exists());
         assert!(!compare_dir(&path_from, &path_to));
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -1260,7 +1268,8 @@ fn it_copy_with_progress_exist_overwrite_and_skip_exist() {
         assert_eq!(23, result);
         assert!(path_to.exists());
         assert!(compare_dir(&path_from, &path_to));
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -1360,7 +1369,8 @@ fn it_copy_with_progress_using_first_levels() {
         assert!(!file4.1.exists());
         assert!(!file5.1.exists());
         assert!(files_eq(&file1.0, &file1.1));
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -1467,7 +1477,8 @@ fn it_copy_with_progress_using_four_levels() {
         assert!(files_eq(&file2.0, &file2.1));
         assert!(files_eq(&file3.0, &file3.1));
         assert!(files_eq(&file4.0, &file4.1));
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -1547,7 +1558,8 @@ fn it_copy_with_progress_content_only_option() {
         assert!(files_eq(&file1.0, &file1.1));
         assert!(files_eq(&file2.0, &file2.1));
         assert!(files_eq(&file3.0, &file3.1));
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -2315,7 +2327,8 @@ fn it_move_progress_work() {
         assert_eq!(15, result);
         assert!(path_to.exists());
         assert!(!path_from.exists());
-    }).join();
+    })
+    .join();
 
     loop {
         match rx.try_recv() {
@@ -2462,7 +2475,8 @@ fn it_move_with_progress_work_dif_buf_size() {
             assert_eq!(16, result);
             assert!(path_to.exists());
             assert!(!path_from.exists());
-        }).join();
+        })
+        .join();
         for i in 1..5 {
             let process_info: TransitProcess = rx.recv().unwrap();
             assert_eq!(i * 2, process_info.file_bytes_copied);
@@ -2482,7 +2496,8 @@ fn it_move_with_progress_work_dif_buf_size() {
             Ok(_) => {}
             Err(err) => panic!(err),
         }
-    }).join();
+    })
+    .join();
 
     for i in 1..9 {
         let process_info: TransitProcess = rx.recv().unwrap();
@@ -2542,7 +2557,8 @@ fn it_move_with_progress_source_not_exist() {
                 panic!("should be error");
             }
         }
-    }).join();
+    })
+    .join();
     match result {
         Ok(_) => {}
         Err(err) => panic!(err),
@@ -2601,7 +2617,8 @@ fn it_move_with_progress_exist_overwrite() {
         assert_eq!(23, result);
         assert!(path_to.exists());
         assert!(!path_from.exists());
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -2658,7 +2675,8 @@ fn it_move_with_progress_exist_not_overwrite() {
                 _ => panic!("Wrong wrror"),
             },
         }
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -2720,7 +2738,8 @@ fn it_move_with_progress_exist_skip_exist() {
         assert_eq!(0, result);
         assert!(path_from.exists());
         assert!(path_to.exists());
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -2781,7 +2800,8 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
         assert_eq!(23, result);
         assert!(path_to.exists());
         assert!(!path_from.exists());
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -2996,16 +3016,12 @@ fn it_get_dir_content_many_levels() {
         }
     }
     assert!(directories_correct);
-    assert!(
-        result
-            .directories
-            .contains(&file1.parent().unwrap().to_str().unwrap().to_string(),)
-    );
-    assert!(
-        result
-            .directories
-            .contains(&file2.parent().unwrap().to_str().unwrap().to_string(),)
-    );
+    assert!(result
+        .directories
+        .contains(&file1.parent().unwrap().to_str().unwrap().to_string(),));
+    assert!(result
+        .directories
+        .contains(&file2.parent().unwrap().to_str().unwrap().to_string(),));
 
     // fourth level
     options.depth = 4;
@@ -3033,31 +3049,21 @@ fn it_get_dir_content_many_levels() {
         }
     }
     assert!(directories_correct);
-    assert!(
-        result
-            .directories
-            .contains(&file1.parent().unwrap().to_str().unwrap().to_string(),)
-    );
-    assert!(
-        result
-            .directories
-            .contains(&file2.parent().unwrap().to_str().unwrap().to_string(),)
-    );
-    assert!(
-        result
-            .directories
-            .contains(&file3.parent().unwrap().to_str().unwrap().to_string(),)
-    );
-    assert!(
-        result
-            .directories
-            .contains(&file4.parent().unwrap().to_str().unwrap().to_string(),)
-    );
-    assert!(
-        result
-            .directories
-            .contains(&file5.parent().unwrap().to_str().unwrap().to_string(),)
-    );
+    assert!(result
+        .directories
+        .contains(&file1.parent().unwrap().to_str().unwrap().to_string(),));
+    assert!(result
+        .directories
+        .contains(&file2.parent().unwrap().to_str().unwrap().to_string(),));
+    assert!(result
+        .directories
+        .contains(&file3.parent().unwrap().to_str().unwrap().to_string(),));
+    assert!(result
+        .directories
+        .contains(&file4.parent().unwrap().to_str().unwrap().to_string(),));
+    assert!(result
+        .directories
+        .contains(&file5.parent().unwrap().to_str().unwrap().to_string(),));
 }
 
 #[test]
@@ -3440,7 +3446,8 @@ fn it_copy_with_progress_exist_user_decide_overwrite() {
         assert!(dir.0.exists());
         assert!(dir.1.exists());
         assert!(compare_dir(&dir.0, &out));
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -3503,7 +3510,8 @@ fn it_copy_with_progress_exist_user_decide_overwrite_all() {
         assert!(dir.0.exists());
         assert!(dir.1.exists());
         assert!(compare_dir(&dir.0, &out));
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -3565,7 +3573,8 @@ fn it_copy_with_progress_exist_user_decide_skip() {
         assert!(dir.0.exists());
         assert!(dir.1.exists());
         assert!(!compare_dir(&dir.0, &out));
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -3627,7 +3636,8 @@ fn it_copy_with_progress_exist_user_decide_skip_all() {
         assert!(dir.0.exists());
         assert!(dir.1.exists());
         assert!(!compare_dir(&dir.0, &out));
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -3693,7 +3703,8 @@ fn it_copy_with_progress_exist_user_decide_retry() {
         assert!(dir.0.exists());
         assert!(dir.1.exists());
         assert!(!compare_dir(&dir.0, &out));
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -3742,7 +3753,8 @@ fn it_copy_with_progress_inside_work_target_dir_not_exist() {
         assert!(root_dir1_sub.exists());
         assert!(root_dir2.exists());
         assert!(compare_dir_recursively(&root_dir1, &root_dir2));
-    }).join();
+    })
+    .join();
 
     loop {
         match rx.try_recv() {
@@ -3822,7 +3834,8 @@ fn it_copy_with_progress_inside_work_target_dir_exist_with_no_source_dir_named_s
         assert!(root_dir2_dir1.exists());
         assert!(root_dir2_dir3.exists());
         assert!(compare_dir(&root_dir1, &root_dir2));
-    }).join();
+    })
+    .join();
 
     loop {
         match rx.try_recv() {
@@ -3910,7 +3923,8 @@ fn it_copy_with_progress_inside_no_overwrite_work_target_dir_exist_with_source_d
         assert!(root_dir2_dir3.exists());
         assert!(!files_eq(file1, old_file1));
         assert!(!files_eq(file2, old_file2));
-    }).join();
+    })
+    .join();
 
     loop {
         match rx.try_recv() {
@@ -3997,7 +4011,8 @@ fn it_copy_with_progress_inside_overwrite_work_target_dir_exist_with_source_dir_
         assert!(root_dir2_dir1_sub.exists());
         assert!(root_dir2_dir3.exists());
         assert!(compare_dir(&root_dir1, &root_dir2));
-    }).join();
+    })
+    .join();
 
     loop {
         match rx.try_recv() {
@@ -4077,7 +4092,8 @@ fn it_move_with_progress_exist_user_decide_overwrite() {
         assert_eq!(16, result);
         assert!(!dir.0.exists());
         assert!(dir.1.exists());
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -4139,7 +4155,8 @@ fn it_move_with_progress_exist_user_decide_overwrite_all() {
         assert_eq!(16, result);
         assert!(!dir.0.exists());
         assert!(dir.1.exists());
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -4200,7 +4217,8 @@ fn it_move_with_progress_exist_user_decide_skip() {
         assert_eq!(0, result);
         assert!(dir.0.exists());
         assert!(dir.1.exists());
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -4261,7 +4279,8 @@ fn it_move_with_progress_exist_user_decide_skip_all() {
         assert_eq!(0, result);
         assert!(dir.0.exists());
         assert!(dir.1.exists());
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -4326,7 +4345,8 @@ fn it_move_with_progress_exist_user_decide_retry() {
         assert_eq!(0, result);
         assert!(dir.0.exists());
         assert!(dir.1.exists());
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
@@ -4379,7 +4399,8 @@ fn it_move_dir_with_progress_inside_work_target_dir_not_exist() {
         assert!(root_dir2_sub.exists());
         assert!(root_dir2_file1.exists());
         assert!(root_dir2_sub_file2.exists());
-    }).join();
+    })
+    .join();
 
     loop {
         match rx.try_recv() {
@@ -4465,7 +4486,8 @@ fn it_move_dir_with_progress_inside_work_target_dir_exist_with_no_source_dir_nam
         assert!(root_dir2_dir1_sub.exists());
         assert!(root_dir2_dir1_sub_file2.exists());
         assert!(root_dir2_dir3_file3.exists());
-    }).join();
+    })
+    .join();
 
     loop {
         match rx.try_recv() {
@@ -4563,7 +4585,8 @@ fn it_move_dir_with_progress_inside_no_overwrite_work_target_dir_exist_with_sour
         assert!(root_dir2_dir3_file3.exists());
         assert!(!files_eq(file1, old_file1));
         assert!(!files_eq(file2, old_file2));
-    }).join();
+    })
+    .join();
 
     loop {
         match rx.try_recv() {
@@ -4657,7 +4680,8 @@ fn it_move_dir_with_progress_inside_overwrite_work_target_dir_exist_with_source_
         assert!(root_dir2_dir1_file1.exists());
         assert!(root_dir2_dir1_sub_file2.exists());
         assert!(root_dir2_dir3_file3.exists());
-    }).join();
+    })
+    .join();
 
     loop {
         match rx.try_recv() {
@@ -4749,7 +4773,8 @@ fn it_move_with_progress_content_only_option() {
         assert!(file1.1.exists());
         assert!(file2.1.exists());
         assert!(file3.1.exists());
-    }).join();
+    })
+    .join();
 
     match result {
         Ok(_) => {}
