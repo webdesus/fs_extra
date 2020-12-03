@@ -4,7 +4,7 @@ use std::fs::{remove_file, File};
 use std::io::{Read, Write};
 use std::path::Path;
 
-///	Options and flags which can be used to configure how a file will be  copied  or moved.
+// Options and flags which can be used to configure how a file will be  copied  or moved.
 pub struct CopyOptions {
     /// Sets the option true for overwrite existing files.
     pub overwrite: bool,
@@ -143,7 +143,7 @@ pub fn copy_with_progress<P, Q, F>(
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
-    F: FnMut(TransitProcess) -> (),
+    F: FnMut(TransitProcess),
 {
     let from = from.as_ref();
     if !from.exists() {
@@ -185,10 +185,13 @@ where
         match file_from.read(&mut buf) {
             Ok(0) => break,
             Ok(n) => {
-                file_to.write(&mut buf[..n])?;
-                copied_bytes = copied_bytes + n as u64;
+                let written_bytes = file_to.write(&buf[..n])?;
+                if written_bytes != n {
+                    err!("Couldn't write the whole buffer to file", ErrorKind::Other);
+                }
+                copied_bytes += n as u64;
                 let data = TransitProcess {
-                    copied_bytes: copied_bytes,
+                    copied_bytes,
                     total_bytes: file_size,
                 };
                 progress_handler(data);
@@ -272,7 +275,7 @@ pub fn move_file_with_progress<P, Q, F>(
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
-    F: FnMut(TransitProcess) -> (),
+    F: FnMut(TransitProcess),
 {
     let mut is_remove = true;
     if options.skip_exist && to.as_ref().exists() && !options.overwrite {

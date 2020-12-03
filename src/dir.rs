@@ -4,7 +4,7 @@ use std::fs::{create_dir, create_dir_all, read_dir, remove_dir_all, Metadata};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-///	Options and flags which can be used to configure how a file will be copied or moved.
+/// Options and flags which can be used to configure how a file will be copied or moved.
 #[derive(Clone)]
 pub struct CopyOptions {
     /// Overwrite existing files if true (default: false).
@@ -53,7 +53,7 @@ impl Default for CopyOptions {
     }
 }
 
-///	Options and flags which can be used to configure how to read a directory.
+// Options and flags which can be used to configure how to read a directory.
 #[derive(Clone, Default)]
 pub struct DirOptions {
     /// Sets levels reading. Set value 0 for read all directory folder. By default 0.
@@ -253,15 +253,13 @@ where
             } else {
                 item.insert(DirEntryAttr::Name, DirEntryValue::String(String::new()));
             }
+        } else if let Some(file_stem) = path.file_stem() {
+            item.insert(
+                DirEntryAttr::Name,
+                DirEntryValue::String(file_stem.to_os_string().into_string()?),
+            );
         } else {
-            if let Some(file_stem) = path.file_stem() {
-                item.insert(
-                    DirEntryAttr::Name,
-                    DirEntryValue::String(file_stem.to_os_string().into_string()?),
-                );
-            } else {
-                item.insert(DirEntryAttr::Name, DirEntryValue::String(String::new()));
-            }
+            item.insert(DirEntryAttr::Name, DirEntryValue::String(String::new()));
         }
     }
     if config.contains(&DirEntryAttr::Ext) {
@@ -423,10 +421,7 @@ where
     if config.contains(&DirEntryAttr::BaseInfo) {
         base = get_details_entry(&path, &config)?;
     }
-    Ok(LsResult {
-        items: items,
-        base: base,
-    })
+    Ok(LsResult { items, base })
 }
 
 /// Creates a new, empty directory at the provided path.
@@ -556,7 +551,7 @@ where
         err!("Invalid folder from", ErrorKind::InvalidFolder);
     }
     let mut to: PathBuf = to.as_ref().to_path_buf();
-    if !options.content_only && ((options.copy_inside && to.exists()) || !options.copy_inside) {
+    if (to.exists() || !options.copy_inside) && !options.content_only {
         to.push(dir_name);
     }
 
@@ -689,7 +684,7 @@ where
     let mut files = Vec::new();
     let mut dir_size;
     let item = path.as_ref().to_str();
-    if !item.is_some() {
+    if item.is_none() {
         err!("Invalid path", ErrorKind::InvalidPath);
     }
     let item = item.unwrap().to_string();
@@ -721,9 +716,9 @@ where
         files.push(item);
     }
     Ok(DirContent {
-        dir_size: dir_size,
-        files: files,
-        directories: directories,
+        dir_size,
+        files,
+        directories,
     })
 }
 
@@ -836,7 +831,7 @@ where
     } else {
         err!("Invalid folder from", ErrorKind::InvalidFolder);
     }
-    if !options.content_only && ((options.copy_inside && to.exists()) || !options.copy_inside) {
+    if (to.exists() || !options.copy_inside) && !options.content_only {
         to.push(dir_name);
     }
 
@@ -875,7 +870,7 @@ where
         let path = to.join(&tp);
 
         let file_name = path.file_name();
-        if !file_name.is_some() {
+        if file_name.is_none() {
             err!("No file name");
         }
         let file_name = file_name.unwrap();
@@ -1055,7 +1050,7 @@ where
         err!("Invalid folder from", ErrorKind::InvalidFolder);
     }
 
-    if !options.content_only && ((options.copy_inside && to.exists()) || !options.copy_inside) {
+    if (to.exists() || !options.copy_inside) && !options.content_only {
         to.push(dir_name);
     }
     let dir_content = get_dir_content(from)?;
@@ -1178,7 +1173,7 @@ where
     } else {
         err!("Invalid folder from", ErrorKind::InvalidFolder);
     }
-    if !options.content_only && ((options.copy_inside && to.exists()) || !options.copy_inside) {
+    if !(options.content_only || options.copy_inside && !to.exists()) {
         to.push(dir_name);
     }
 
@@ -1212,7 +1207,7 @@ where
         let path = to.join(&tp);
 
         let file_name = path.file_name();
-        if !file_name.is_some() {
+        if file_name.is_none() {
             err!("No file name");
         }
         let file_name = file_name.unwrap();

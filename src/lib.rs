@@ -203,19 +203,17 @@ where
         let item = item.as_ref();
         if item.is_dir() {
             result += dir::copy(item, &to, options)?;
-        } else {
-            if let Some(file_name) = item.file_name() {
-                if let Some(file_name) = file_name.to_str() {
-                    let file_options = file::CopyOptions {
-                        overwrite: options.overwrite,
-                        skip_exist: options.skip_exist,
-                        ..Default::default()
-                    };
-                    result += file::copy(item, to.as_ref().join(file_name), &file_options)?;
-                }
-            } else {
-                err!("Invalid file name", ErrorKind::InvalidFileName);
+        } else if let Some(file_name) = item.file_name() {
+            if let Some(file_name) = file_name.to_str() {
+                let file_options = file::CopyOptions {
+                    overwrite: options.overwrite,
+                    skip_exist: options.skip_exist,
+                    ..Default::default()
+                };
+                result += file::copy(item, to.as_ref().join(file_name), &file_options)?;
             }
+        } else {
+            err!("Invalid file name", ErrorKind::InvalidFileName);
         }
     }
 
@@ -356,7 +354,6 @@ where
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
-                ..Default::default()
             };
 
             if let Some(file_name) = item.file_name() {
@@ -544,7 +541,6 @@ where
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
-                ..Default::default()
             };
 
             if let Some(file_name) = item.file_name() {
@@ -670,7 +666,6 @@ where
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
-                ..Default::default()
             };
 
             if let Some(file_name) = item.file_name() {

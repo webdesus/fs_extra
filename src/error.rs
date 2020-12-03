@@ -104,7 +104,7 @@ impl Error {
     /// ```
     pub fn new(kind: ErrorKind, message: &str) -> Error {
         Error {
-            kind: kind,
+            kind,
             message: message.to_string(),
         }
     }
