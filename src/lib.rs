@@ -75,7 +75,7 @@ pub mod error;
 ///
 /// fn main() {
 ///     example_copy();
-///
+/// }
 ///
 /// ```
 pub mod file;
