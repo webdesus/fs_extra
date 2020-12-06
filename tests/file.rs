@@ -1,11 +1,11 @@
 // use std::io::{ErrorKind, Result};
 use std::path::{Path, PathBuf};
-use std::thread;
 use std::sync::mpsc;
+use std::thread;
 
 extern crate fs_extra;
-use fs_extra::file::*;
 use fs_extra::error::*;
+use fs_extra::file::*;
 
 const TEST_FOLDER: &'static str = "./tests/temp/file";
 
