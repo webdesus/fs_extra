@@ -153,7 +153,7 @@ pub mod file;
 ///
 pub mod dir;
 
-use error::*;
+use crate::error::*;
 use std::path::Path;
 
 /// Copies a list of directories and files to another place recursively. This function will

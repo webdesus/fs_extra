@@ -1,4 +1,4 @@
-use error::{Error, ErrorKind, Result};
+use crate::error::{Error, ErrorKind, Result};
 use std;
 use std::fs::{remove_file, File};
 use std::io::{Read, Write};
