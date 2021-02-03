@@ -143,7 +143,7 @@ pub fn copy_with_progress<P, Q, F>(
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
-    F: FnMut(TransitProcess),
+    F: FnMut(TransitProcess) -> crate::dir::TransitProcessResult,
 {
     let from = from.as_ref();
     if !from.exists() {
@@ -194,7 +194,13 @@ where
                     copied_bytes,
                     total_bytes: file_size,
                 };
-                progress_handler(data);
+                let progres_result = progress_handler(data);
+                if progres_result as usize == crate::dir::TransitProcessResult::Abort as usize {
+                    return Err(super::error::Error::new(
+                        super::error::ErrorKind::Interrupted,
+                        "Aborted by user",
+                    ));
+                }
             }
             Err(ref e) if e.kind() == ::std::io::ErrorKind::Interrupted => {}
             Err(e) => return Err(::std::convert::From::from(e)),
@@ -275,7 +281,7 @@ pub fn move_file_with_progress<P, Q, F>(
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
-    F: FnMut(TransitProcess),
+    F: FnMut(TransitProcess) -> crate::dir::TransitProcessResult,
 {
     let mut is_remove = true;
     if options.skip_exist && to.as_ref().exists() && !options.overwrite {
