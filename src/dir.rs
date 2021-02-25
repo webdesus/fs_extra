@@ -884,7 +884,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
-                append: options.append,
+            append: options.append,
         };
 
         if let Some(file_name) = file_name.to_str() {
@@ -1080,7 +1080,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
-                append: options.append,
+            append: options.append,
         };
 
         let mut result_copy: Result<u64>;
@@ -1223,7 +1223,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
-                append: options.append,
+            append: options.append,
         };
 
         if let Some(file_name) = file_name.to_str() {
