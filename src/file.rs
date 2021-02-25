@@ -10,6 +10,8 @@ pub struct CopyOptions {
     pub overwrite: bool,
     /// Sets the option true for skip existing files.
     pub skip_exist: bool,
+    /// If set to true appends content of new file to the old one
+    pub append: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
 }
@@ -29,6 +31,7 @@ impl CopyOptions {
         CopyOptions {
             overwrite: false,
             skip_exist: false,
+            append: false,
             buffer_size: 64000, //64kb
         }
     }
@@ -180,7 +183,11 @@ where
     let file_size = file_from.metadata()?.len();
     let mut copied_bytes: u64 = 0;
 
-    let mut file_to = File::create(to)?;
+    let mut file_to = std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .append(options.append)
+        .open(to)?;
     while !buf.is_empty() {
         match file_from.read(&mut buf) {
             Ok(0) => break,
