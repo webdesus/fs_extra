@@ -11,6 +11,8 @@ pub struct CopyOptions {
     pub overwrite: bool,
     /// Skip existing files if true (default: false).
     pub skip_exist: bool,
+    /// If set to true will append new file content to the old one
+    pub append: bool,
     /// Buffer size that specifies the amount of bytes to be moved or copied before the progress handler is called. This only affects functions with progress handlers. (default: 64000)
     pub buffer_size: usize,
     /// Recursively copy a directory with a new name or place it inside the destination (default: false, same behaviors as cp -r on Unix)
@@ -39,6 +41,7 @@ impl CopyOptions {
         CopyOptions {
             overwrite: false,
             skip_exist: false,
+            append: false,
             buffer_size: 64000, // 64kb
             copy_inside: false,
             content_only: false,
@@ -582,6 +585,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            append: options.append,
         };
         let mut result_copy: Result<u64>;
         let mut work = true;
@@ -880,6 +884,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+                append: options.append,
         };
 
         if let Some(file_name) = file_name.to_str() {
@@ -1075,6 +1080,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+                append: options.append,
         };
 
         let mut result_copy: Result<u64>;
@@ -1217,6 +1223,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+                append: options.append,
         };
 
         if let Some(file_name) = file_name.to_str() {
