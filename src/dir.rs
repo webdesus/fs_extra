@@ -901,11 +901,12 @@ where
         let copied_bytes = result;
         while work {
             {
-                let _progress_handler = |info: super::file::TransitProcess| {
-                    info_process.copied_bytes = copied_bytes + info.copied_bytes;
-                    info_process.file_bytes_copied = info.copied_bytes;
-                    progress_handler(info_process.clone());
-                };
+                let _progress_handler =
+                    |info: super::file::TransitProcess| -> TransitProcessResult {
+                        info_process.copied_bytes = copied_bytes + info.copied_bytes;
+                        info_process.file_bytes_copied = info.copied_bytes;
+                        progress_handler(info_process.clone())
+                    };
 
                 result_copy =
                     super::file::copy_with_progress(&file, &path, &file_options, _progress_handler);
@@ -1240,11 +1241,12 @@ where
         let copied_bytes = result;
         while work {
             {
-                let _progress_handler = |info: super::file::TransitProcess| {
-                    info_process.copied_bytes = copied_bytes + info.copied_bytes;
-                    info_process.file_bytes_copied = info.copied_bytes;
-                    progress_handler(info_process.clone());
-                };
+                let _progress_handler =
+                    |info: super::file::TransitProcess| -> TransitProcessResult {
+                        info_process.copied_bytes = copied_bytes + info.copied_bytes;
+                        info_process.file_bytes_copied = info.copied_bytes;
+                        progress_handler(info_process.clone())
+                    };
 
                 result_copy = super::file::move_file_with_progress(
                     &file,
