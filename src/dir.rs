@@ -869,7 +869,7 @@ where
     };
 
     let mut options = options.clone();
-    let rg = regex::Regex::new(&selected_mask);//++artie
+    let rg  = regex::RegexSet::new(&selected_mask.split_ascii_whitespace().collect::<Vec::<_>>());//++artie
     let rg_ok = rg.is_ok();
     for file in dir_content.files {
         /*++artie */
