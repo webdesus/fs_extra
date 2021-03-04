@@ -869,10 +869,11 @@ where
     };
 
     let mut options = options.clone();
-    let rg = regex::Regex::new(&selected_mask).unwrap();//++artie
+    let rg = regex::Regex::new(&selected_mask);//++artie
+    let rg_ok = rg.is_ok();
     for file in dir_content.files {
         /*++artie */
-        if !rg.is_match(&file)
+        if rg_ok && !rg.as_ref().unwrap().is_match(&file)
         {
             continue;
         }
