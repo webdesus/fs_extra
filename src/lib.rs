@@ -287,6 +287,7 @@ impl Clone for TransitProcess {
 /// ```
 ///
 pub fn copy_items_with_progress<P, Q, F>(
+    selected_mask:&String,//++artie
     from: &[P],
     to: Q,
     options: &dir::CopyOptions,
@@ -348,7 +349,7 @@ where
                 }
                 result
             };
-            result += dir::copy_with_progress(item, &to, &dir_options, handler)?;
+            result += dir::copy_with_progress(selected_mask/*++artie */,item, &to, &dir_options, handler)?;
         } else {
             let mut file_options = file::CopyOptions {
                 overwrite: options.overwrite,
