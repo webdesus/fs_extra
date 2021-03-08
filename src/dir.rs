@@ -1318,7 +1318,8 @@ where
                                 file_options.skip_exist = true;
                             }
                             TransitProcessResult::SkipAll => {
-                                file_options.skip_exist = true;
+                                is_remove = false;
+ 				file_options.skip_exist = true;
                                 options.skip_exist = true;
                             }
                             TransitProcessResult::Retry => {}
