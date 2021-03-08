@@ -1148,6 +1148,7 @@ where
 ///
 /// ```
 pub fn move_dir_with_progress<P, Q, F>(
+    selected_mask:&String,
     from: P,
     to: Q,
     options: &CopyOptions,
@@ -1217,7 +1218,15 @@ where
     };
 
     let mut options = options.clone();
+    let rg  = regex::RegexSet::new(&selected_mask.split_ascii_whitespace().collect::<Vec::<_>>());//++artie
+    let rg_ok = rg.is_ok();
     for file in dir_content.files {
+         /*++artie */
+         if rg_ok && !rg.as_ref().unwrap().is_match(&file)
+         {
+             continue;
+         }
+         //--artie
         let mut to = to.to_path_buf();
         let tp = Path::new(&file).strip_prefix(from)?;
         let path = to.join(&tp);

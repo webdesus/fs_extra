@@ -602,6 +602,7 @@ where
 /// ```
 ///
 pub fn move_items_with_progress<P, Q, F>(
+    selected_mask:&String,//++artie
     from_items: &[P],
     to: Q,
     options: &dir::CopyOptions,
@@ -663,7 +664,7 @@ where
                 }
                 result
             };
-            result += dir::move_dir_with_progress(item, &to, &dir_options, handler)?;
+            result += dir::move_dir_with_progress(selected_mask/*++artie */,item, &to, &dir_options, handler)?;
         } else {
             let mut file_options = file::CopyOptions {
                 overwrite: options.overwrite,
