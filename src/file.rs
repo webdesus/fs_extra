@@ -101,7 +101,7 @@ where
         }
 
         if let Some(msg) = to.as_ref().to_str() {
-            let msg = format!("Path \"{}\" is exist", msg);
+            let msg = format!("Path \"{}\" exists", msg);
             err!(&msg, ErrorKind::AlreadyExists);
         }
     }
@@ -171,7 +171,7 @@ where
         }
 
         if let Some(msg) = to.as_ref().to_str() {
-            let msg = format!("Path \"{}\" is exist", msg);
+            let msg = format!("Path \"{}\" exists", msg);
             err!(&msg, ErrorKind::AlreadyExists);
         }
     }
