@@ -98,7 +98,7 @@ pub struct TransitProcess {
 pub enum TransitState {
     /// Standard state.
     Normal,
-    /// Pause state when destination path is exist.
+    /// Pause state when destination path exists.
     Exists,
     /// Pause state when current process does not have the permission to access from or to
     /// path.
