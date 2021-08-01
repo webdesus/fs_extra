@@ -422,7 +422,7 @@ fn it_copy_exist_not_overwrite() {
     match copy(&path_from, &path_to, &options) {
         Err(err) => match err.kind {
             ErrorKind::AlreadyExists => {
-                let wrong_path = format!("Path \"{}\" is exist", exist_path.to_str().unwrap());
+                let wrong_path = format!("Path \"{}\" exists", exist_path.to_str().unwrap());
                 assert_eq!(wrong_path, err.to_string());
             }
             _ => {
@@ -1949,7 +1949,7 @@ fn it_move_exist_not_overwrite() {
     match move_dir(&path_from, &path_to, &options) {
         Err(err) => match err.kind {
             ErrorKind::AlreadyExists => {
-                let wrong_path = format!("Path \"{}\" is exist", exist_path.to_str().unwrap());
+                let wrong_path = format!("Path \"{}\" exists", exist_path.to_str().unwrap());
                 assert_eq!(wrong_path, err.to_string());
             }
             _ => {
