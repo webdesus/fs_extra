@@ -2,6 +2,6 @@ language: rust
 rust:
   - stable
 script:
-  - cargo build --verbose
-  - cargo test --verbose
-  - cargo doc
+  - cargo build --verbose --features filetime
+  - cargo test --verbose --features filetime
+  - cargo doc --features filetime

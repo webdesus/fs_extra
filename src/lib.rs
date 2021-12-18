@@ -10,6 +10,12 @@ macro_rules! err {
 
 /// The error type for fs_extra operations on files and directories.
 pub mod error;
+
+/// This module includes an additional method for working with file and
+/// directory modification times and access times.
+#[cfg(feature = "filetime")]
+pub mod time;
+
 /// This module includes additional methods for working with files.
 ///
 /// One of the distinguishing features is receipt information
@@ -354,6 +360,8 @@ where
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
+                #[cfg(feature = "filetime")]
+                time_options: options.time_options.clone(),
             };
 
             if let Some(file_name) = item.file_name() {
@@ -541,6 +549,8 @@ where
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
+                #[cfg(feature = "filetime")]
+                time_options: options.time_options.clone(),
             };
 
             if let Some(file_name) = item.file_name() {
@@ -666,6 +676,8 @@ where
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
+                #[cfg(feature = "filetime")]
+                time_options: options.time_options.clone(),
             };
 
             if let Some(file_name) = item.file_name() {

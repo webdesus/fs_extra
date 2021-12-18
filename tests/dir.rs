@@ -3,6 +3,7 @@ use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::{self, TryRecvError};
 use std::thread;
+use std::time::SystemTime;
 
 extern crate fs_extra;
 use fs_extra::dir::*;
@@ -1762,34 +1763,51 @@ where
     true
 }
 
+macro_rules! create_all {
+    ($($var:ident = $fragment_first:expr $(=> $fragment:expr)*),* $(,)?) => {
+        $(
+            let mut path = PathBuf::from($fragment_first);
+            $(
+                path.push($fragment);
+            )*
+            create_all(&path, true).unwrap();
+            assert!(path.exists());
+            $var = path;
+        )*
+    };
+}
+
+macro_rules! write_all {
+    ($([$fragment_first:expr $(=> $fragment:expr)* ] = $content:expr),* $(,)?) => {
+        $(
+            let mut path = PathBuf::from($fragment_first);
+            let mut _iter_num = 1;
+            $(
+                if _iter_num >= 2 {
+                    create(&path, true).unwrap();
+                }
+                path.push($fragment);
+                _iter_num += 1;
+            )*
+            let content = $content;
+            fs_extra::file::write_all(&path, &content).unwrap();
+            assert!(path.exists());
+        )*
+    };
+}
+
 #[test]
 fn it_move_work() {
-    let mut path_from = PathBuf::from(TEST_FOLDER);
-    let test_name = "sub";
-    path_from.push("it_move_work");
-    let mut path_to = path_from.clone();
-    path_to.push("out");
-    path_from.push(&test_name);
-
-    create_all(&path_from, true).unwrap();
-    assert!(path_from.exists());
-    create_all(&path_to, true).unwrap();
-    assert!(path_to.exists());
-
-    let mut file1_path = path_from.clone();
-    file1_path.push("test1.txt");
-    let content1 = "content1";
-    fs_extra::file::write_all(&file1_path, &content1).unwrap();
-    assert!(file1_path.exists());
-
-    let mut sub_dir_path = path_from.clone();
-    sub_dir_path.push("sub");
-    create(&sub_dir_path, true).unwrap();
-    let mut file2_path = sub_dir_path.clone();
-    file2_path.push("test2.txt");
-    let content2 = "content2";
-    fs_extra::file::write_all(&file2_path, &content2).unwrap();
-    assert!(file2_path.exists());
+    let path_from;
+    let path_to;
+    create_all!(
+        path_from = TEST_FOLDER => "it_move_work" => "sub",
+        path_to = TEST_FOLDER => "it_move_work" => "out",
+    );
+    write_all!(
+        [ path_from.clone() => "test1.txt" ] = "content1",
+        [ path_from.clone() => "sub" => "test2.txt" ] = "content2",
+    );
 
     let options = CopyOptions::new();
     let result = move_dir(&path_from, &path_to, &options).unwrap();
@@ -4785,4 +4803,75 @@ fn it_move_with_progress_content_only_option() {
         Err(_) => panic!("Errors should not be!"),
         _ => {}
     }
+}
+
+#[cfg(feature = "filetime")]
+fn atime(path: &Path) -> Option<SystemTime> {
+    match path.metadata() {
+        Ok(metadata) => {
+            metadata.accessed().ok()
+        }
+        Err(err) => {
+            panic!(err);
+        }
+    }
+}
+
+#[cfg(feature = "filetime")]
+fn mtime(path: &Path) -> Option<SystemTime> {
+    match path.metadata() {
+        Ok(metadata) => {
+            metadata.modified().ok()
+        }
+        Err(err) => {
+            panic!("{:?}", err);
+        }
+    }
+}
+
+#[cfg(feature = "filetime")]
+#[test]
+fn it_move_work_with_same_mtime_and_atime() {
+    let path_from;
+    let path_to;
+    create_all!(
+        path_from = TEST_FOLDER => "it_move_work_with_same_mtime_and_atime" => "sub",
+        path_to = TEST_FOLDER => "it_move_work_with_same_mtime_and_atime" => "out",
+    );
+    write_all!(
+        [ path_from.clone() => "test1.txt" ] = "content1",
+        [ path_from.clone() => "sub" => "test2.txt" ] = "content2",
+    );
+
+    let mut file1_path = path_from.join("test1.txt");
+    let mut file2_path = path_from.join("sub").join("test2.txt");
+    let mut sub_path = path_from.join("sub");
+    let expected_file1_atime = atime(file1_path.as_path());
+    let expected_file1_mtime = mtime(file1_path.as_path());
+    let expected_file2_atime = atime(file2_path.as_path());
+    let expected_file2_mtime = mtime(file2_path.as_path());
+    let expected_sub_atime = atime(sub_path.as_path());
+    let expected_sub_mtime = mtime(sub_path.as_path());
+
+    let mut options = CopyOptions::new();
+    options.time_options.retain_modification_time = true;
+    options.time_options.retain_access_time = true;
+    let result = move_dir(&path_from, &path_to, &options).unwrap();
+
+    assert_eq!(16, result);
+    assert!(path_to.exists());
+    assert!(!path_from.exists());
+
+    let mut file1_path = path_to.join("sub").join("test1.txt");
+    assert!(file1_path.exists());
+    let mut file2_path = path_to.join("sub").join("sub").join("test2.txt");
+    assert!(file2_path.exists());
+    let mut sub_path = path_to.join("sub").join("sub");
+    assert!(sub_path.exists());
+    assert_eq!(mtime(file1_path.as_path()), expected_file1_mtime);
+    assert_eq!(atime(file1_path.as_path()), expected_file1_atime);
+    assert_eq!(mtime(file2_path.as_path()), expected_file2_mtime);
+    assert_eq!(atime(file2_path.as_path()), expected_file2_atime);
+    assert_eq!(mtime(sub_path.as_path()), expected_sub_mtime);
+    assert_eq!(atime(sub_path.as_path()), expected_sub_atime);
 }
