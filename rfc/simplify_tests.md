@@ -36,9 +36,9 @@ In new way this code can be like:
 ```rust 
 let t = TestFS::new("it_read_and_write_work", r#"	
 			test.txt: 
-				- type: "FILE"
-				- content: "test_1""#;
-let test_file = t.getPath("test.txt")
+				type: "FILE"
+				content: "test_1""#;
+let test_file = t.get_path("test.txt")
 let data = read_to_string(&test_file).unwrap();
 assert_eq!("test_1", data);
 write_all(&test_file, "test_2").unwrap();
@@ -73,21 +73,21 @@ RFC version:
 ```rust
 let t = TestFS::new("it_copy_work", r#"	
     test.txt: 
-      - type: "FILE"
-      - content: "test_data"
-    out: "FOLDER""#;
+      type: "FILE"
+      content: "test_data"
+    out: "FOLDER""#);
 let options = CopyOptions::new();
-let test_file = t.getPath("test.txt")
-let test_file_out = t.getPath("out/test.txt")
+let test_file = t.get_path("test.txt")
+let test_file_out = t.get_path("out/test.txt")
 copy(&test_file, &test_file_out, &options).unwrap();
 t.check(r#"	
   test.txt: 
-    - type: "FILE"
-    - content: "test_data"
+    type: "FILE"
+    content: "test_data"
   out: "FOLDER"
     test.txt: 
-      - type: "FILE"
-      - content: "test_data""#);
+      type: "FILE"
+      content: "test_data""#);
 ```
 
 
