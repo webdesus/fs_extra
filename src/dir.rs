@@ -691,9 +691,9 @@ where
 /// # Examples
 /// ```rust,ignore
 /// extern crate fs_extra;
-/// use fs_extra::dir::get_dir_content2;
+/// use fs_extra::dir::{DirOptions, get_dir_content2};
 ///
-/// let options = DirOptions::new();
+/// let mut options = DirOptions::new();
 /// options.depth = 3; // Get 3 levels of folder.
 /// let dir_content = get_dir_content2("dir", &options)?;
 /// for directory in dir_content.directories {
