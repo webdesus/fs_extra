@@ -45,6 +45,42 @@ impl CopyOptions {
             depth: 0,
         }
     }
+
+    /// Overwrite existing files if true.
+    pub fn overwrite(mut self, overwrite: bool) -> Self {
+        self.overwrite = overwrite;
+        self
+    }
+
+    /// Skip existing files if true.
+    pub fn skip_exist(mut self, skip_exist: bool) -> Self {
+        self.skip_exist = skip_exist;
+        self
+    }
+
+    /// Buffer size that specifies the amount of bytes to be moved or copied before the progress handler is called. This only affects functions with progress handlers.
+    pub fn buffer_size(mut self, buffer_size: usize) -> Self {
+        self.buffer_size = buffer_size;
+        self
+    }
+
+    /// Recursively copy a directory with a new name or place it inside the destination (default: false, same behaviors as cp -r on Unix)
+    pub fn copy_inside(mut self, copy_inside: bool) -> Self {
+        self.copy_inside = copy_inside;
+        self
+    }
+
+    /// Copy only contents without a creating a new folder in the destination folder.
+    pub fn content_only(mut self, content_only: bool) -> Self {
+        self.content_only = content_only;
+        self
+    }
+
+    /// Sets levels reading. Set 0 for read all directory folder
+    pub fn depth(mut self, depth: u64) -> Self {
+        self.depth = depth;
+        self
+    }
 }
 
 impl Default for CopyOptions {
