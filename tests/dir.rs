@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use std::fs::read_dir;
+use std::fs::{self, read_dir};
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::{self, TryRecvError};
 use std::thread;
@@ -68,6 +68,22 @@ fn get_dir_size() -> u64 {
     std::fs::metadata("./tests/temp")
         .expect("Couldn't receive metadata of tests/temp folder")
         .len()
+}
+
+#[cfg(unix)]
+fn create_file_symlink<P: AsRef<Path>, Q: AsRef<Path>>(
+    original: P,
+    link: Q,
+) -> std::io::Result<()> {
+    std::os::unix::fs::symlink(original.as_ref(), link.as_ref())
+}
+
+#[cfg(windows)]
+fn create_file_symlink<P: AsRef<Path>, Q: AsRef<Path>>(
+    original: P,
+    link: Q,
+) -> std::io::Result<()> {
+    std::os::windows::fs::symlink_file(original.as_ref(), link.as_ref())
 }
 
 const TEST_FOLDER: &'static str = "./tests/temp/dir";
@@ -2821,22 +2837,49 @@ fn it_get_folder_size() {
 
     let mut file1 = path.clone();
     file1.push("test1.txt");
-    fs_extra::file::write_all(&file1, "content1").unwrap();
+    fs_extra::file::write_all(&file1, &"A".repeat(100)).unwrap();
     assert!(file1.exists());
 
     let mut sub_dir_path = path.clone();
     sub_dir_path.push("sub");
     create(&sub_dir_path, true).unwrap();
+
     let mut file2 = sub_dir_path.clone();
     file2.push("test2.txt");
-    fs_extra::file::write_all(&file2, "content2").unwrap();
+    fs_extra::file::write_all(&file2, &"B".repeat(300)).unwrap();
     assert!(file2.exists());
+
+    let symlink_file = sub_dir_path.join("symlink_file.txt");
+
+    // Rust stdlib APIs for creating a symlinked file only exist for Unix and Windows.
+    #[cfg(any(unix, windows))]
+    {
+        // Only passing the filename since we want this to be a relative symlink.
+        create_file_symlink("test2.txt", &symlink_file).unwrap();
+        assert!(symlink_file.exists());
+    }
+
+    // Total size comprises of:
+    // - 100 bytes for the standard file "test1.txt"
+    // - 300 bytes for the standard file "test2.txt"
+    // - 2 x directories (one for the top level directory "dir", another for the subdirectory "sub"),
+    //   whose size varies by filesystem, so is dynamically calculated. We cannot use `get_dir_size()`
+    //   since even the directory metadata size varies from directory to directory, so we instead have
+    //   to retrieve the size of both "dir" and "sub" directly.
+    // - (On supported platforms) 1 x symlink whose whose size varies by filesystem, so is dynamically calculated.
+    let mut expected_size = 100
+        + 300
+        + fs::symlink_metadata(&path).unwrap().len()
+        + fs::symlink_metadata(&sub_dir_path).unwrap().len();
+
+    if symlink_file.exists() {
+        // `fs::symlink_metadata` does not follow symlinks, so this is the size of the symlink itself, not its target.
+        expected_size += fs::symlink_metadata(&symlink_file).unwrap().len();
+    }
 
     let result = get_size(&path).unwrap();
 
-    let test_size: u64 = 16 + get_dir_size();
-
-    assert_eq!(test_size, result);
+    assert_eq!(expected_size, result);
 }
 
 #[test]
