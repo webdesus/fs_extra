@@ -786,8 +786,6 @@ pub fn get_size<P>(path: P) -> Result<u64>
 where
     P: AsRef<Path>,
 {
-    let mut size_in_bytes = 0;
-
     // Using `fs::symlink_metadata` since we don't want to follow symlinks,
     // as we're calculating the exact size of the requested path itself.
     let path_metadata = path.as_ref().symlink_metadata()?;
@@ -795,7 +793,7 @@ where
     // For directories this is just the size of the directory entry itself, not its contents.
     // Similarly for symlinks, this is the size of the symlink entry, not its target.
     // In both cases, we still want to count these so that we get an accurate total size.
-    size_in_bytes += path_metadata.len();
+    let mut size_in_bytes = path_metadata.len();
 
     if path_metadata.is_dir() {
         for entry in read_dir(&path)? {
