@@ -23,3 +23,4 @@ include = [
 yaml-rust = "0.4"
 chrono = "0.4"
 filetime = "0.2"
+linked-hash-map = "0.5"

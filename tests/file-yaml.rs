@@ -1,7 +1,7 @@
 extern crate chrono;
 extern crate filetime;
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 // use std::io::{ErrorKind, Result};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -10,13 +10,15 @@ use std::thread;
 
 extern crate fs_extra;
 extern crate yaml_rust;
+extern crate linked_hash_map;
 use filetime::FileTime;
 use fs_extra::error::*;
 use fs_extra::file::*;
 use fs_extra::dir;
+use linked_hash_map::LinkedHashMap;
 
-use yaml_rust::{Yaml, YamlLoader};
-use chrono::DateTime;
+use yaml_rust::{Yaml, YamlLoader, YamlEmitter};
+use chrono::{DateTime, Utc, NaiveDateTime, FixedOffset};
 
 struct Test {
     path: PathBuf,
@@ -52,7 +54,11 @@ impl Ast {
     fn parse_doc(doc: &Yaml) -> Self {
         let name = doc["NAME"].as_str().map(|s| s.to_owned());
         let files = Files::parse(&doc["FILES"]);
-        let attrs = Attrs::parse(&doc["ATTRIBUTES"])
+        let attrs = if doc["ATTRIBUTES"].is_badvalue() {
+            Attrs::new()
+        } else {
+            Attrs::parse(&doc["ATTRIBUTES"])
+        };
         Ast {
             name,
             files,
@@ -68,6 +74,29 @@ impl Ast {
     fn check(&self, path: &Path) {
         self.files.check(path);
         self.attrs.check(path);
+    }
+
+    fn from_fs(name: String, path: &Path) -> Self {
+        Ast {
+            name: Some(name),
+            files: Files::from_fs(path),
+            attrs: Attrs::from_fs(path),
+        }
+    }
+
+    fn dump(&self, root_path: &Path) -> String {
+        let mut out_str = String::new();
+        let mut emitter = YamlEmitter::new(&mut out_str);
+        emitter.dump(&self.into_yaml_doc(root_path)).unwrap(); // dump the YAML object to a String
+        out_str
+    }
+
+    fn into_yaml_doc(&self, root_path: &Path) -> Yaml {
+        let mut hash = LinkedHashMap::new();
+        hash.insert(Yaml::String("NAME".into()), Yaml::String(self.name.clone().unwrap()));
+        hash.insert(Yaml::String("FILES".into()), self.files.into_yaml());
+        hash.insert(Yaml::String("ATTRIBUTES".into()), self.attrs.into_yaml(root_path));
+        Yaml::Hash(hash)
     }
 }
 
@@ -103,10 +132,12 @@ impl Files {
             let path = &*path.join(name);
             match file {
                 &File::Dir { ref content } => {
+                    println!("name {:?} dir {:?}", name, path);
                     Files::create_dir(path);
                     content.initialize(path);
                 }
                 &File::File { ref content } => {
+                    println!("file {:?}", path);
                     Files::create_file(path, &content[..])
                 }
             }
@@ -147,15 +178,53 @@ impl Files {
     fn check_file(path: &Path, expected_file_content: &str) {
         let actual_content = read_to_string(path).ok();
         assert_eq!(
-            actual_content.map(|s| &s[..]),
-            Some(expected_file_content),
+            actual_content,
+            Some(expected_file_content.to_owned()),
             "file content mismatch or file does not exist at {:?}",
             path
         );
     }
+
+    fn from_fs(path: &Path) -> Self {
+        use fs_extra::dir::{DirEntryAttr, DirEntryValue, ls};
+        let mut config = HashSet::new();
+        config.insert(DirEntryAttr::Name);
+        config.insert(DirEntryAttr::BaseInfo);
+        
+        let result = ls(path, &config).expect("invalid path");
+        if matches!(result.base[&DirEntryAttr::IsDir], DirEntryValue::Boolean(true)) {
+
+        }
+        for entry in result.items {
+            unimplemented!()
+        }
+        unimplemented!()
+    }
+
+    fn into_yaml(&self) -> Yaml {
+        Yaml::Hash(
+            self.files.iter().map(|(filename, content)| {
+                let val = match content {
+                    File::Dir { content } => {
+                        content.into_yaml()
+                    }
+                    File::File { content } => {
+                        Yaml::String(content.clone())
+                    }
+                };
+                (Yaml::String(filename.clone()), val)
+            }).collect()
+        )
+    }
 }
 
+const INVALID_ATTRIBUTE_MSG: &'static str = "invalid attribute name: expected string (`permissions`, `mtime`, `atime`, `readonly`)";
+
 impl Attrs {
+    fn new() -> Self {
+        Attrs { attrs: vec![] }
+    }
+
     fn parse(doc: &Yaml) -> Self {
         if doc.is_badvalue() {
             panic!("missing ATTRIBUTES");
@@ -163,8 +232,9 @@ impl Attrs {
         let attrs = doc.as_hash().expect("invalid ATTRIBUTES: expected hash of hashes");
         let attrs = attrs.iter().flat_map(|(path_str, attr_hash)| {
             let inner_attrs = attr_hash.as_hash().expect("invalid ATTRIBUTES: expected hash of hashes");
-            inner_attrs.iter().map(|(attr_name, val)| {
-                let attr = match attr_name.as_str().expect("invalid attribute name: expected string (`permissions`, `mtime`, `atime`, `readonly`)") {
+            let path: PathBuf = path_str.as_str().expect("invalid ATTRIBUTES: expected hash of hashes").into();
+            inner_attrs.iter().map(move |(attr_name, val)| {
+                let attr = match attr_name.as_str().expect(INVALID_ATTRIBUTE_MSG) {
                     "permissions" => {
                         Attr::parse_permissions(val)
                     }
@@ -177,9 +247,11 @@ impl Attrs {
                     "atime" => {
                         Attr::parse_atime(val)
                     }
+                    _ => {
+                        panic!("{}", INVALID_ATTRIBUTE_MSG)
+                    }
                 };
-                let path = path_str.as_str().expect("invalid ATTRIBUTES: expected hash of hashes").into();
-                (path, attr)
+                (path.clone(), attr)
             })
         }).collect();
         Attrs { attrs }
@@ -230,11 +302,19 @@ impl Attrs {
         }
     }
 
+    fn permissions_to_string(mode: u32) -> String {
+        "drwxrwxrwx".bytes().rev().map(|letter| {
+            let bit = mode % 2;
+            mode /= 2;
+            if bit == 1 { letter as char } else { '-' }
+        }).collect::<String>().chars().rev().collect::<String>()
+    }
+
     #[cfg(unix)]
     fn check_permissions(full_path: PathBuf, expected_perm: u32) {
         use std::os::unix::fs::PermissionsExt;
         let actual_perm = fs::metadata(full_path).expect("failed checking permissions: entry does not exist").permissions();
-        assert_eq!(actual_perm.mode(), expected_perm);
+        assert_eq!(Attrs::permissions_to_string(actual_perm.mode()), Attrs::permissions_to_string(expected_perm));
     }
 
     #[cfg(not(unix))]
@@ -251,6 +331,24 @@ impl Attrs {
     fn check_readonly(full_path: PathBuf, expected_readonly: bool) {
         let actual_perm = fs::metadata(full_path).expect("failed checking permissions: entry does not exist").readonly();
         assert_eq!(actual_perm, expected_readonly);
+    }
+
+    fn into_yaml(&self, root_path: &Path) -> Yaml {
+        let attrs_by_str = BTreeMap::new();
+        for (path, attr) in self.attrs.iter() {
+            let key = path.strip_prefix(root_path).expect("prefix path mismatch").to_str().expect("invalid unicode path").to_string();
+            attrs_by_str.entry(key).or_insert(vec![]).push(attr);
+        }
+        Yaml::Hash(
+            attrs_by_str.into_iter().map(|(path, attrs)| {
+                (
+                    Yaml::String(path),
+                    Yaml::Hash(
+                        attrs.iter().map(|attr| attr.into_yaml()).collect()
+                    )
+                )
+            }).collect()
+        )
     }
 }
 
@@ -286,7 +384,36 @@ impl Attr {
 
     fn parse_time(value: &str) -> FileTime {
         let date_time = DateTime::parse_from_rfc3339(value).expect("atime/mtime attr: expected date");
+        assert_eq!(date_time.timezone().local_minus_utc(), 0, "invalid timezone: expected UTC");
         FileTime::from_unix_time(date_time.timestamp(), date_time.timestamp_subsec_nanos())
+    }
+
+    fn into_yaml(&self) -> (Yaml, Yaml) {
+        let val = match self {
+            &Attr::Readonly(readonly) => {
+                Yaml::Boolean(readonly)
+            }
+            Attr::ATime(ref time) | Attr::MTime(ref time) => {
+                Yaml::String(
+                    DateTime::<FixedOffset>::from_utc(
+                        NaiveDateTime::from_timestamp(time.unix_seconds(), time.nanoseconds()), FixedOffset::east(0)
+                    ).to_rfc3339()
+                )
+            }
+            &Attr::PermissionsUnix(mode) => {
+                Yaml::String(Attrs::permissions_to_string(mode))
+            }
+        };
+        (Yaml::String(self.name().into()), val)
+    }
+
+    fn name(&self) -> &'static str {
+        match self {
+            Attr::Readonly(..) => "readonly",
+            Attr::ATime(..) => "atime",
+            Attr::MTime(..) => "mtime",
+            Attr::PermissionsUnix(..) => "permissions",
+        }
     }
 }
 
@@ -301,112 +428,12 @@ impl Test {
         this
     }
 
-    fn create_dir(path: &Path, dir_content: &Yaml) {
-        if dir_content.is_badvalue() {
-            panic!("invalid FILES: expected hash at FILES");
-        }
-        let hash = dir_content.as_hash().expect("expected hash");
-        for (key, value) in hash {
-            let name = key.as_str().expect("expected file name");
-            match value {
-                &Yaml::String(ref file_content) => {
-                    Test::create_file(&*path.join(name), &file_content[..]);
-                }
-                hash @ &Yaml::Hash(..) => {
-                    Test::create_dir(&*path.join(name), hash);
-                }
-                other => {
-                    panic!("invalid yaml value, expected string or hash, found {:?}", other);
-                }
-            }
-        }
-    }
-
-    fn create_file(path: &Path, file_content: &str) {
-        write_all(path, file_content).expect("file structure initialization failed");
-    }
-
-    fn set_attributes(root: &Path, attributes: Yaml) {
-        for (filepath, attr_hash) in attributes.as_hash().expect("invalid ATTRIBUTES: expected hash of hashes") {
-            let subpath = filepath.as_str().expect("invalid AT<TRIBUTES: expected string key");
-            let full_path = root.join(PathBuf::from(subpath));
-            assert!(full_path.exists());
-            for (attr, value) in attr_hash.as_hash().expect("invalid ATTRIBUTES: expected hash of hashes") {
-                let value = value.as_str().expect("invalid attribute value: expected string");
-                match attr.as_str().expect("invalid attribute name: expected string (`permissions`, `mtime`, `atime`)") {
-                    "permissions" => {
-
-                    }
-                    ty @ ("mtime" | "atime") => {
-
-                        let date_time = DateTime::parse_from_rfc3339(value).expect("ATTRIBUTES: expected date");
-                        let file_time = FileTime::from_unix_time(date_time.timestamp(), date_time.timestamp_subsec_nanos());
-                        if ty == "mtime" {
-                            ::filetime::set_file_mtime(full_path, file_time).expect("failed setting mtime");
-                        } else {
-                            ::filetime::set_file_atime(full_path, file_time).expect("failed setting atime");
-                        }
-                    }
-                    other => {
-                        panic!("unknown attribute: expected `permissions`, `mtime`, `atime`, found `{}`", other);
-                    }
-                }
-            }
-        }
-    }
-
-    fn check_dir(path: &Path, dir_content: &Yaml) {
-        dir::create_all(path, true).expect("file structure initialization failed");
-        if dir_content.is_badvalue() {
-            panic!("invalid FILES: expected hash at FILES");
-        }
-        let hash = dir_content.as_hash().expect("expected hash");
-        for (key, value) in hash {
-            let name = key.as_str().expect("expected file name");
-            match value {
-                &Yaml::String(ref file_content) => {
-                    Test::create_file(&*path.join(name), &file_content[..]);
-                }
-                hash @ &Yaml::Hash(..) => {
-                    Test::create_dir(&*path.join(name), hash);
-                }
-                other => {
-                    panic!("invalid yaml value, expected string or hash, found {:?}", other);
-                }
-            }
-        }
-    }
-
-    fn check_attributes(path: &Path, attributes: &[Yaml]) {
-        for attr in attributes {
-            let attrs = attr.as_hash().expect("invalid ATTRIBUTES: expected vec of hashes");
-            for (attr, value) in attrs {
-                let subpath = key.as_str().expect("invalid ATTRIBUTES: expected string key");
-                let full_path = path.join(PathBuf::from(subpath));
-                match attr.as_str().expect("invalid attribute name: expected string (`permissions`, `mtime`, `atime`)") {
-                    "permissions" => {
-
-                    }
-                    ty @ ("mtime" | "atime") => {
-
-                    }
-                }
-            }
-        }
-    }
-
-    fn initialize(&self, description: &str) {
+    fn initialize(&mut self, description: &str) {
         let docs = YamlLoader::load_from_str(description).expect("failed to load yaml");
         let doc = &docs[0];
         let ast = Ast::parse_doc(doc);
+        self.path = self.path.join(ast.name.as_ref().unwrap());
         ast.initialize(&*self.path);
-        Test::set(ast);
-        let name = doc["NAME"].as_str().expect("invalid NAME: expected string at NAME");
-        Test::create_dir(&*self.path, &doc["FILES"]);
-        let attributes = doc["ATTRIBUTES"];
-        if !attributes.is_badvalue() {
-            Test::set_attributes(&*self.path, attributes)
-        }
     }
 
     pub fn check(&self, description: &str) {
@@ -414,12 +441,6 @@ impl Test {
         let doc = &docs[0];
         let ast = Ast::parse_doc(doc);
         ast.check(&*self.path);
-        let name = doc["NAME"].as_str().expect("invalid NAME: expected string at NAME");
-        Test::check_dir(&*self.path, &doc["FILES"]);
-        let attributes = &doc["ATTRIBUTES"];
-        if !attributes.is_badvalue() {
-            Test::check_attributes(&*self.path, &attributes.as_vec().expect("invalid ATTRIBUTES: expected vec of hashes")[..])
-        }
     }
 
     pub fn file(&self, path: &str) -> PathBuf {
@@ -447,13 +468,19 @@ fn it_read_and_write_work() {
     assert_eq!(CONTENT1, read1);
     write_all(&test_file, CONTENT2).unwrap();
     let read2 = read_to_string(&test_file).unwrap();
-    assert_eq!(CONTENT2, read2)
+    assert_eq!(CONTENT2, read2);
+
+    test.check(r"
+        FILES:
+            dir:
+                test.txt: test_2
+    ");
 }
 
 #[test]
 fn it_set_attributes() {
     let test = Test::new(r#"
-        NAME: it_read_and_write_work
+        NAME: it_set_attributes
         FILES:
             dir:
                 test.txt: test_0
@@ -461,8 +488,8 @@ fn it_set_attributes() {
             dir/test.txt:
                 permissions: -rw-rw-r--
                 readonly: false
-                mtime: 2021-06-09 08:02:32+02:00
-                atime: 2022-07-10 08:02:32+02:00
+                mtime: 2021-06-09T08:02:32+02:00
+                atime: 2022-07-10T08:02:32+02:00
     "#);
 
     const CONTENT1: &'static str = "test_1";
@@ -476,7 +503,19 @@ fn it_set_attributes() {
     assert_eq!(CONTENT1, read1);
     write_all(&test_file, CONTENT2).unwrap();
     let read2 = read_to_string(&test_file).unwrap();
-    assert_eq!(CONTENT2, read2)
+    assert_eq!(CONTENT2, read2);
+
+    test.check(r"
+        FILES:
+            dir:
+                test.txt: test_2
+        ATTRIBUTES:
+            dir/test.txt:
+                permissions: -rw-r--r--
+                readonly: false
+                mtime: 2021-06-09T08:02:32+02:00
+                atime: 2022-07-10T08:02:32+02:00
+    ")
 }
 
 #[test]
