@@ -269,6 +269,7 @@ where
     let metadata = path.metadata()?;
     get_details_entry_with_meta(path, config, metadata)
 }
+
 fn get_details_entry_with_meta<P>(
     path: P,
     config: &HashSet<DirEntryAttr>,
@@ -758,7 +759,7 @@ where
     })
 }
 
-/// Returns the size of the file or directory in bytes.
+/// Returns the size of the file or directory in bytes.(!important: folders size not count)
 ///
 /// If used on a directory, this function will recursively iterate over every file and every
 /// directory inside the directory. This can be very time consuming if used on large directories.
@@ -790,10 +791,7 @@ where
     // as we're calculating the exact size of the requested path itself.
     let path_metadata = path.as_ref().symlink_metadata()?;
 
-    // For directories this is just the size of the directory entry itself, not its contents.
-    // Similarly for symlinks, this is the size of the symlink entry, not its target.
-    // In both cases, we still want to count these so that we get an accurate total size.
-    let mut size_in_bytes = path_metadata.len();
+    let mut size_in_bytes = 0;
 
     if path_metadata.is_dir() {
         for entry in read_dir(&path)? {
@@ -810,6 +808,8 @@ where
                 size_in_bytes += entry_metadata.len();
             }
         }
+    } else {
+        size_in_bytes = path_metadata.len();
     }
 
     Ok(size_in_bytes)

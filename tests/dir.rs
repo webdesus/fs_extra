@@ -2862,15 +2862,8 @@ fn it_get_folder_size() {
     // Total size comprises of:
     // - 100 bytes for the standard file "test1.txt"
     // - 300 bytes for the standard file "test2.txt"
-    // - 2 x directories (one for the top level directory "dir", another for the subdirectory "sub"),
-    //   whose size varies by filesystem, so is dynamically calculated. We cannot use `get_dir_size()`
-    //   since even the directory metadata size varies from directory to directory, so we instead have
-    //   to retrieve the size of both "dir" and "sub" directly.
     // - (On supported platforms) 1 x symlink whose whose size varies by filesystem, so is dynamically calculated.
-    let mut expected_size = 100
-        + 300
-        + fs::symlink_metadata(&path).unwrap().len()
-        + fs::symlink_metadata(&sub_dir_path).unwrap().len();
+    let mut expected_size = 100 + 300;
 
     if symlink_file.exists() {
         // `fs::symlink_metadata` does not follow symlinks, so this is the size of the symlink itself, not its target.
