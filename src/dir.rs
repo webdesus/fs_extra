@@ -269,6 +269,7 @@ where
     let metadata = path.metadata()?;
     get_details_entry_with_meta(path, config, metadata)
 }
+
 fn get_details_entry_with_meta<P>(
     path: P,
     config: &HashSet<DirEntryAttr>,
@@ -758,10 +759,12 @@ where
     })
 }
 
-/// Returns the size of the file or directory in bytes
+/// Returns the size of the file or directory in bytes.(!important: folders size not count)
 ///
 /// If used on a directory, this function will recursively iterate over every file and every
 /// directory inside the directory. This can be very time consuming if used on large directories.
+///
+/// Does not follow symlinks.
 ///
 /// # Errors
 ///
@@ -784,20 +787,32 @@ pub fn get_size<P>(path: P) -> Result<u64>
 where
     P: AsRef<Path>,
 {
-    let mut result = 0;
+    // Using `fs::symlink_metadata` since we don't want to follow symlinks,
+    // as we're calculating the exact size of the requested path itself.
+    let path_metadata = path.as_ref().symlink_metadata()?;
 
-    if path.as_ref().is_dir() {
+    let mut size_in_bytes = 0;
+
+    if path_metadata.is_dir() {
         for entry in read_dir(&path)? {
-            let _path = entry?.path();
-            result += _path.metadata()?.len();
-            if _path.is_dir() {
-                result += get_size(_path)?;
+            let entry = entry?;
+            // `DirEntry::metadata` does not follow symlinks (unlike `fs::metadata`), so in the
+            // case of symlinks, this is the size of the symlink itself, not its target.
+            let entry_metadata = entry.metadata()?;
+
+            if entry_metadata.is_dir() {
+                // The size of the directory entry itself will be counted inside the `get_size()` call,
+                // so we intentionally don't also add `entry_metadata.len()` to the total here.
+                size_in_bytes += get_size(entry.path())?;
+            } else {
+                size_in_bytes += entry_metadata.len();
             }
         }
     } else {
-        result = path.as_ref().metadata()?.len();
+        size_in_bytes = path_metadata.len();
     }
-    Ok(result)
+
+    Ok(size_in_bytes)
 }
 
 /// Copies the directory contents from one place to another using recursive method,

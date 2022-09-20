@@ -59,16 +59,6 @@ where
     true
 }
 
-// Returns the size of a directory. On Linux with ext4 this can be about 4kB.
-// Since the directory size can vary, we need to calculate is dynamically.
-fn get_dir_size() -> u64 {
-    std::fs::create_dir_all("./tests/temp").expect("Couldn't create test folder");
-
-    std::fs::metadata("./tests/temp")
-        .expect("Couldn't receive metadata of tests/temp folder")
-        .len()
-}
-
 const TEST_FOLDER: &'static str = "./tests/temp/lib";
 
 #[test]
@@ -922,10 +912,10 @@ fn it_copy_progress_work() {
             Ok(process_info) => {
                 if process_info.file_name == "file2.txt" {
                     assert_eq!(9, process_info.file_total_bytes);
-                    assert_eq!(get_dir_size() + 41, process_info.total_bytes);
+                    assert_eq!(41, process_info.total_bytes);
                 } else if process_info.file_name == "file1.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(get_dir_size() + 41, process_info.total_bytes);
+                    assert_eq!(41, process_info.total_bytes);
                 }
             }
             Err(TryRecvError::Disconnected) => {
@@ -1033,14 +1023,14 @@ fn it_copy_with_progress_work_dif_buf_size() {
             assert_eq!(i * 2, process_info.file_bytes_copied);
             assert_eq!(i * 2, process_info.copied_bytes);
             assert_eq!(8, process_info.file_total_bytes);
-            assert_eq!(get_dir_size() + 40, process_info.total_bytes);
+            assert_eq!(40, process_info.total_bytes);
         }
         for i in 1..5 {
             let process_info: TransitProcess = rx.recv().unwrap();
             assert_eq!(i * 2 + 8, process_info.copied_bytes);
             assert_eq!(i * 2, process_info.file_bytes_copied);
             assert_eq!(8, process_info.file_total_bytes);
-            assert_eq!(get_dir_size() + 40, process_info.total_bytes);
+            assert_eq!(40, process_info.total_bytes);
         }
 
         match result {
@@ -1055,14 +1045,14 @@ fn it_copy_with_progress_work_dif_buf_size() {
         assert_eq!(i, process_info.file_bytes_copied);
         assert_eq!(i, process_info.copied_bytes);
         assert_eq!(8, process_info.file_total_bytes);
-        assert_eq!(get_dir_size() + 40, process_info.total_bytes);
+        assert_eq!(40, process_info.total_bytes);
     }
     for i in 1..9 {
         let process_info: TransitProcess = rx.recv().unwrap();
         assert_eq!(i + 8, process_info.copied_bytes);
         assert_eq!(i, process_info.file_bytes_copied);
         assert_eq!(8, process_info.file_total_bytes);
-        assert_eq!(get_dir_size() + 40, process_info.total_bytes);
+        assert_eq!(40, process_info.total_bytes);
     }
 
     match result {
@@ -2385,10 +2375,10 @@ fn it_move_progress_work() {
             Ok(process_info) => {
                 if process_info.file_name == "file2.txt" {
                     assert_eq!(9, process_info.file_total_bytes);
-                    assert_eq!(get_dir_size() + 41, process_info.total_bytes);
+                    assert_eq!(41, process_info.total_bytes);
                 } else if process_info.file_name == "file1.txt" {
                     assert_eq!(8, process_info.file_total_bytes);
-                    assert_eq!(get_dir_size() + 41, process_info.total_bytes);
+                    assert_eq!(41, process_info.total_bytes);
                 }
             }
             Err(TryRecvError::Disconnected) => {
