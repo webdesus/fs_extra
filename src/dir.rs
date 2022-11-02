@@ -550,7 +550,7 @@ where
 /// use fs_extra::dir::copy;
 ///
 /// let options = CopyOptions::new(); //Initialize default values for CopyOptions
-/// // options.mirror_copy = true; // To mirror copy the whole structure of the source directory
+/// // options.copy_inside = true; // Recursively copy a directory with a new name or place it inside the destination
 ///
 ///
 /// // copy source/dir1 to target/dir1
