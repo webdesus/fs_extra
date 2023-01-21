@@ -1,10 +1,12 @@
 use crate::error::{Error, ErrorKind, Result};
 use std;
+use std::convert::From;
 use std::fs::{remove_file, File};
 use std::io::{Read, Write};
 use std::path::Path;
 
 // Options and flags which can be used to configure how a file will be  copied  or moved.
+#[derive(Debug, Copy, Clone)]
 pub struct CopyOptions {
     /// Sets the option true for overwrite existing files.
     pub overwrite: bool,
@@ -55,6 +57,16 @@ impl CopyOptions {
 impl Default for CopyOptions {
     fn default() -> Self {
         CopyOptions::new()
+    }
+}
+
+impl From<&super::dir::CopyOptions> for CopyOptions {
+    fn from(dir_options: &super::dir::CopyOptions) -> Self {
+        CopyOptions {
+            overwrite: dir_options.overwrite,
+            skip_exist: dir_options.skip_exist,
+            buffer_size: dir_options.buffer_size,
+        }
     }
 }
 

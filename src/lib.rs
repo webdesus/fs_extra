@@ -350,11 +350,7 @@ where
             };
             result += dir::copy_with_progress(item, &to, &dir_options, handler)?;
         } else {
-            let mut file_options = file::CopyOptions {
-                overwrite: options.overwrite,
-                skip_exist: options.skip_exist,
-                buffer_size: options.buffer_size,
-            };
+            let mut file_options = file::CopyOptions::from(&options);
 
             if let Some(file_name) = item.file_name() {
                 if let Some(file_name) = file_name.to_str() {
@@ -537,11 +533,7 @@ where
 
             result += dir::move_dir(item, &to, options)?;
         } else {
-            let file_options = file::CopyOptions {
-                overwrite: options.overwrite,
-                skip_exist: options.skip_exist,
-                buffer_size: options.buffer_size,
-            };
+            let file_options = file::CopyOptions::from(options);
 
             if let Some(file_name) = item.file_name() {
                 if let Some(file_name) = file_name.to_str() {
@@ -662,11 +654,7 @@ where
             };
             result += dir::move_dir_with_progress(item, &to, &dir_options, handler)?;
         } else {
-            let mut file_options = file::CopyOptions {
-                overwrite: options.overwrite,
-                skip_exist: options.skip_exist,
-                buffer_size: options.buffer_size,
-            };
+            let mut file_options = file::CopyOptions::from(&options);
 
             if let Some(file_name) = item.file_name() {
                 if let Some(file_name) = file_name.to_str() {
