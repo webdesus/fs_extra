@@ -4,9 +4,11 @@ use std::convert::From;
 use std::fs::{create_dir, create_dir_all, read_dir, remove_dir_all, Metadata};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
+#[cfg(feature = "reflink")]
+use super::RefLinkUsage;
 
 /// Options and flags which can be used to configure how a file will be copied or moved.
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct CopyOptions {
     /// Overwrite existing files if true (default: false).
     pub overwrite: bool,
@@ -22,6 +24,9 @@ pub struct CopyOptions {
     ///
     /// Warning: Work only for copy operations!
     pub depth: u64,
+    /// Controls the usage of reflinks for files on filesystems supporting it.
+    #[cfg(feature = "reflink")]
+    pub reflink: RefLinkUsage,
 }
 
 impl CopyOptions {
@@ -44,6 +49,8 @@ impl CopyOptions {
             copy_inside: false,
             content_only: false,
             depth: 0,
+            #[cfg(feature = "reflink")]
+            reflink: RefLinkUsage::Never,
         }
     }
 
