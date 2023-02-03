@@ -1,6 +1,6 @@
 [package]
 name = "fs_extra"
-version = "1.2.0"
+version = "1.3.0"
 edition = "2018"
 description = "Expanding std::fs and std::io. Recursively copy folders with information about process and much more."
 license = "MIT"
