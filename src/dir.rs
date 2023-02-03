@@ -246,7 +246,7 @@ pub struct LsResult {
 ///
 /// #Examples
 ///
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::{get_details_entry, DirEntryAttr};
 /// use std::collections::{HashMap, HashSet};
@@ -424,7 +424,7 @@ where
 ///
 /// #Examples
 ///
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::{ls, DirEntryAttr, LsResult};
 /// use std::collections::HashSet;
@@ -480,7 +480,7 @@ where
 ///
 /// #Examples
 ///
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::create;
 ///
@@ -515,11 +515,12 @@ where
 ///
 /// #Examples
 ///
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::create_all;
 ///
 /// create_all("/some/dir", false); // create directory some and dir
+/// ```
 pub fn create_all<P>(path: P, erase: bool) -> Result<()>
 where
     P: AsRef<Path>,
@@ -545,7 +546,7 @@ where
 /// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::copy;
 ///
@@ -555,7 +556,6 @@ where
 ///
 /// // copy source/dir1 to target/dir1
 /// copy("source/dir1", "target/dir1", &options)?;
-///
 /// ```
 pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 where
@@ -656,7 +656,7 @@ where
 /// * The current process does not have the permission to access `path`.
 ///
 /// # Examples
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::get_dir_content;
 ///
@@ -665,7 +665,6 @@ where
 ///     println!("{}", directory); // print directory path
 /// }
 /// ```
-///
 pub fn get_dir_content<P>(path: P) -> Result<DirContent>
 where
     P: AsRef<Path>,
@@ -690,7 +689,7 @@ where
 /// * The current process does not have the permission to access `path`.
 ///
 /// # Examples
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::{DirOptions, get_dir_content2};
 ///
@@ -701,7 +700,6 @@ where
 ///     println!("{}", directory); // print directory path
 /// }
 /// ```
-///
 pub fn get_dir_content2<P>(path: P, options: &DirOptions) -> Result<DirContent>
 where
     P: AsRef<Path>,
@@ -776,7 +774,7 @@ where
 /// * The current process does not have the permission to access `path`.
 ///
 /// # Examples
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::get_size;
 ///
@@ -830,7 +828,7 @@ where
 /// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::copy;
 ///
@@ -841,7 +839,6 @@ where
 /// }
 /// // copy source/dir1 to target/dir1
 /// copy_with_progress("source/dir1", "target/dir1", &options, handle)?;
-///
 /// ```
 pub fn copy_with_progress<P, Q, F>(
     from: P,
@@ -1048,7 +1045,7 @@ where
 /// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::move_dir;
 ///
@@ -1056,7 +1053,6 @@ where
 ///
 /// // move source/dir1 to target/dir1
 /// move_dir("source/dir1", "target/dir1", &options)?;
-///
 /// ```
 pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>
 where
@@ -1168,7 +1164,7 @@ where
 /// * The current process does not have the permission to access `from` or write `to`.
 ///
 /// # Example
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::move_dir_with_progress;
 ///
@@ -1180,7 +1176,6 @@ where
 ///
 /// // move source/dir1 to target/dir1
 /// move_dir_with_progress("source/dir1", "target/dir1", &options, handle)?;
-///
 /// ```
 pub fn move_dir_with_progress<P, Q, F>(
     from: P,
@@ -1383,7 +1378,7 @@ where
 /// Removes directory.
 ///
 /// # Example
-/// ```rust,ignore
+/// ```no_run
 /// extern crate fs_extra;
 /// use fs_extra::dir::remove;
 ///
