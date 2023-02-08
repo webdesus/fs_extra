@@ -18,3 +18,4 @@ include = [
 ]
 
 [dependencies]
+filetime = { version = "0.2", optional = true }

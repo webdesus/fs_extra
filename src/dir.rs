@@ -4,6 +4,9 @@ use std::fs::{create_dir, create_dir_all, read_dir, remove_dir_all, Metadata};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
+#[cfg(feature = "filetime")]
+use crate::time::{TimeOptions, copy_time};
+
 /// Options and flags which can be used to configure how a file will be copied or moved.
 #[derive(Clone)]
 pub struct CopyOptions {
@@ -21,6 +24,9 @@ pub struct CopyOptions {
     ///
     /// Warning: Work only for copy operations!
     pub depth: u64,
+    /// File time options.
+    #[cfg(feature = "filetime")]
+    pub time_options: TimeOptions,
 }
 
 impl CopyOptions {
@@ -43,6 +49,8 @@ impl CopyOptions {
             copy_inside: false,
             content_only: false,
             depth: 0,
+            #[cfg(feature = "filetime")]
+            time_options: TimeOptions::new(),
         }
     }
 
@@ -598,17 +606,9 @@ where
     }
 
     let dir_content = get_dir_content2(from, &read_options)?;
-    for directory in dir_content.directories {
-        let tmp_to = Path::new(&directory).strip_prefix(from)?;
-        let dir = to.join(&tmp_to);
-        if !dir.exists() {
-            if options.copy_inside {
-                create_all(dir, false)?;
-            } else {
-                create(dir, false)?;
-            }
-        }
-    }
+
+    copy_dir_structure(from, to.as_path(), &dir_content, &options);
+
     let mut result: u64 = 0;
     for file in dir_content.files {
         let to = to.to_path_buf();
@@ -619,6 +619,8 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            #[cfg(feature = "filetime")]
+            time_options: options.time_options.clone(),
         };
         let mut result_copy: Result<u64>;
         let mut work = true;
@@ -892,17 +894,8 @@ where
     }
 
     let dir_content = get_dir_content2(from, &read_options)?;
-    for directory in dir_content.directories {
-        let tmp_to = Path::new(&directory).strip_prefix(from)?;
-        let dir = to.join(&tmp_to);
-        if !dir.exists() {
-            if options.copy_inside {
-                create_all(dir, false)?;
-            } else {
-                create(dir, false)?;
-            }
-        }
-    }
+
+    copy_dir_structure(from, to.as_path(), &dir_content, &options);
 
     let mut result: u64 = 0;
     let mut info_process = TransitProcess {
@@ -931,6 +924,8 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            #[cfg(feature = "filetime")]
+            time_options: options.time_options.clone(),
         };
 
         if let Some(file_name) = file_name.to_str() {
@@ -1105,17 +1100,9 @@ where
         to.push(dir_name);
     }
     let dir_content = get_dir_content(from)?;
-    for directory in dir_content.directories {
-        let tmp_to = Path::new(&directory).strip_prefix(from)?;
-        let dir = to.join(&tmp_to);
-        if !dir.exists() {
-            if options.copy_inside {
-                create_all(dir, false)?;
-            } else {
-                create(dir, false)?;
-            }
-        }
-    }
+
+    copy_dir_structure(from, to.as_path(), &dir_content, &options);
+
     let mut result: u64 = 0;
     for file in dir_content.files {
         let to = to.to_path_buf();
@@ -1126,6 +1113,8 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            #[cfg(feature = "filetime")]
+            time_options: options.time_options.clone(),
         };
 
         let mut result_copy: Result<u64>;
@@ -1229,17 +1218,8 @@ where
     }
 
     let dir_content = get_dir_content(from)?;
-    for directory in dir_content.directories {
-        let tmp_to = Path::new(&directory).strip_prefix(from)?;
-        let dir = to.join(&tmp_to);
-        if !dir.exists() {
-            if options.copy_inside {
-                create_all(dir, false)?;
-            } else {
-                create(dir, false)?;
-            }
-        }
-    }
+
+    copy_dir_structure(from, to.as_path(), &dir_content, &options);
 
     let mut result: u64 = 0;
     let mut info_process = TransitProcess {
@@ -1268,6 +1248,8 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            #[cfg(feature = "filetime")]
+            time_options: options.time_options.clone(),
         };
 
         if let Some(file_name) = file_name.to_str() {
@@ -1395,4 +1377,22 @@ pub fn remove<P: AsRef<Path>>(path: P) -> Result<()> {
     } else {
         Ok(())
     }
+}
+
+fn copy_dir_structure(from: &Path, to: &Path, dir_content: &DirContent, options: &CopyOptions) -> Result<()> {
+    for directory in &dir_content.directories {
+        let path_from = Path::new(directory);
+        let tmp_to = path_from.strip_prefix(from)?;
+        let dir = to.join(&tmp_to);
+        if !dir.exists() {
+            if options.copy_inside {
+                create_all(dir.as_path(), false)?;
+            } else {
+                create(dir.as_path(), false)?;
+            }
+            #[cfg(feature = "filetime")]
+            copy_time(&path_from, dir, &options.time_options);
+        }
+    }
+    Ok(())
 }

@@ -4,6 +4,9 @@ use std::fs::{remove_file, File};
 use std::io::{Read, Write};
 use std::path::Path;
 
+#[cfg(feature = "filetime")]
+use crate::time::{TimeOptions, copy_time};
+
 // Options and flags which can be used to configure how a file will be  copied  or moved.
 pub struct CopyOptions {
     /// Sets the option true for overwrite existing files.
@@ -12,6 +15,9 @@ pub struct CopyOptions {
     pub skip_exist: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
+    /// File time options.
+    #[cfg(feature = "filetime")]
+    pub time_options: TimeOptions,
 }
 
 impl CopyOptions {
@@ -30,6 +36,8 @@ impl CopyOptions {
             overwrite: false,
             skip_exist: false,
             buffer_size: 64000, //64kb
+            #[cfg(feature = "filetime")]
+            time_options: TimeOptions::new(),
         }
     }
 
@@ -124,7 +132,11 @@ where
         }
     }
 
-    Ok(std::fs::copy(from, to)?)
+    let result = std::fs::copy(from, to.as_ref())?;
+    #[cfg(feature = "filetime")]
+    copy_time(from, to, &options.time_options);
+
+    Ok(result)
 }
 
 /// Copies the contents of one file to another file with information about progress.
@@ -198,7 +210,7 @@ where
     let file_size = file_from.metadata()?.len();
     let mut copied_bytes: u64 = 0;
 
-    let mut file_to = File::create(to)?;
+    let mut file_to = File::create(to.as_ref())?;
     while !buf.is_empty() {
         match file_from.read(&mut buf) {
             Ok(0) => break,
@@ -218,6 +230,8 @@ where
             Err(e) => return Err(::std::convert::From::from(e)),
         }
     }
+    #[cfg(feature = "filetime")]
+    copy_time(from, to, &options.time_options);
     Ok(file_size)
 }
 
