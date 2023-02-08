@@ -195,7 +195,8 @@ where
     }
     let mut file_from = File::open(from)?;
     let mut buf = vec![0; options.buffer_size];
-    let file_size = file_from.metadata()?.len();
+    let metadata = file_from.metadata()?;
+    let file_size = metadata.len();
     let mut copied_bytes: u64 = 0;
 
     let mut file_to = File::create(to)?;
@@ -218,6 +219,7 @@ where
             Err(e) => return Err(::std::convert::From::from(e)),
         }
     }
+    file_to.set_permissions(metadata.permissions())?;
     Ok(file_size)
 }
 
