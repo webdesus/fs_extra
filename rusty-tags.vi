@@ -1,0 +1,62 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+CopyOptions	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub struct CopyOptions {$/;"	s
+CopyOptions	/home/artie/Documents/Repos/smallB_fs_extra/src/file.rs	/^pub struct CopyOptions {$/;"	s
+DirContent	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub struct DirContent {$/;"	s
+DirEntryAttr	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub enum DirEntryAttr {$/;"	g
+DirEntryValue	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub enum DirEntryValue {$/;"	g
+DirOptions	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub struct DirOptions {$/;"	s
+Error	/home/artie/Documents/Repos/smallB_fs_extra/src/error.rs	/^pub struct Error {$/;"	s
+ErrorKind	/home/artie/Documents/Repos/smallB_fs_extra/src/error.rs	/^pub enum ErrorKind {$/;"	g
+LsResult	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub struct LsResult {$/;"	s
+Result	/home/artie/Documents/Repos/smallB_fs_extra/src/error.rs	/^pub type Result<T> = ::std::result::Result<T, Error>;$/;"	T
+TransitProcess	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub struct TransitProcess {$/;"	s
+TransitProcess	/home/artie/Documents/Repos/smallB_fs_extra/src/file.rs	/^pub struct TransitProcess {$/;"	s
+TransitProcess	/home/artie/Documents/Repos/smallB_fs_extra/src/lib.rs	/^pub struct TransitProcess {$/;"	s
+TransitProcessResult	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub enum TransitProcessResult {$/;"	g
+TransitState	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub enum TransitState {$/;"	g
+_get_dir_content	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^fn _get_dir_content<P>(path: P, mut depth: u64) -> Result<DirContent>$/;"	f
+as_str	/home/artie/Documents/Repos/smallB_fs_extra/src/error.rs	/^    fn as_str(&self) -> &str {$/;"	f
+clone	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^    fn clone(&self) -> TransitProcess {$/;"	f
+clone	/home/artie/Documents/Repos/smallB_fs_extra/src/lib.rs	/^    fn clone(&self) -> TransitProcess {$/;"	f
+copy	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>$/;"	f
+copy	/home/artie/Documents/Repos/smallB_fs_extra/src/file.rs	/^pub fn copy<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>$/;"	f
+copy_items	/home/artie/Documents/Repos/smallB_fs_extra/src/lib.rs	/^pub fn copy_items<P, Q>(from: &[P], to: Q, options: &dir::CopyOptions) -> Result<u64>$/;"	f
+copy_items_with_progress	/home/artie/Documents/Repos/smallB_fs_extra/src/lib.rs	/^pub fn copy_items_with_progress<P, Q, F>($/;"	f
+copy_with_progress	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn copy_with_progress<P, Q, F>($/;"	f
+copy_with_progress	/home/artie/Documents/Repos/smallB_fs_extra/src/file.rs	/^pub fn copy_with_progress<P, Q, F>($/;"	f
+create	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn create<P>(path: P, erase: bool) -> Result<()>$/;"	f
+create_all	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn create_all<P>(path: P, erase: bool) -> Result<()>$/;"	f
+default	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^    fn default() -> Self {$/;"	f
+default	/home/artie/Documents/Repos/smallB_fs_extra/src/file.rs	/^    fn default() -> Self {$/;"	f
+description	/home/artie/Documents/Repos/smallB_fs_extra/src/error.rs	/^    fn description(&self) -> &str {$/;"	f
+err	/home/artie/Documents/Repos/smallB_fs_extra/src/lib.rs	/^macro_rules! err {$/;"	d
+fmt	/home/artie/Documents/Repos/smallB_fs_extra/src/error.rs	/^    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {$/;"	f
+from	/home/artie/Documents/Repos/smallB_fs_extra/src/error.rs	/^    fn from(err: IoError) -> Error {$/;"	f
+from	/home/artie/Documents/Repos/smallB_fs_extra/src/error.rs	/^    fn from(err: OsString) -> Error {$/;"	f
+from	/home/artie/Documents/Repos/smallB_fs_extra/src/error.rs	/^    fn from(err: StripPrefixError) -> Error {$/;"	f
+get_details_entry	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn get_details_entry<P>($/;"	f
+get_details_entry_with_meta	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^fn get_details_entry_with_meta<P>($/;"	f
+get_dir_content	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn get_dir_content<P>(path: P) -> Result<DirContent>$/;"	f
+get_dir_content2	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn get_dir_content2<P>(path: P, options: &DirOptions) -> Result<DirContent>$/;"	f
+get_size	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn get_size<P>(path: P) -> Result<u64>$/;"	f
+ls	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn ls<P>(path: P, config: &HashSet<DirEntryAttr>) -> Result<LsResult>$/;"	f
+move_dir	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn move_dir<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>$/;"	f
+move_dir_with_progress	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn move_dir_with_progress<P, Q, F>($/;"	f
+move_file	/home/artie/Documents/Repos/smallB_fs_extra/src/file.rs	/^pub fn move_file<P, Q>(from: P, to: Q, options: &CopyOptions) -> Result<u64>$/;"	f
+move_file_with_progress	/home/artie/Documents/Repos/smallB_fs_extra/src/file.rs	/^pub fn move_file_with_progress<P, Q, F>($/;"	f
+move_items	/home/artie/Documents/Repos/smallB_fs_extra/src/lib.rs	/^pub fn move_items<P, Q>(from_items: &[P], to: Q, options: &dir::CopyOptions) -> Result<u64>$/;"	f
+move_items_with_progress	/home/artie/Documents/Repos/smallB_fs_extra/src/lib.rs	/^pub fn move_items_with_progress<P, Q, F>($/;"	f
+new	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^    pub fn new() -> CopyOptions {$/;"	f
+new	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^    pub fn new() -> DirOptions {$/;"	f
+new	/home/artie/Documents/Repos/smallB_fs_extra/src/error.rs	/^    pub fn new(kind: ErrorKind, message: &str) -> Error {$/;"	f
+new	/home/artie/Documents/Repos/smallB_fs_extra/src/file.rs	/^    pub fn new() -> CopyOptions {$/;"	f
+read_to_string	/home/artie/Documents/Repos/smallB_fs_extra/src/file.rs	/^pub fn read_to_string<P>(path: P) -> Result<String>$/;"	f
+remove	/home/artie/Documents/Repos/smallB_fs_extra/src/dir.rs	/^pub fn remove<P: AsRef<Path>>(path: P) -> Result<()> {$/;"	f
+remove	/home/artie/Documents/Repos/smallB_fs_extra/src/file.rs	/^pub fn remove<P>(path: P) -> Result<()>$/;"	f
+remove_items	/home/artie/Documents/Repos/smallB_fs_extra/src/lib.rs	/^pub fn remove_items<P>(from_items: &[P]) -> Result<()>$/;"	f
+write_all	/home/artie/Documents/Repos/smallB_fs_extra/src/file.rs	/^pub fn write_all<P>(path: P, content: &str) -> Result<()>$/;"	f

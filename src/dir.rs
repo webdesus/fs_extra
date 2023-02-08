@@ -11,6 +11,8 @@ pub struct CopyOptions {
     pub overwrite: bool,
     /// Skip existing files if true (default: false).
     pub skip_exist: bool,
+    /// If set to true will append new file content to the old one
+    pub append: bool,
     /// Buffer size that specifies the amount of bytes to be moved or copied before the progress handler is called. This only affects functions with progress handlers. (default: 64000)
     pub buffer_size: usize,
     /// Recursively copy a directory with a new name or place it inside the destination (default: false, same behaviors as cp -r on Unix)
@@ -39,6 +41,7 @@ impl CopyOptions {
         CopyOptions {
             overwrite: false,
             skip_exist: false,
+            append: false,
             buffer_size: 64000, // 64kb
             copy_inside: false,
             content_only: false,
@@ -619,6 +622,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            append: options.append,
         };
         let mut result_copy: Result<u64>;
         let mut work = true;
@@ -844,6 +848,7 @@ where
 ///
 /// ```
 pub fn copy_with_progress<P, Q, F>(
+    selected_mask:&String,
     from: P,
     to: Q,
     options: &CopyOptions,
@@ -915,7 +920,15 @@ where
     };
 
     let mut options = options.clone();
+    let rg  = regex::RegexSet::new(&selected_mask.split_ascii_whitespace().collect::<Vec::<_>>());//++artie
+    let rg_ok = rg.is_ok();
     for file in dir_content.files {
+        /*++artie */
+        if rg_ok && !rg.as_ref().unwrap().is_match(&file)
+        {
+            continue;
+        }
+        //--artie
         let mut to = to.to_path_buf();
         let tp = Path::new(&file).strip_prefix(from)?;
         let path = to.join(&tp);
@@ -931,6 +944,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            append: options.append,
         };
 
         if let Some(file_name) = file_name.to_str() {
@@ -947,11 +961,12 @@ where
         let copied_bytes = result;
         while work {
             {
-                let _progress_handler = |info: super::file::TransitProcess| {
-                    info_process.copied_bytes = copied_bytes + info.copied_bytes;
-                    info_process.file_bytes_copied = info.copied_bytes;
-                    progress_handler(info_process.clone());
-                };
+                let _progress_handler =
+                    |info: super::file::TransitProcess| -> TransitProcessResult {
+                        info_process.copied_bytes = copied_bytes + info.copied_bytes;
+                        info_process.file_bytes_copied = info.copied_bytes;
+                        progress_handler(info_process.clone())
+                    };
 
                 result_copy =
                     super::file::copy_with_progress(&file, &path, &file_options, _progress_handler);
@@ -1126,6 +1141,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            append: options.append,
         };
 
         let mut result_copy: Result<u64>;
@@ -1268,6 +1284,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            append: options.append,
         };
 
         if let Some(file_name) = file_name.to_str() {
@@ -1284,11 +1301,12 @@ where
         let copied_bytes = result;
         while work {
             {
-                let _progress_handler = |info: super::file::TransitProcess| {
-                    info_process.copied_bytes = copied_bytes + info.copied_bytes;
-                    info_process.file_bytes_copied = info.copied_bytes;
-                    progress_handler(info_process.clone());
-                };
+                let _progress_handler =
+                    |info: super::file::TransitProcess| -> TransitProcessResult {
+                        info_process.copied_bytes = copied_bytes + info.copied_bytes;
+                        info_process.file_bytes_copied = info.copied_bytes;
+                        progress_handler(info_process.clone())
+                    };
 
                 result_copy = super::file::move_file_with_progress(
                     &file,
@@ -1351,7 +1369,8 @@ where
                                 file_options.skip_exist = true;
                             }
                             TransitProcessResult::SkipAll => {
-                                file_options.skip_exist = true;
+                                is_remove = false;
+ 				file_options.skip_exist = true;
                                 options.skip_exist = true;
                             }
                             TransitProcessResult::Retry => {}

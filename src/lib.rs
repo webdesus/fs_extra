@@ -287,6 +287,7 @@ impl Clone for TransitProcess {
 /// ```
 ///
 pub fn copy_items_with_progress<P, Q, F>(
+    selected_mask:&String,//++artie
     from: &[P],
     to: Q,
     options: &dir::CopyOptions,
@@ -348,12 +349,13 @@ where
                 }
                 result
             };
-            result += dir::copy_with_progress(item, &to, &dir_options, handler)?;
+            result += dir::copy_with_progress(selected_mask/*++artie */,item, &to, &dir_options, handler)?;
         } else {
             let mut file_options = file::CopyOptions {
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
+                append: options.append,
             };
 
             if let Some(file_name) = item.file_name() {
@@ -376,10 +378,10 @@ where
             let mut result_copy: Result<u64>;
             while work {
                 {
-                    let handler = |info: file::TransitProcess| {
+                    let handler = |info: file::TransitProcess| -> dir::TransitProcessResult {
                         info_process.copied_bytes = copied_bytes + info.copied_bytes;
                         info_process.file_bytes_copied = info.copied_bytes;
-                        progress_handler(info_process.clone());
+                        progress_handler(info_process.clone())
                     };
                     result_copy =
                         file::copy_with_progress(item, &file_name, &file_options, handler);
@@ -541,6 +543,7 @@ where
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
+                append: options.append,
             };
 
             if let Some(file_name) = item.file_name() {
@@ -666,6 +669,7 @@ where
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
+                append: options.append,
             };
 
             if let Some(file_name) = item.file_name() {
@@ -688,10 +692,10 @@ where
             let mut result_copy: Result<u64>;
             while work {
                 {
-                    let handler = |info: file::TransitProcess| {
+                    let handler = |info: file::TransitProcess| -> dir::TransitProcessResult {
                         info_process.copied_bytes = copied_bytes + info.copied_bytes;
                         info_process.file_bytes_copied = info.copied_bytes;
-                        progress_handler(info_process.clone());
+                        progress_handler(info_process.clone())
                     };
                     result_copy =
                         file::move_file_with_progress(item, &file_name, &file_options, handler);

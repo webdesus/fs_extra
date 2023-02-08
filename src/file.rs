@@ -10,6 +10,8 @@ pub struct CopyOptions {
     pub overwrite: bool,
     /// Sets the option true for skip existing files.
     pub skip_exist: bool,
+    /// If set to true appends content of new file to the old one
+    pub append: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
 }
@@ -29,6 +31,7 @@ impl CopyOptions {
         CopyOptions {
             overwrite: false,
             skip_exist: false,
+            append: false,
             buffer_size: 64000, //64kb
         }
     }
@@ -161,7 +164,7 @@ pub fn copy_with_progress<P, Q, F>(
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
-    F: FnMut(TransitProcess),
+    F: FnMut(TransitProcess) -> crate::dir::TransitProcessResult,
 {
     let from = from.as_ref();
     if !from.exists() {
@@ -198,7 +201,11 @@ where
     let file_size = file_from.metadata()?.len();
     let mut copied_bytes: u64 = 0;
 
-    let mut file_to = File::create(to)?;
+    let mut file_to = std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .append(options.append)
+        .open(to)?;
     while !buf.is_empty() {
         match file_from.read(&mut buf) {
             Ok(0) => break,
@@ -212,7 +219,13 @@ where
                     copied_bytes,
                     total_bytes: file_size,
                 };
-                progress_handler(data);
+                let progres_result = progress_handler(data);
+                if progres_result as usize == crate::dir::TransitProcessResult::Abort as usize {
+                    return Err(super::error::Error::new(
+                        super::error::ErrorKind::Interrupted,
+                        "Aborted by user",
+                    ));
+                }
             }
             Err(ref e) if e.kind() == ::std::io::ErrorKind::Interrupted => {}
             Err(e) => return Err(::std::convert::From::from(e)),
@@ -293,7 +306,7 @@ pub fn move_file_with_progress<P, Q, F>(
 where
     P: AsRef<Path>,
     Q: AsRef<Path>,
-    F: FnMut(TransitProcess),
+    F: FnMut(TransitProcess) -> crate::dir::TransitProcessResult,
 {
     let mut is_remove = true;
     if options.skip_exist && to.as_ref().exists() && !options.overwrite {
