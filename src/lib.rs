@@ -1,3 +1,6 @@
+#[cfg(feature = "reflink")]
+extern crate reflink;
+
 macro_rules! err {
     ($text:expr, $kind:expr) => {
         return Err(Error::new($kind, $text))
@@ -155,6 +158,21 @@ pub mod dir;
 
 use crate::error::*;
 use std::path::Path;
+
+/// Possible values for the reflink field in CopyOptions.  These
+/// correspond to the `--reflink` option of the Unix `cp` command.
+#[cfg(feature = "reflink")]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum RefLinkUsage {
+    /// Do not use reflinks.
+    Never,
+    /// Use reflinks if possible.
+    #[cfg(feature = "reflink")]
+    Auto,
+    /// Force use of reflinks, error out if not possible.
+    #[cfg(feature = "reflink")]
+    Always,
+}
 
 /// Copies a list of directories and files to another place recursively. This function will
 /// also copy the permission bits of the original files to destination files (not for
@@ -350,11 +368,7 @@ where
             };
             result += dir::copy_with_progress(item, &to, &dir_options, handler)?;
         } else {
-            let mut file_options = file::CopyOptions {
-                overwrite: options.overwrite,
-                skip_exist: options.skip_exist,
-                buffer_size: options.buffer_size,
-            };
+            let mut file_options = file::CopyOptions::from(&options);
 
             if let Some(file_name) = item.file_name() {
                 if let Some(file_name) = file_name.to_str() {
@@ -537,11 +551,7 @@ where
 
             result += dir::move_dir(item, &to, options)?;
         } else {
-            let file_options = file::CopyOptions {
-                overwrite: options.overwrite,
-                skip_exist: options.skip_exist,
-                buffer_size: options.buffer_size,
-            };
+            let file_options = file::CopyOptions::from(options);
 
             if let Some(file_name) = item.file_name() {
                 if let Some(file_name) = file_name.to_str() {
@@ -662,11 +672,7 @@ where
             };
             result += dir::move_dir_with_progress(item, &to, &dir_options, handler)?;
         } else {
-            let mut file_options = file::CopyOptions {
-                overwrite: options.overwrite,
-                skip_exist: options.skip_exist,
-                buffer_size: options.buffer_size,
-            };
+            let mut file_options = file::CopyOptions::from(&options);
 
             if let Some(file_name) = item.file_name() {
                 if let Some(file_name) = file_name.to_str() {

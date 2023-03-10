@@ -17,4 +17,8 @@ include = [
     "CHANGELOG.md",
 ]
 
+[features]
+reflink = ["dep:reflink"]
+
 [dependencies]
+reflink = { version = "^0.1.0", optional = true }

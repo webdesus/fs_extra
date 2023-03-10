@@ -1,10 +1,14 @@
 use crate::error::{Error, ErrorKind, Result};
 use std;
+use std::convert::From;
 use std::fs::{remove_file, File};
 use std::io::{Read, Write};
 use std::path::Path;
+#[cfg(feature = "reflink")]
+use super::RefLinkUsage;
 
 // Options and flags which can be used to configure how a file will be  copied  or moved.
+#[derive(Debug, Copy, Clone)]
 pub struct CopyOptions {
     /// Sets the option true for overwrite existing files.
     pub overwrite: bool,
@@ -12,6 +16,9 @@ pub struct CopyOptions {
     pub skip_exist: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
+    /// Controls the usage of reflinks on filesystems supporting it.
+    #[cfg(feature = "reflink")]
+    pub reflink: RefLinkUsage,
 }
 
 impl CopyOptions {
@@ -30,6 +37,8 @@ impl CopyOptions {
             overwrite: false,
             skip_exist: false,
             buffer_size: 64000, //64kb
+            #[cfg(feature = "reflink")]
+            reflink: RefLinkUsage::Never,
         }
     }
 
@@ -55,6 +64,18 @@ impl CopyOptions {
 impl Default for CopyOptions {
     fn default() -> Self {
         CopyOptions::new()
+    }
+}
+
+impl From<&super::dir::CopyOptions> for CopyOptions {
+    fn from(dir_options: &super::dir::CopyOptions) -> Self {
+        CopyOptions {
+            overwrite: dir_options.overwrite,
+            skip_exist: dir_options.skip_exist,
+            buffer_size: dir_options.buffer_size,
+            #[cfg(feature = "reflink")]
+            reflink: dir_options.reflink,
+        }
     }
 }
 
@@ -124,7 +145,24 @@ where
         }
     }
 
-    Ok(std::fs::copy(from, to)?)
+    Ok(
+        #[cfg(not(feature = "reflink"))]
+        { std::fs::copy(from, to)? },
+
+        #[cfg(feature = "reflink")]
+        match options.reflink {
+            RefLinkUsage::Never => std::fs::copy(from, to)?,
+
+            #[cfg(feature = "reflink")]
+            RefLinkUsage::Auto => reflink::reflink_or_copy(from, to)?.unwrap_or(0),
+
+            #[cfg(feature = "reflink")]
+            RefLinkUsage::Always => {
+                reflink::reflink(from, to)?;
+                0
+            },
+        }
+    )
 }
 
 /// Copies the contents of one file to another file with information about progress.
@@ -193,6 +231,18 @@ where
             err!(&msg, ErrorKind::AlreadyExists);
         }
     }
+
+    #[cfg(feature = "reflink")]
+    if options.reflink != RefLinkUsage::Never {
+        match reflink::reflink(&from, &to) {
+            Ok(()) => return Ok(0),
+            Err(e) if options.reflink == RefLinkUsage::Always => {
+                return Err(::std::convert::From::from(e));
+            },
+            Err(_) => { /* continue with plain copy */ }
+        }
+    }
+
     let mut file_from = File::open(from)?;
     let mut buf = vec![0; options.buffer_size];
     let file_size = file_from.metadata()?.len();
