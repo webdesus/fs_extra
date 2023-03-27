@@ -9,6 +9,22 @@ use fs_extra::file::*;
 
 const TEST_FOLDER: &'static str = "./tests/temp/file";
 
+#[cfg(unix)]
+fn create_file_symlink<P: AsRef<Path>, Q: AsRef<Path>>(
+    original: P,
+    link: Q,
+) -> std::io::Result<()> {
+    std::os::unix::fs::symlink(original.as_ref(), link.as_ref())
+}
+
+#[cfg(windows)]
+fn create_file_symlink<P: AsRef<Path>, Q: AsRef<Path>>(
+    original: P,
+    link: Q,
+) -> std::io::Result<()> {
+    std::os::windows::fs::symlink_file(original.as_ref(), link.as_ref())
+}
+
 fn files_eq<P, Q>(file1: P, file2: Q) -> Result<bool>
 where
     P: AsRef<Path>,
@@ -1030,5 +1046,65 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
             ()
         }
         Err(err) => panic!(err.to_string()),
+    }
+}
+
+#[test]
+#[cfg(unix)]
+fn it_copy_not_overwrite_broken_symlink() {
+    let mut test_file = PathBuf::from(TEST_FOLDER);
+    test_file.push("it_copy_not_overwrite_broken_symlink");
+    let mut test_link = test_file.clone();
+    let mut test_target = test_file.clone();
+
+    test_file.push("file");
+    test_link.push("link");
+    test_target.push("nothing");
+
+    fs_extra::dir::create_all(&test_link.parent().unwrap(), true).unwrap();
+    fs_extra::dir::create_all(&test_file.parent().unwrap(), true).unwrap();
+
+    write_all(&test_file, "test").unwrap();
+    create_file_symlink(test_target, &test_link).unwrap();
+
+    let options = CopyOptions::new();
+
+    match copy(&test_file, &test_link, &options) {
+        Ok(_) => panic!("should be error"),
+        Err(err) => match err.kind {
+            ErrorKind::AlreadyExists => {}
+            _ => panic!("wrong error: {:?}", err.kind),
+        },
+    }
+}
+
+#[test]
+fn it_copy_symlink_not_follow() {
+    let mut test_file = PathBuf::from(TEST_FOLDER);
+    test_file.push("it_copy_symlink_not_follow");
+    let mut test_link = test_file.clone();
+    let mut test_link_to = test_file.clone();
+
+    test_file.push("file");
+    test_link.push("link");
+    test_link_to.push("link_copy");
+
+    fs_extra::dir::create_all(&test_link.parent().unwrap(), true).unwrap();
+    fs_extra::dir::create_all(&test_file.parent().unwrap(), true).unwrap();
+
+    write_all(&test_file, "test").unwrap();
+    create_file_symlink(&test_file, &test_link).unwrap();
+
+    let options = CopyOptions {
+        follow: false,
+        ..CopyOptions::new()
+    };
+
+    match copy(&test_link, &test_link_to, &options) {
+        Ok(_) => {
+            assert!(test_link_to.is_symlink());
+            assert_eq!(std::fs::read_link(test_link_to).unwrap(), test_file);
+        }
+        Err(_) => panic!("Should not be error"),
     }
 }
