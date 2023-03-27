@@ -1,7 +1,9 @@
 use crate::error::{Error, ErrorKind, Result};
 use std;
-use std::fs::{remove_file, File};
+use std::fs::{read_link, remove_file, File};
 use std::io::{Read, Write};
+#[cfg(unix)]
+use std::os::unix::fs::symlink;
 use std::path::Path;
 
 // Options and flags which can be used to configure how a file will be  copied  or moved.
@@ -12,6 +14,8 @@ pub struct CopyOptions {
     pub skip_exist: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
+    /// Follows the last symbolic link in the path
+    pub follow: bool,
 }
 
 impl CopyOptions {
@@ -30,6 +34,7 @@ impl CopyOptions {
             overwrite: false,
             skip_exist: false,
             buffer_size: 64000, //64kb
+            follow: true,
         }
     }
 
@@ -94,26 +99,54 @@ where
     Q: AsRef<Path>,
 {
     let from = from.as_ref();
-    if !from.exists() {
-        if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
-            err!(&msg, ErrorKind::NotFound);
+    match from.try_exists() {
+        Ok(false) => {
+            if options.follow {
+                err!(
+                    &if let Some(msg) = from.to_str() {
+                        format!("Path \"{}\" is a broken symlink or doesn't exist!", msg)
+                    } else {
+                        String::from("Path is a broken symlink or doesn't exist!")
+                    },
+                    if from.is_symlink() {
+                        ErrorKind::InvalidFile
+                    } else {
+                        ErrorKind::NotFound
+                    }
+                )
+            }
         }
-        err!(
-            "Path does not exist or you don't have access!",
-            ErrorKind::NotFound
-        );
+        Err(_) => {
+            if let Some(msg) = from.to_str() {
+                let msg = format!("You don't have access to \"{}\" path!", msg);
+                err!(&msg, ErrorKind::PermissionDenied);
+            }
+            err!("You don't have access!", ErrorKind::PermissionDenied);
+        }
+        _ => {}
     }
 
     if !from.is_file() {
-        if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" is not a file!", msg);
-            err!(&msg, ErrorKind::InvalidFile);
+        if options.follow {
+            if let Some(msg) = from.to_str() {
+                let msg = format!("Path \"{}\" is not a file!", msg);
+                err!(&msg, ErrorKind::InvalidFile);
+            }
+            err!("Path is not a file!", ErrorKind::InvalidFile);
+        } else if !from.is_symlink() {
+            if let Some(msg) = from.to_str() {
+                let msg = format!("Path \"{}\" is not a file or symlink!", msg);
+                err!(&msg, ErrorKind::InvalidFile);
+            }
+            err!("Path is not a file or symlink!", ErrorKind::InvalidFile);
         }
-        err!("Path is not a file!", ErrorKind::InvalidFile);
     }
 
-    if !options.overwrite && to.as_ref().exists() {
+    if !options.overwrite
+        && (to.as_ref().exists() ||
+        // If the target is a broken symlink, it should not be overwritten
+        to.as_ref().is_symlink())
+    {
         if options.skip_exist {
             return Ok(0);
         }
@@ -122,9 +155,16 @@ where
             let msg = format!("Path \"{}\" exists", msg);
             err!(&msg, ErrorKind::AlreadyExists);
         }
+        err!("Path exists!", ErrorKind::AlreadyExists);
     }
 
-    Ok(std::fs::copy(from, to)?)
+    if options.follow || from.is_file() {
+        Ok(std::fs::copy(from, to)?)
+    } else {
+        #[cfg(unix)]
+        symlink(read_link(from)?, &to)?;
+        Ok(to.as_ref().as_os_str().len() as u64)
+    }
 }
 
 /// Copies the contents of one file to another file with information about progress.

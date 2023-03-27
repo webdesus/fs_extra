@@ -619,6 +619,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            follow: false,
         };
         let mut result_copy: Result<u64>;
         let mut work = true;
@@ -931,6 +932,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            follow: false,
         };
 
         if let Some(file_name) = file_name.to_str() {
@@ -1126,6 +1128,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            follow: false,
         };
 
         let mut result_copy: Result<u64>;
@@ -1268,6 +1271,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            follow: false,
         };
 
         if let Some(file_name) = file_name.to_str() {

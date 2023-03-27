@@ -168,8 +168,7 @@ fn it_copy_source_not_exist() {
         Err(err) => match err.kind {
             ErrorKind::NotFound => {
                 let wrong_path = format!(
-                    "Path \"{}\" does not exist or you don't have \
-                     access!",
+                    "Path \"{}\" is a broken symlink or doesn't exist!",
                     test_file.to_str().unwrap()
                 );
                 assert_eq!(wrong_path, err.to_string());
@@ -643,8 +642,7 @@ fn it_move_source_not_exist() {
         Err(err) => match err.kind {
             ErrorKind::NotFound => {
                 let wrong_path = format!(
-                    "Path \"{}\" does not exist or you don't have \
-                     access!",
+                    "Path \"{}\" is a broken symlink or doesn't exist!",
                     test_file.to_str().unwrap()
                 );
 
