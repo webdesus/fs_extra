@@ -750,7 +750,7 @@ where
             }
         }
     } else {
-        dir_size = path.as_ref().metadata()?.len();
+        dir_size = path.as_ref().symlink_metadata()?.len();
         files.push(item);
     }
     Ok(DirContent {
