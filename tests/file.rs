@@ -183,10 +183,7 @@ fn it_copy_source_not_exist() {
         Ok(_) => panic!("should be error"),
         Err(err) => match err.kind {
             ErrorKind::NotFound => {
-                let wrong_path = format!(
-                    "Path \"{}\" is a broken symlink or doesn't exist!",
-                    test_file.to_str().unwrap()
-                );
+                let wrong_path = format!("Path \"{}\" doesn't exist!", test_file.to_str().unwrap());
                 assert_eq!(wrong_path, err.to_string());
                 ()
             }
@@ -657,10 +654,7 @@ fn it_move_source_not_exist() {
         Ok(_) => panic!("should be error"),
         Err(err) => match err.kind {
             ErrorKind::NotFound => {
-                let wrong_path = format!(
-                    "Path \"{}\" is a broken symlink or doesn't exist!",
-                    test_file.to_str().unwrap()
-                );
+                let wrong_path = format!("Path \"{}\" doesn't exist!", test_file.to_str().unwrap());
 
                 assert_eq!(wrong_path, err.to_string());
                 ()

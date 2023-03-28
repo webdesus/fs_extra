@@ -99,72 +99,40 @@ where
     Q: AsRef<Path>,
 {
     let from = from.as_ref();
-    match from.try_exists() {
-        Ok(false) => {
-            if options.follow {
-                err!(
-                    &if let Some(msg) = from.to_str() {
-                        format!("Path \"{}\" is a broken symlink or doesn't exist!", msg)
-                    } else {
-                        String::from("Path is a broken symlink or doesn't exist!")
-                    },
-                    if from.is_symlink() {
-                        ErrorKind::InvalidFile
-                    } else {
-                        ErrorKind::NotFound
-                    }
-                )
-            }
+    let to = to.as_ref();
+
+    if !options.overwrite && to.symlink_metadata().is_ok() {
+        if !options.skip_exist {
+            err!(
+                &format!("Path \"{}\" exists", to.display()),
+                ErrorKind::AlreadyExists
+            );
+        } else {
+            return Ok(0);
         }
-        Err(_) => {
-            if let Some(msg) = from.to_str() {
-                let msg = format!("You don't have access to \"{}\" path!", msg);
-                err!(&msg, ErrorKind::PermissionDenied);
-            }
-            err!("You don't have access!", ErrorKind::PermissionDenied);
-        }
-        _ => {}
+    }
+
+    if !options.follow && from.is_symlink() {
+        #[cfg(unix)]
+        symlink(read_link(from)?, &to)?;
+        return Ok(to.as_os_str().len() as u64);
+    }
+
+    if !from.try_exists()? {
+        err!(
+            &format!("Path \"{}\" doesn't exist!", from.display()),
+            ErrorKind::NotFound
+        );
     }
 
     if !from.is_file() {
-        if options.follow {
-            if let Some(msg) = from.to_str() {
-                let msg = format!("Path \"{}\" is not a file!", msg);
-                err!(&msg, ErrorKind::InvalidFile);
-            }
-            err!("Path is not a file!", ErrorKind::InvalidFile);
-        } else if !from.is_symlink() {
-            if let Some(msg) = from.to_str() {
-                let msg = format!("Path \"{}\" is not a file or symlink!", msg);
-                err!(&msg, ErrorKind::InvalidFile);
-            }
-            err!("Path is not a file or symlink!", ErrorKind::InvalidFile);
-        }
+        err!(
+            &format!("Path \"{}\" is not a file!", from.display()),
+            ErrorKind::InvalidFile
+        );
     }
 
-    if !options.overwrite
-        && (to.as_ref().exists() ||
-        // If the target is a broken symlink, it should not be overwritten
-        to.as_ref().is_symlink())
-    {
-        if options.skip_exist {
-            return Ok(0);
-        }
-
-        if let Some(msg) = to.as_ref().to_str() {
-            let msg = format!("Path \"{}\" exists", msg);
-            err!(&msg, ErrorKind::AlreadyExists);
-        }
-        err!("Path exists!", ErrorKind::AlreadyExists);
-    }
-
-    if options.follow || from.is_file() {
-        Ok(std::fs::copy(from, to)?)
-    } else {
-        #[cfg(unix)]
-        symlink(read_link(from)?, &to)?;
-        Ok(to.as_ref().as_os_str().len() as u64)
-    }
+    Ok(std::fs::copy(from, to)?)
 }
 
 /// Copies the contents of one file to another file with information about progress.
