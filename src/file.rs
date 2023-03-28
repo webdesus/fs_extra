@@ -6,6 +6,8 @@ use std::io::{Read, Write};
 use std::os::unix::fs::symlink;
 #[cfg(target_os = "wasi")]
 use std::os::wasi::fs::symlink_path as symlink;
+#[cfg(windows)]
+use std::os::windows::fs::{symlink_dir, symlink_file, FileTypeExt};
 use std::path::Path;
 
 // Options and flags which can be used to configure how a file will be  copied  or moved.
@@ -116,7 +118,13 @@ where
 
     if !options.follow && from.is_symlink() {
         #[cfg(any(unix, target_os = "wasi", target_os = "redox"))]
-        symlink(read_link(from)?, &to)?;
+        symlink(read_link(from)?, to)?;
+        #[cfg(windows)]
+        if from.symlink_metadata()?.file_type().is_symlink_dir() {
+            symlink_dir(read_link(from)?, to)?;
+        } else {
+            symlink_file(read_link(from)?, to)?;
+        }
         return Ok(to.as_os_str().len() as u64);
     }
 
