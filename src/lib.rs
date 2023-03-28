@@ -1,3 +1,5 @@
+#![cfg_attr(target_os = "wasi", feature(wasi_ext))]
+
 macro_rules! err {
     ($text:expr, $kind:expr) => {
         return Err(Error::new($kind, $text))

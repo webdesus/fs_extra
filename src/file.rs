@@ -2,8 +2,10 @@ use crate::error::{Error, ErrorKind, Result};
 use std;
 use std::fs::{read_link, remove_file, File};
 use std::io::{Read, Write};
-#[cfg(unix)]
+#[cfg(any(unix, target_os = "redox"))]
 use std::os::unix::fs::symlink;
+#[cfg(target_os = "wasi")]
+use std::os::wasi::fs::symlink_path as symlink;
 use std::path::Path;
 
 // Options and flags which can be used to configure how a file will be  copied  or moved.
@@ -113,7 +115,7 @@ where
     }
 
     if !options.follow && from.is_symlink() {
-        #[cfg(unix)]
+        #[cfg(any(unix, target_os = "wasi", target_os = "redox"))]
         symlink(read_link(from)?, &to)?;
         return Ok(to.as_os_str().len() as u64);
     }
