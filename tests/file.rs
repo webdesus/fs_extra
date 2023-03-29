@@ -1036,7 +1036,7 @@ fn it_move_with_progress_exist_overwrite_and_skip_exist() {
 }
 
 #[test]
-#[cfg(unix)]
+#[cfg(any(unix, windows, target_os = "redox", target_os = "wasi"))]
 fn it_copy_not_overwrite_broken_symlink() {
     let mut test_file = PathBuf::from(TEST_FOLDER);
     test_file.push("it_copy_not_overwrite_broken_symlink");
@@ -1065,6 +1065,7 @@ fn it_copy_not_overwrite_broken_symlink() {
 }
 
 #[test]
+#[cfg(any(unix, windows, target_os = "redox", target_os = "wasi"))]
 fn it_copy_symlink_not_follow() {
     let mut test_file = PathBuf::from(TEST_FOLDER);
     test_file.push("it_copy_symlink_not_follow");
