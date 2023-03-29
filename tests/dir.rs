@@ -18,6 +18,16 @@ where
     content1 == content2
 }
 
+fn symlinks_eq<P, Q>(symlink1: P, symlink2: Q) -> bool
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+{
+    let target1 = fs::read_link(symlink1).unwrap();
+    let target2 = fs::read_link(symlink2).unwrap();
+    target1 == target2
+}
+
 fn compare_dir<P, Q>(path_from: P, path_to: Q) -> bool
 where
     P: AsRef<Path>,
@@ -28,7 +38,7 @@ where
         None => panic!("Invalid folder from"),
         Some(dir_name) => {
             path_to.push(dir_name.as_os_str());
-            if !path_to.exists() {
+            if !path_to.exists() && !path_to.is_symlink() {
                 return false;
             }
         }
@@ -47,10 +57,16 @@ where
                 None => panic!("No file name"),
                 Some(file_name) => {
                     path_to.push(file_name);
-                    if !path_to.exists() {
-                        return false;
-                    } else if !files_eq(&path, path_to.clone()) {
-                        return false;
+                    if path_to.is_symlink() {
+                        if !symlinks_eq(&path, &path_to) {
+                            return false;
+                        }
+                    } else if path_to.is_file() {
+                        if !path_to.exists() {
+                            return false;
+                        } else if !files_eq(&path, path_to.clone()) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -70,7 +86,7 @@ fn get_dir_size() -> u64 {
         .len()
 }
 
-#[cfg(unix)]
+#[cfg(any(unix, target_os = "wasi", target_os = "redox"))]
 fn create_file_symlink<P: AsRef<Path>, Q: AsRef<Path>>(
     original: P,
     link: Q,
@@ -4821,4 +4837,34 @@ fn it_move_with_progress_content_only_option() {
         Err(_) => panic!("Errors should not be!"),
         _ => {}
     }
+}
+
+#[test]
+fn it_move_with_symlinks() {
+    let copy_options = &CopyOptions {
+        copy_inside: true,
+        ..CopyOptions::new()
+    };
+    let test_dir = Path::new(TEST_FOLDER).join("it_move_with_symlinks");
+    let path_from = test_dir.clone().join("dir");
+    let path_to1 = test_dir.clone().join("dir_cpy1");
+    let path_to2 = test_dir.clone().join("dir_cpy2");
+
+    let test_file = Path::new("file");
+    let test_link = Path::new("link");
+    let test_dir1 = Path::new("dir_in");
+    let test_link1 = test_dir1.clone().join("link1");
+
+    let _ = remove(test_dir);
+    create_all(&path_from.join(&test_dir1), true).unwrap();
+    fs_extra::file::write_all(&path_from.join(&test_file), "test").unwrap();
+
+    create_file_symlink(&test_file, &path_from.join(&test_link)).unwrap();
+    create_file_symlink(&Path::new("..").join(test_file), &path_from.join(&test_link1)).unwrap();
+
+    copy(&path_from, &path_to1.join("dir"), &copy_options).unwrap();
+    assert!(compare_dir(&path_from, &path_to1));
+
+    move_dir(&path_to1.join("dir"), &path_to2.join("dir"), &copy_options).unwrap();
+    assert!(compare_dir(&path_from, &path_to2));
 }
