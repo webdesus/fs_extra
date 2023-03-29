@@ -727,7 +727,8 @@ where
     }
     let item = item.unwrap().to_string();
 
-    if path.as_ref().is_dir() {
+    let meta = path.as_ref().symlink_metadata()?;
+    if meta.is_dir() {
         dir_size = path.as_ref().metadata()?.len();
         directories.push(item);
         if depth == 0 || depth > 1 {
@@ -750,7 +751,7 @@ where
             }
         }
     } else {
-        dir_size = path.as_ref().symlink_metadata()?.len();
+        dir_size = meta.len();
         files.push(item);
     }
     Ok(DirContent {

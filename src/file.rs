@@ -182,35 +182,45 @@ where
     F: FnMut(TransitProcess),
 {
     let from = from.as_ref();
-    if !from.exists() {
-        if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
-            err!(&msg, ErrorKind::NotFound);
+    let to = to.as_ref();
+
+    if !options.overwrite && (to.try_exists()? || to.symlink_metadata().is_ok()) {
+        if !options.skip_exist {
+            err!(
+                &format!("Path \"{}\" exists", to.display()),
+                ErrorKind::AlreadyExists
+            );
+        } else {
+            return Ok(0);
         }
+    }
+
+    if !options.follow && from.is_symlink() {
+        #[cfg(any(unix, target_os = "wasi", target_os = "redox"))]
+        symlink(read_link(from)?, to)?;
+        #[cfg(windows)]
+        if from.symlink_metadata()?.file_type().is_symlink_dir() {
+            symlink_dir(read_link(from)?, to)?;
+        } else {
+            symlink_file(read_link(from)?, to)?;
+        }
+        return Ok(to.as_os_str().len() as u64);
+    }
+
+    if !from.try_exists()? {
         err!(
-            "Path does not exist or you don't have access!",
+            &format!("Path \"{}\" doesn't exist!", from.display()),
             ErrorKind::NotFound
         );
     }
 
     if !from.is_file() {
-        if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" is not a file!", msg);
-            err!(&msg, ErrorKind::InvalidFile);
-        }
-        err!("Path is not a file!", ErrorKind::InvalidFile);
+        err!(
+            &format!("Path \"{}\" is not a file!", from.display()),
+            ErrorKind::InvalidFile
+        );
     }
 
-    if !options.overwrite && to.as_ref().exists() {
-        if options.skip_exist {
-            return Ok(0);
-        }
-
-        if let Some(msg) = to.as_ref().to_str() {
-            let msg = format!("Path \"{}\" exists", msg);
-            err!(&msg, ErrorKind::AlreadyExists);
-        }
-    }
     let mut file_from = File::open(from)?;
     let mut buf = vec![0; options.buffer_size];
     let file_size = file_from.metadata()?.len();

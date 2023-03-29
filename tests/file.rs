@@ -442,8 +442,7 @@ fn it_copy_with_progress_source_not_exist() {
         Err(err) => match err.kind {
             ErrorKind::NotFound => {
                 let wrong_path = format!(
-                    "Path \"{}\" does not exist or you don't have \
-                     access!",
+                    "Path \"{}\" doesn't exist!",
                     test_file.to_str().unwrap()
                 );
 
@@ -905,8 +904,7 @@ fn it_move_with_progress_source_not_exist() {
         Err(err) => match err.kind {
             ErrorKind::NotFound => {
                 let wrong_path = format!(
-                    "Path \"{}\" does not exist or you don't have \
-                     access!",
+                    "Path \"{}\" doesn't exist!",
                     test_file.to_str().unwrap()
                 );
 
