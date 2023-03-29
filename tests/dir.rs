@@ -4860,11 +4860,57 @@ fn it_move_with_symlinks() {
     fs_extra::file::write_all(&path_from.join(&test_file), "test").unwrap();
 
     create_file_symlink(&test_file, &path_from.join(&test_link)).unwrap();
-    create_file_symlink(&Path::new("..").join(test_file), &path_from.join(&test_link1)).unwrap();
+    create_file_symlink(
+        &Path::new("..").join(test_file),
+        &path_from.join(&test_link1),
+    )
+    .unwrap();
 
     copy(&path_from, &path_to1.join("dir"), &copy_options).unwrap();
     assert!(compare_dir(&path_from, &path_to1));
 
     move_dir(&path_to1.join("dir"), &path_to2.join("dir"), &copy_options).unwrap();
+    assert!(compare_dir(&path_from, &path_to2));
+}
+
+#[test]
+fn it_move_with_symlinks_progress() {
+    let copy_options = &CopyOptions {
+        copy_inside: true,
+        ..CopyOptions::new()
+    };
+    let test_dir = Path::new(TEST_FOLDER).join("it_move_with_symlinks_progress");
+    let path_from = test_dir.clone().join("dir");
+    let path_to1 = test_dir.clone().join("dir_cpy1");
+    let path_to2 = test_dir.clone().join("dir_cpy2");
+
+    let test_file = Path::new("file");
+    let test_link = Path::new("link");
+    let test_dir1 = Path::new("dir_in");
+    let test_link1 = test_dir1.clone().join("link1");
+
+    let func_test = |_process_info: TransitProcess| TransitProcessResult::ContinueOrAbort;
+
+    let _ = remove(test_dir);
+    create_all(&path_from.join(&test_dir1), true).unwrap();
+    fs_extra::file::write_all(&path_from.join(&test_file), "test").unwrap();
+
+    create_file_symlink(&test_file, &path_from.join(&test_link)).unwrap();
+    create_file_symlink(
+        &Path::new("..").join(test_file),
+        &path_from.join(&test_link1),
+    )
+    .unwrap();
+
+    copy_with_progress(&path_from, &path_to1.join("dir"), &copy_options, &func_test).unwrap();
+    assert!(compare_dir(&path_from, &path_to1));
+
+    move_dir_with_progress(
+        &path_to1.join("dir"),
+        &path_to2.join("dir"),
+        &copy_options,
+        &func_test,
+    )
+    .unwrap();
     assert!(compare_dir(&path_from, &path_to2));
 }
