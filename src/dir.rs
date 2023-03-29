@@ -943,7 +943,7 @@ where
         }
 
         info_process.file_bytes_copied = 0;
-        info_process.file_total_bytes = Path::new(&file).metadata()?.len();
+        info_process.file_total_bytes = Path::new(&file).symlink_metadata()?.len();
 
         let mut result_copy: Result<u64>;
         let mut work = true;
@@ -1283,7 +1283,7 @@ where
         }
 
         info_process.file_bytes_copied = 0;
-        info_process.file_total_bytes = Path::new(&file).metadata()?.len();
+        info_process.file_total_bytes = Path::new(&file).symlink_metadata()?.len();
 
         let mut result_copy: Result<u64>;
         let mut work = true;
