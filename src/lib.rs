@@ -1,3 +1,5 @@
+#![cfg_attr(target_os = "wasi", feature(wasi_ext))]
+
 macro_rules! err {
     ($text:expr, $kind:expr) => {
         return Err(Error::new($kind, $text))
@@ -354,6 +356,7 @@ where
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
+                follow: false,
             };
 
             if let Some(file_name) = item.file_name() {
@@ -541,6 +544,7 @@ where
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
+                follow: false,
             };
 
             if let Some(file_name) = item.file_name() {
@@ -666,6 +670,7 @@ where
                 overwrite: options.overwrite,
                 skip_exist: options.skip_exist,
                 buffer_size: options.buffer_size,
+                follow: false,
             };
 
             if let Some(file_name) = item.file_name() {

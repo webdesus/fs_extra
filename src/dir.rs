@@ -619,6 +619,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            follow: false,
         };
         let mut result_copy: Result<u64>;
         let mut work = true;
@@ -726,7 +727,8 @@ where
     }
     let item = item.unwrap().to_string();
 
-    if path.as_ref().is_dir() {
+    let meta = path.as_ref().symlink_metadata()?;
+    if meta.is_dir() {
         dir_size = path.as_ref().metadata()?.len();
         directories.push(item);
         if depth == 0 || depth > 1 {
@@ -749,7 +751,7 @@ where
             }
         }
     } else {
-        dir_size = path.as_ref().metadata()?.len();
+        dir_size = meta.len();
         files.push(item);
     }
     Ok(DirContent {
@@ -931,6 +933,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            follow: false,
         };
 
         if let Some(file_name) = file_name.to_str() {
@@ -940,7 +943,7 @@ where
         }
 
         info_process.file_bytes_copied = 0;
-        info_process.file_total_bytes = Path::new(&file).metadata()?.len();
+        info_process.file_total_bytes = Path::new(&file).symlink_metadata()?.len();
 
         let mut result_copy: Result<u64>;
         let mut work = true;
@@ -1126,6 +1129,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            follow: false,
         };
 
         let mut result_copy: Result<u64>;
@@ -1146,6 +1150,7 @@ where
             }
         }
     }
+
     if is_remove {
         remove(from)?;
     }
@@ -1268,6 +1273,7 @@ where
             overwrite: options.overwrite,
             skip_exist: options.skip_exist,
             buffer_size: options.buffer_size,
+            follow: false,
         };
 
         if let Some(file_name) = file_name.to_str() {
@@ -1277,7 +1283,7 @@ where
         }
 
         info_process.file_bytes_copied = 0;
-        info_process.file_total_bytes = Path::new(&file).metadata()?.len();
+        info_process.file_total_bytes = Path::new(&file).symlink_metadata()?.len();
 
         let mut result_copy: Result<u64>;
         let mut work = true;

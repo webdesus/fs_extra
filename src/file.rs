@@ -1,7 +1,13 @@
 use crate::error::{Error, ErrorKind, Result};
 use std;
-use std::fs::{remove_file, File};
+use std::fs::{read_link, remove_file, File};
 use std::io::{Read, Write};
+#[cfg(any(unix, target_os = "redox"))]
+use std::os::unix::fs::symlink;
+#[cfg(target_os = "wasi")]
+use std::os::wasi::fs::symlink_path as symlink;
+#[cfg(windows)]
+use std::os::windows::fs::{symlink_dir, symlink_file, FileTypeExt};
 use std::path::Path;
 
 // Options and flags which can be used to configure how a file will be  copied  or moved.
@@ -12,6 +18,8 @@ pub struct CopyOptions {
     pub skip_exist: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
     pub buffer_size: usize,
+    /// Follows the last symbolic link in the path
+    pub follow: bool,
 }
 
 impl CopyOptions {
@@ -30,6 +38,7 @@ impl CopyOptions {
             overwrite: false,
             skip_exist: false,
             buffer_size: 64000, //64kb
+            follow: true,
         }
     }
 
@@ -94,34 +103,43 @@ where
     Q: AsRef<Path>,
 {
     let from = from.as_ref();
-    if !from.exists() {
-        if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
-            err!(&msg, ErrorKind::NotFound);
+    let to = to.as_ref();
+
+    if !options.overwrite && to.symlink_metadata().is_ok() {
+        if !options.skip_exist {
+            err!(
+                &format!("Path \"{}\" exists", to.display()),
+                ErrorKind::AlreadyExists
+            );
+        } else {
+            return Ok(0);
         }
+    }
+
+    if !options.follow && from.is_symlink() {
+        #[cfg(any(unix, target_os = "wasi", target_os = "redox"))]
+        symlink(read_link(from)?, to)?;
+        #[cfg(windows)]
+        if from.symlink_metadata()?.file_type().is_symlink_dir() {
+            symlink_dir(read_link(from)?, to)?;
+        } else {
+            symlink_file(read_link(from)?, to)?;
+        }
+        return Ok(to.as_os_str().len() as u64);
+    }
+
+    if !from.try_exists()? {
         err!(
-            "Path does not exist or you don't have access!",
+            &format!("Path \"{}\" doesn't exist!", from.display()),
             ErrorKind::NotFound
         );
     }
 
     if !from.is_file() {
-        if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" is not a file!", msg);
-            err!(&msg, ErrorKind::InvalidFile);
-        }
-        err!("Path is not a file!", ErrorKind::InvalidFile);
-    }
-
-    if !options.overwrite && to.as_ref().exists() {
-        if options.skip_exist {
-            return Ok(0);
-        }
-
-        if let Some(msg) = to.as_ref().to_str() {
-            let msg = format!("Path \"{}\" exists", msg);
-            err!(&msg, ErrorKind::AlreadyExists);
-        }
+        err!(
+            &format!("Path \"{}\" is not a file!", from.display()),
+            ErrorKind::InvalidFile
+        );
     }
 
     Ok(std::fs::copy(from, to)?)
@@ -164,35 +182,45 @@ where
     F: FnMut(TransitProcess),
 {
     let from = from.as_ref();
-    if !from.exists() {
-        if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" does not exist or you don't have access!", msg);
-            err!(&msg, ErrorKind::NotFound);
+    let to = to.as_ref();
+
+    if !options.overwrite && (to.try_exists()? || to.symlink_metadata().is_ok()) {
+        if !options.skip_exist {
+            err!(
+                &format!("Path \"{}\" exists", to.display()),
+                ErrorKind::AlreadyExists
+            );
+        } else {
+            return Ok(0);
         }
+    }
+
+    if !options.follow && from.is_symlink() {
+        #[cfg(any(unix, target_os = "wasi", target_os = "redox"))]
+        symlink(read_link(from)?, to)?;
+        #[cfg(windows)]
+        if from.symlink_metadata()?.file_type().is_symlink_dir() {
+            symlink_dir(read_link(from)?, to)?;
+        } else {
+            symlink_file(read_link(from)?, to)?;
+        }
+        return Ok(to.as_os_str().len() as u64);
+    }
+
+    if !from.try_exists()? {
         err!(
-            "Path does not exist or you don't have access!",
+            &format!("Path \"{}\" doesn't exist!", from.display()),
             ErrorKind::NotFound
         );
     }
 
     if !from.is_file() {
-        if let Some(msg) = from.to_str() {
-            let msg = format!("Path \"{}\" is not a file!", msg);
-            err!(&msg, ErrorKind::InvalidFile);
-        }
-        err!("Path is not a file!", ErrorKind::InvalidFile);
+        err!(
+            &format!("Path \"{}\" is not a file!", from.display()),
+            ErrorKind::InvalidFile
+        );
     }
 
-    if !options.overwrite && to.as_ref().exists() {
-        if options.skip_exist {
-            return Ok(0);
-        }
-
-        if let Some(msg) = to.as_ref().to_str() {
-            let msg = format!("Path \"{}\" exists", msg);
-            err!(&msg, ErrorKind::AlreadyExists);
-        }
-    }
     let mut file_from = File::open(from)?;
     let mut buf = vec![0; options.buffer_size];
     let file_size = file_from.metadata()?.len();
