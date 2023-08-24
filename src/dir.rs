@@ -1,6 +1,7 @@
 use crate::error::*;
 use std::collections::{HashMap, HashSet};
 use std::fs::{create_dir, create_dir_all, read_dir, remove_dir_all, Metadata};
+ tuse std::io::ErrorKind as IoErrorKind;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
@@ -469,16 +470,16 @@ where
 ///
 /// * `erase` - If set true and folder exist, then folder will be erased.
 ///
-/// #Errors
+/// # Errors
 ///
 /// This function will return an error in the following situations,
 /// but is not limited to just these cases:
 ///
 /// * User lacks permissions to create directory at `path`.
 ///
-/// * `path` already exists if `erase` set false.
+/// If the directory already exists, no error will be returned.
 ///
-/// #Examples
+/// # Examples
 ///
 /// ```rust,ignore
 /// extern crate fs_extra;
@@ -493,7 +494,13 @@ where
     if erase && path.as_ref().exists() {
         remove(&path)?;
     }
-    Ok(create_dir(&path)?)
+
+    match create_dir(&path) {
+        // if it fails because it exists, we ignore it
+        Err(err) if err.kind() == IoErrorKind::AlreadyExists => Ok(()),
+        Err(err) => Err(err.into()),
+        Ok(()) => Ok(()),
+    }
 }
 
 /// Recursively create a directory and all of its parent components if they are missing.
@@ -504,16 +511,16 @@ where
 ///
 /// * `erase` - If set true and folder exist, then folder will be erased.
 ///
-///#Errors
+/// # Errors
 ///
 /// This function will return an error in the following situations,
 /// but is not limited to just these cases:
 ///
 /// * User lacks permissions to create directory at `path`.
 ///
-/// * `path` already exists if `erase` set false.
+/// If the directory already exists, no error will be returned.
 ///
-/// #Examples
+/// # Examples
 ///
 /// ```rust,ignore
 /// extern crate fs_extra;

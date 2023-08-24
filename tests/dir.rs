@@ -135,18 +135,8 @@ fn it_create_exist_folder() {
     fs_extra::file::write_all(&file_path, &content).unwrap();
     assert!(file_path.exists());
 
-    match create(&test_dir, false) {
-        Ok(_) => panic!("Should be error!"),
-        Err(err) => match err.kind {
-            ErrorKind::AlreadyExists => {
-                assert!(test_dir.exists());
-                assert!(file_path.exists());
-                let new_content = fs_extra::file::read_to_string(file_path).unwrap();
-                assert_eq!(new_content, content);
-            }
-            _ => panic!("Wrong error"),
-        },
-    }
+    let result = create(&test_dir, false);
+    assert!(result.is_ok());
 }
 
 #[test]
