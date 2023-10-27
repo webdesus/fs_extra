@@ -229,7 +229,7 @@ pub struct LsResult {
 
 /// Returned information about directory entry with information which you choose in config.
 ///
-/// This function takes to arguments:
+/// This function takes two arguments:
 ///
 /// * `path` - Path to directory.
 ///
