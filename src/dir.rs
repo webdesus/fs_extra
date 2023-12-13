@@ -15,7 +15,7 @@ pub struct CopyOptions {
     pub buffer_size: usize,
     /// Recursively copy a directory with a new name or place it inside the destination (default: false, same behaviors as cp -r on Unix)
     pub copy_inside: bool,
-    /// Copy only contents without a creating a new folder in the destination folder (default: false).
+    /// Copy only contents without creating a new folder in the destination folder (default: false).
     pub content_only: bool,
     /// Sets levels reading. Set 0 for read all directory folder (default: 0).
     ///
@@ -70,7 +70,7 @@ impl CopyOptions {
         self
     }
 
-    /// Copy only contents without a creating a new folder in the destination folder.
+    /// Copy only contents without creating a new folder in the destination folder.
     pub fn content_only(mut self, content_only: bool) -> Self {
         self.content_only = content_only;
         self
