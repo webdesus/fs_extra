@@ -2,7 +2,7 @@
 
 A Rust library that provides additional functionality not present in [`std::fs`](https://doc.rust-lang.org/std/fs/index.html).
 
-[![Build Status](https://travis-ci.org/webdesus/fs_extra.svg)](https://travis-ci.org/webdesus/fs_extra)
+[![Build Status](https://app.travis-ci.com/webdesus/fs_extra.svg)](https://app.travis-ci.com/webdesus/fs_extra)
 [![Crates.io Status](https://img.shields.io/crates/v/fs_extra.svg)](https://crates.io/crates/fs_extra)
 [![Docs](https://docs.rs/fs_extra/badge.svg)](https://docs.rs/fs_extra)
 
