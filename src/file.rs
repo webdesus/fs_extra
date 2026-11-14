@@ -11,6 +11,7 @@ pub struct CopyOptions {
     /// Sets the option true for skip existing files.
     pub skip_exist: bool,
     /// Sets buffer size for copy/move work only with receipt information about process work.
+    /// Must be greater than zero for operations with progress.
     pub buffer_size: usize,
 }
 
@@ -122,6 +123,7 @@ where
             let msg = format!("Path \"{}\" exists", msg);
             err!(&msg, ErrorKind::AlreadyExists);
         }
+        err!("Path exists", ErrorKind::AlreadyExists);
     }
 
     Ok(std::fs::copy(from, to)?)
@@ -163,6 +165,9 @@ where
     Q: AsRef<Path>,
     F: FnMut(TransitProcess),
 {
+    if options.buffer_size == 0 {
+        err!("Buffer size must be greater than zero", ErrorKind::Other);
+    }
     let from = from.as_ref();
     if !from.exists() {
         if let Some(msg) = from.to_str() {
@@ -192,13 +197,27 @@ where
             let msg = format!("Path \"{}\" exists", msg);
             err!(&msg, ErrorKind::AlreadyExists);
         }
+        err!("Path exists", ErrorKind::AlreadyExists);
     }
     let mut file_from = File::open(from)?;
     let mut buf = vec![0; options.buffer_size];
-    let file_size = file_from.metadata()?.len();
+    let metadata = file_from.metadata()?;
+    let file_size = metadata.len();
+    let permissions = metadata.permissions();
     let mut copied_bytes: u64 = 0;
 
-    let mut file_to = File::create(to)?;
+    let mut destination_options = std::fs::OpenOptions::new();
+    destination_options.write(true).create(true).truncate(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
+        // Do not create a private source's destination with broader permissions even briefly.
+        destination_options.mode(permissions.mode());
+    }
+    let mut file_to = destination_options.open(to)?;
+    // Set permissions through the opened handle before exposing any copied bytes. This also
+    // tightens an existing destination, whose permissions open/create does not replace.
+    file_to.set_permissions(permissions.clone())?;
     while !buf.is_empty() {
         match file_from.read(&mut buf) {
             Ok(0) => break,
@@ -218,6 +237,8 @@ where
             Err(e) => return Err(::std::convert::From::from(e)),
         }
     }
+    // A write may clear platform permission bits; retain the source's final permissions too.
+    file_to.set_permissions(permissions)?;
     Ok(file_size)
 }
 
